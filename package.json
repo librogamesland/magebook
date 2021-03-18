@@ -10,7 +10,7 @@
     "type": "git",
     "url": "https://github.com/librogamesland/magebook.git"
   },
-  "keywords" : [
+  "keywords": [
     "lgl",
     "librogamesland",
     "librogame",
@@ -26,12 +26,11 @@
     "alpha": "npm run clean; npm run build; mkdir ./alpha; cp -fr ./dist/* ./alpha",
     "release": "npm run clean; npm run build; mkdir ./editor; cp -fr ./dist/* ./editor",
     "dev": "rollup -c -w",
-    "api-build":  "rollup -c 'rollup-api.config.js'",
-    "api-dev":  "rollup -c 'rollup-api.config.js' -w"
+    "api-build": "rollup -c 'rollup-api.config.js'",
+    "api-dev": "rollup -c 'rollup-api.config.js' -w"
   },
   "devDependencies": {
     "@babel/core": "^7.13.8",
-    "@babel/plugin-transform-runtime": "^7.13.9",
     "@babel/preset-env": "^7.13.9",
     "@babel/runtime": "^7.13.9",
     "@codemirror/basic-setup": "^0.17.1",
@@ -44,13 +43,12 @@
     "@rollup/plugin-node-resolve": "^11.2.0",
     "@rollup/pluginutils": "^4.1.0",
     "babel-preset-env": "^1.7.0",
-    "dexie": "^3.0.3",
-    "docx": "^5.5.0",
     "file-saver": "^2.0.5",
     "marked": "^2.0.1",
     "pkg": "^4.4.9",
     "rollup": "^2.40.0",
     "rollup-plugin-css-only": "^3.1.0",
+    "rollup-plugin-external-globals": "^0.6.1",
     "rollup-plugin-serve": "^1.1.0",
     "rollup-plugin-svelte": "^7.1.0",
     "rollup-plugin-terser": "^7.0.2",

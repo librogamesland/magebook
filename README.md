@@ -1,7 +1,7 @@
 # Magebook web editor
 A web editor for gamebook writing. Try it here: [https://librogamesland.github.io/magebook](https://librogamesland.github.io/magebook)
 
-<img src="https://github.com/librogamesland/magebook/raw/master/screenshots/1.jpg" alt="magebook screenshot" style="max-width:100%;">
+<img src="https://librogamesland.github.io/magebook/screenshots/1.jpg" alt="magebook screenshot" style="max-width:100%;">
 
 ## Developer api
 Magebook provides a javascript ([Node.js](https://nodejs.org/)) api to work with Magebook md format. You can use it to convert book formats, analyze books, or bundle your book inside a web app with [Rollup](https://rollupjs.org/).
@@ -38,7 +38,9 @@ const data = {
 ```
 
 #### Rollup plugin
-To import a `.md` file inside a javascript code, you need a bundler. Magebook includes a rollup plugin already configured for that. It will read the book and transpile it to a standard format book (like above). You can set the `trasform` option to encode markdown to html on the fly.
+To import a `.md` file inside a javascript code, you need a bundler. Magebook includes a rollup plugin already configured for that. It will read the book and transpile it to a standard format book (like above). 
+
+You can set the `trasform` option to encode markdown to html on the fly.
 
 Example:
 ```javascript

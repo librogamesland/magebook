@@ -150,14 +150,7 @@ const encode = (book) => {
 
   docx.Packer.toBlob(doc).then(blob => {
     const reader = new FileReader();
-
-    reader.onload = () => {
-        console.log("" + reader.result);
-    };
-
-    reader.readAsDataURL(blob);
-
-      saveAs(blob, name + '.docx');
+    saveAs(blob, name + '.docx');
   });
 
   
