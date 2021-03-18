@@ -8,6 +8,234 @@ function _interopDefaultLegacy (e) { return e && typeof e === 'object' && 'defau
 
 var path__default = /*#__PURE__*/_interopDefaultLegacy(path);
 
+function noop() { }
+function safe_not_equal(a, b) {
+    return a != a ? b == b : a !== b || ((a && typeof a === 'object') || typeof a === 'function');
+}
+
+const subscriber_queue = [];
+/**
+ * Create a `Writable` store that allows both updating and reading by subscription.
+ * @param {*=}value initial value
+ * @param {StartStopNotifier=}start start and stop notifications for subscriptions
+ */
+function writable(value, start = noop) {
+    let stop;
+    const subscribers = [];
+    function set(new_value) {
+        if (safe_not_equal(value, new_value)) {
+            value = new_value;
+            if (stop) { // store is ready
+                const run_queue = !subscriber_queue.length;
+                for (let i = 0; i < subscribers.length; i += 1) {
+                    const s = subscribers[i];
+                    s[1]();
+                    subscriber_queue.push(s, value);
+                }
+                if (run_queue) {
+                    for (let i = 0; i < subscriber_queue.length; i += 2) {
+                        subscriber_queue[i][0](subscriber_queue[i + 1]);
+                    }
+                    subscriber_queue.length = 0;
+                }
+            }
+        }
+    }
+    function update(fn) {
+        set(fn(value));
+    }
+    function subscribe(run, invalidate = noop) {
+        const subscriber = [run, invalidate];
+        subscribers.push(subscriber);
+        if (subscribers.length === 1) {
+            stop = start(set) || noop;
+        }
+        run(value);
+        return () => {
+            const index = subscribers.indexOf(subscriber);
+            if (index !== -1) {
+                subscribers.splice(index, 1);
+            }
+            if (subscribers.length === 0) {
+                stop();
+                stop = null;
+            }
+        };
+    }
+    return { set, update, subscribe };
+}
+
+// Random string generator
+
+
+// https://javascript.info/task/shuffle
+function shuffleArray(array) {
+  for (let i = array.length - 1; i > 0; i--) {
+    let j = Math.floor(Math.random() * (i + 1)); // random index from 0 to i
+
+    // swap elements array[i] and array[j]
+    // we use "destructuring assignment" syntax to achieve that
+    // you'll find more details about that syntax in later chapters
+    // same can be written as:
+    // let t = array[i]; array[i] = array[j]; array[j] = t
+    [array[i], array[j]] = [array[j], array[i]];
+  }
+}
+
+
+const isNumber = n => /^-?\d+$/.test(n);
+
+const empty = {
+  key: "1",
+  properties: {},
+  chapters: {
+    "1": {title: "", group: "", flags:[], text: ""},
+  }
+};
+
+// Book constructor
+const Book = function(data = empty){
+  const beforeCallbacks = [];
+  const beforeUpdate    = (callback) => beforeCallbacks.push(callback);
+
+  const {set, subscribe} = new writable(data);
+
+
+
+  const newChapter = () => ({title: "", group: "", flags:[], text: ""});
+  const sanitizeKey = key => key.replace(/[^a-z0-9]/gi,'');
+
+  const update = (callback) => {
+    const callbacks = [...beforeCallbacks, callback];
+    callbacks.forEach( (fun) => {
+      data = {...data, ...fun(data)};
+    });
+    if(!data.chapters || Object.keys(data.chapters).length == 0){
+      data.chapters = { "1": newChapter() };
+    }
+    if(!(data.chapters[data.key])){
+      console.warn("Key not found, rewriting with first key");
+      data.key = Object.keys(data.chapters)[0];
+    }
+    set(data); 
+  };
+
+
+
+  const availableKey = () => {
+    for (let i = 1; i < 5000; i++) {
+      const key = String(i);
+      if (data.chapters[key]) continue
+      return key
+    }
+  };
+
+  // Something like "01 - Title"
+  const fullTitle = (chapterKey) => chapterKey + (data.chapters[chapterKey].title ? ' - ' + data.chapters[chapterKey].title : '');
+
+  const linksTo = (chapterKey) => {
+    const escapeRegex = (string) => string.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
+    const keyRegex =     new RegExp(String.raw`\[([^\[]*)\](\(\s*\#${escapeRegex(chapterKey)}\s*\))`, 'g');
+    return Object.keys(data.chapters).filter( key => keyRegex.test(data.chapters[key].text) )
+  };
+
+  const get = () => {
+    update(()=> {});
+    return JSON.parse(JSON.stringify(data))
+  };
+
+  const sortedKeys = (chapters = data.chapters) => Object.keys(chapters).sort( (a, b) => {
+    const aIsNumber = isNumber(a);
+    const bIsNumber = isNumber(b);
+
+    if(!aIsNumber && bIsNumber) return -1
+    if(aIsNumber && !bIsNumber) return +1
+    if(!aIsNumber && !bIsNumber) return a.localeCompare(b)
+    if(aIsNumber && bIsNumber) return  parseInt(a, 10) - parseInt(b, 10)
+  });
+
+  const refresh = (increaseRevision = false) => update(({properties}) => {
+    if(increaseRevision){
+      let revision = Number(properties.revision || "0");
+      properties.revision = String(revision + 1);
+      return {properties}
+    }
+    return {}
+  });
+
+  const shuffle = (selectedFlags = [], groupsFilter = [], increaseRevision = false) => {
+    const toShuffle = [];
+    const toNotShuffle = [];
+
+    // Divide le chiavi in due gruppi, da mescolare e da non mescolare
+    Object.entries(data.chapters).forEach( ([key, value]) => {
+      if(!isNumber(key)){
+        toNotShuffle.push(key);
+        return 
+      }
+      // Se la flag era fra quelle fisse, allora aggiungi la chiave a quella da non mischiare
+      if(value.flags && value.flags.some( flag => selectedFlags.includes(flag))){
+        toNotShuffle.push(key);
+        return
+      }
+      if(groupsFilter.length > 0){
+        if(!(value.group && groupsFilter.includes(value.group) )){
+          toNotShuffle.push(key);
+          return   
+        }
+      }
+      toShuffle.push(key);
+    });
+    // Mescola le chiavi e crea un dizionario
+    const shuffledKeys = JSON.parse(JSON.stringify(toShuffle));  // Obj copy
+    shuffleArray(shuffledKeys);
+    const shuffled    = Object.fromEntries( toShuffle.map((k, i) =>[k, shuffledKeys[i]]));
+    const shuffledRev = Object.fromEntries( toShuffle.map((k, i) =>[shuffledKeys[i], k]));
+    const getShuffledKey = key => toNotShuffle.includes(key) ? key : shuffled[key];
+
+    shuffleArray(toShuffle);
+    const newData = get();
+    if(increaseRevision){
+      let revision = Number(newData.properties.revision || "0");
+      newData.properties.revision = String(revision + 1);
+    }
+    newData.key = getShuffledKey(data.key);
+
+    Object.keys(data.chapters).forEach( (oldKey) => {
+      const newKey = toNotShuffle.includes(oldKey) ? oldKey : shuffledRev[oldKey];
+      newData.chapters[oldKey] = JSON.parse(JSON.stringify(data.chapters[newKey]));
+      newData.chapters[oldKey].text =  newData.chapters[oldKey].text
+        .replace(/\[([^\[]*)\](\(\s*#(\w+)\s*\))/g, (...all) => `[${all[1]}](#${getShuffledKey(all[3])})`); 
+
+    });
+
+    return newData
+  };
+
+
+  Object.defineProperty(this, "data", {
+    get : () => get(),
+    set: (value) => update( ()=> value)
+  });
+
+  // Return
+  Object.assign(this, {
+    "__is_book": true,
+    beforeUpdate,
+    update, 
+    refresh,
+    subscribe,
+    get,
+    newChapter,
+    availableKey,
+    sanitizeKey,
+    sortedKeys,
+    linksTo,
+    fullTitle,
+    shuffle,
+  });
+};
+
 const mimetype$2 = 'text/markdown';
 
 const decode$1 = (file) => {
@@ -405,26 +633,6 @@ const template =  (content) =>
   </office:text>
  </office:body>
 </office:document>`;
-
-// Random string generator
-
-
-// https://javascript.info/task/shuffle
-function shuffleArray(array) {
-  for (let i = array.length - 1; i > 0; i--) {
-    let j = Math.floor(Math.random() * (i + 1)); // random index from 0 to i
-
-    // swap elements array[i] and array[j]
-    // we use "destructuring assignment" syntax to achieve that
-    // you'll find more details about that syntax in later chapters
-    // same can be written as:
-    // let t = array[i]; array[i] = array[j]; array[j] = t
-    [array[i], array[j]] = [array[j], array[i]];
-  }
-}
-
-
-const isNumber = n => /^-?\d+$/.test(n);
 
 var commonjsGlobal = typeof globalThis !== 'undefined' ? globalThis : typeof window !== 'undefined' ? window : typeof global !== 'undefined' ? global : typeof self !== 'undefined' ? self : {};
 
@@ -3263,214 +3471,6 @@ const encodeToHTML = (text, renderer = defaultHTMLRenderer) => {
   return marked(text.replace(/\n/g, '\n\n'))
 };
 
-function noop() { }
-function safe_not_equal(a, b) {
-    return a != a ? b == b : a !== b || ((a && typeof a === 'object') || typeof a === 'function');
-}
-
-const subscriber_queue = [];
-/**
- * Create a `Writable` store that allows both updating and reading by subscription.
- * @param {*=}value initial value
- * @param {StartStopNotifier=}start start and stop notifications for subscriptions
- */
-function writable(value, start = noop) {
-    let stop;
-    const subscribers = [];
-    function set(new_value) {
-        if (safe_not_equal(value, new_value)) {
-            value = new_value;
-            if (stop) { // store is ready
-                const run_queue = !subscriber_queue.length;
-                for (let i = 0; i < subscribers.length; i += 1) {
-                    const s = subscribers[i];
-                    s[1]();
-                    subscriber_queue.push(s, value);
-                }
-                if (run_queue) {
-                    for (let i = 0; i < subscriber_queue.length; i += 2) {
-                        subscriber_queue[i][0](subscriber_queue[i + 1]);
-                    }
-                    subscriber_queue.length = 0;
-                }
-            }
-        }
-    }
-    function update(fn) {
-        set(fn(value));
-    }
-    function subscribe(run, invalidate = noop) {
-        const subscriber = [run, invalidate];
-        subscribers.push(subscriber);
-        if (subscribers.length === 1) {
-            stop = start(set) || noop;
-        }
-        run(value);
-        return () => {
-            const index = subscribers.indexOf(subscriber);
-            if (index !== -1) {
-                subscribers.splice(index, 1);
-            }
-            if (subscribers.length === 0) {
-                stop();
-                stop = null;
-            }
-        };
-    }
-    return { set, update, subscribe };
-}
-
-const empty = {
-  key: "1",
-  properties: {},
-  chapters: {
-    "1": {title: "", group: "", flags:[], text: ""},
-  }
-};
-
-// Book constructor
-const Book$1 = function(data = empty){
-  const beforeCallbacks = [];
-  const beforeUpdate    = (callback) => beforeCallbacks.push(callback);
-
-  const {set, subscribe} = new writable(data);
-
-
-
-  const newChapter = () => ({title: "", group: "", flags:[], text: ""});
-  const sanitizeKey = key => key.replace(/[^a-z0-9]/gi,'');
-
-  const update = (callback) => {
-    const callbacks = [...beforeCallbacks, callback];
-    callbacks.forEach( (fun) => {
-      data = {...data, ...fun(data)};
-    });
-    if(!data.chapters || Object.keys(data.chapters).length == 0){
-      data.chapters = { "1": newChapter() };
-    }
-    if(!(data.chapters[data.key])){
-      console.warn("Key not found, rewriting with first key");
-      data.key = Object.keys(data.chapters)[0];
-    }
-    set(data); 
-  };
-
-
-
-  const availableKey = () => {
-    for (let i = 1; i < 5000; i++) {
-      const key = String(i);
-      if (data.chapters[key]) continue
-      return key
-    }
-  };
-
-  // Something like "01 - Title"
-  const fullTitle = (chapterKey) => chapterKey + (data.chapters[chapterKey].title ? ' - ' + data.chapters[chapterKey].title : '');
-
-  const linksTo = (chapterKey) => {
-    const escapeRegex = (string) => string.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
-    const keyRegex =     new RegExp(String.raw`\[([^\[]*)\](\(\s*\#${escapeRegex(chapterKey)}\s*\))`, 'g');
-    return Object.keys(data.chapters).filter( key => keyRegex.test(data.chapters[key].text) )
-  };
-
-  const get = () => {
-    update(()=> {});
-    return JSON.parse(JSON.stringify(data))
-  };
-
-  const sortedKeys = (chapters = data.chapters) => Object.keys(chapters).sort( (a, b) => {
-    const aIsNumber = isNumber(a);
-    const bIsNumber = isNumber(b);
-
-    if(!aIsNumber && bIsNumber) return -1
-    if(aIsNumber && !bIsNumber) return +1
-    if(!aIsNumber && !bIsNumber) return a.localeCompare(b)
-    if(aIsNumber && bIsNumber) return  parseInt(a, 10) - parseInt(b, 10)
-  });
-
-  const refresh = (increaseRevision = false) => update(({properties}) => {
-    if(increaseRevision){
-      let revision = Number(properties.revision || "0");
-      properties.revision = String(revision + 1);
-      return {properties}
-    }
-    return {}
-  });
-
-  const shuffle = (selectedFlags = [], groupsFilter = [], increaseRevision = false) => {
-    const toShuffle = [];
-    const toNotShuffle = [];
-
-    // Divide le chiavi in due gruppi, da mescolare e da non mescolare
-    Object.entries(data.chapters).forEach( ([key, value]) => {
-      if(!isNumber(key)){
-        toNotShuffle.push(key);
-        return 
-      }
-      // Se la flag era fra quelle fisse, allora aggiungi la chiave a quella da non mischiare
-      if(value.flags && value.flags.some( flag => selectedFlags.includes(flag))){
-        toNotShuffle.push(key);
-        return
-      }
-      if(groupsFilter.length > 0){
-        if(!(value.group && groupsFilter.includes(value.group) )){
-          toNotShuffle.push(key);
-          return   
-        }
-      }
-      toShuffle.push(key);
-    });
-    // Mescola le chiavi e crea un dizionario
-    const shuffledKeys = JSON.parse(JSON.stringify(toShuffle));  // Obj copy
-    shuffleArray(shuffledKeys);
-    const shuffled    = Object.fromEntries( toShuffle.map((k, i) =>[k, shuffledKeys[i]]));
-    const shuffledRev = Object.fromEntries( toShuffle.map((k, i) =>[shuffledKeys[i], k]));
-    const getShuffledKey = key => toNotShuffle.includes(key) ? key : shuffled[key];
-
-    shuffleArray(toShuffle);
-    const newData = get();
-    if(increaseRevision){
-      let revision = Number(newData.properties.revision || "0");
-      newData.properties.revision = String(revision + 1);
-    }
-    newData.key = getShuffledKey(data.key);
-
-    Object.keys(data.chapters).forEach( (oldKey) => {
-      const newKey = toNotShuffle.includes(oldKey) ? oldKey : shuffledRev[oldKey];
-      newData.chapters[oldKey] = JSON.parse(JSON.stringify(data.chapters[newKey]));
-      newData.chapters[oldKey].text =  newData.chapters[oldKey].text
-        .replace(/\[([^\[]*)\](\(\s*#(\w+)\s*\))/g, (...all) => `[${all[1]}](#${getShuffledKey(all[3])})`); 
-
-    });
-
-    return newData
-  };
-
-
-  Object.defineProperty(this, "data", {
-    get : () => get(),
-    set: (value) => update( ()=> value)
-  });
-
-  // Return
-  Object.assign(this, {
-    "__is_book": true,
-    beforeUpdate,
-    update, 
-    refresh,
-    subscribe,
-    get,
-    newChapter,
-    availableKey,
-    sanitizeKey,
-    sortedKeys,
-    linksTo,
-    fullTitle,
-    shuffle,
-  });
-};
-
 const mimetype$1 = 'application/vnd.oasis.opendocument.text';
 
 
@@ -3506,7 +3506,7 @@ const encodeChapter$1 = (key, chapters) => {
 
 
 const encode$2 = (book) => {
-  if(!book["__is_book"]) book = new Book$1(book);
+  if(!book["__is_book"]) book = new Book(book);
   const {chapters} = book.get();
   return template(book.sortedKeys().reduce( (acc, key) => acc + encodeChapter$1(key, chapters), ''))
 };
@@ -3641,7 +3641,7 @@ const encodeEntity = (key, entity) =>
 
 // Codifica il libro
 const encode$1 = book => {
-  if(!book["__is_book"]) book = new Book$1(book);
+  if(!book["__is_book"]) book = new Book(book);
   const {key : currentKey, chapters, properties} = book.get();
   return `<?xml version="1.0" encoding="UTF-8"?><entities>${
       encodeProperties(properties, currentKey) +
@@ -22320,7 +22320,7 @@ const addChapter = (key, chapters ) => {
 
 
 const encode = (book) => {
-  if(!book["__is_book"]) book = new Book$1(book);
+  if(!book["__is_book"]) book = new Book(book);
   const name = 'example';
   const doc = new docx$1.Document({
     styles: {

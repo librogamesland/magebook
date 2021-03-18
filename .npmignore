@@ -7,3 +7,4 @@ src/
 wrappers/
 
 rollup.config.js
+rollup-api.config.js

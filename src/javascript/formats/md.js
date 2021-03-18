@@ -1,3 +1,4 @@
+import {Book} from '../book.js'
 
 const mimetype = 'text/markdown'
 
