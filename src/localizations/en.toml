@@ -29,6 +29,12 @@ hint       = "Shuffle chapters with numeric key. You may choose to shuffle only 
 group      = "Group filter"
 flags      = "Exclude flags"
 
+[dialogs.lock]
+title      = "Warning"
+text       = "Another tab has written changes on this session. If you overwrite, those changes will be lost. You can open a new session instead, and recover the other session with the <b>File -> Recover session</b> tool."
+new        = "Open in new session"
+overwrite  = "Overwrite"
+
 
 [navbar.file]
 title   = "File"

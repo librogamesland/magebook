@@ -1,11 +1,16 @@
 import Dexie from 'dexie'
 import { randomString } from './utils.js'
+import {lockStore} from '../components/Dialogs.svelte'
 
+
+
+window.lo = lockStore
 // Database: declare tables, IDs and indexes
 const db = new Dexie('magebook');
 db.version(1).stores({
   sessions: '&id, time, preview'
 });
+
 
 // Session previews
 const previews = async() => {
@@ -52,18 +57,25 @@ const Session = function(book, defaultBookData){
       return
     }
     // Trova il nome della sessione o creane una nuova
+    const lastSession = localStorage.getItem('mage-session-last')
+
     sessionName = await (async() => {
       const prefix = 'msession='
+      if(!lastSession) return randomString(IDLength)
+
       if(window.location.hash && window.location.hash.includes(prefix)){
         const pos = window.location.hash.indexOf(prefix) + prefix.length
         if(!((pos + IDLength) > window.location.hash.length)){
           const candidate = window.location.hash.substr(pos, IDLength)
-          if(await db.sessions.get(candidate)){
-            return candidate
-          }
+          if(candidate == lastSession) return candidate
+          try {
+            if(await db.sessions.get(candidate)){
+              return candidate
+            }
+          }catch(e){}
         }
       }
-      return localStorage.getItem('mage-session-last') ||  randomString(IDLength)
+      return lastSession ||  randomString(IDLength)
     })()
     location.replace(`#msession=${sessionName}`) // Set dell'url
     
@@ -79,7 +91,16 @@ const Session = function(book, defaultBookData){
     localStorage.setItem(`mage-lock-${sessionName}`, lock)
 
     // Load book in session
-    const info = (await db.sessions.get(sessionName)) || {data: defaultBookData, file: {name: defaultBookData.properties.title}} 
+    let info
+    if(lastSession == sessionName){
+      info = JSON.parse(localStorage.getItem('mage-session-last-data'))
+    }else {
+      try{
+        info =  (await db.sessions.get(sessionName)) 
+      }catch(e){}
+    }
+    info = info || {data: defaultBookData, file: {name: defaultBookData.properties.title}} 
+     
     const {data} = info
     this.file = info.file
     book.update( () => data)
@@ -87,10 +108,12 @@ const Session = function(book, defaultBookData){
     // Save book on changes
     book.subscribe( async(bookData) => {
       if(localStorage.getItem(`mage-lock-${sessionName}`) != lock ){
-    
-        console.log("LOCK PROBLEM")
+        lockStore.set( {
+          lock: true,
+          session: this,
+        })
+        return 
       }
-
 
       localStorage.setItem('mage-session-last', sessionName)
       const sessionData = {
@@ -99,11 +122,14 @@ const Session = function(book, defaultBookData){
         data: bookData,
         time: new Date().getTime(),
       }
+      localStorage.setItem('mage-session-last-data', JSON.stringify(sessionData))
 
+      try{
       await db.sessions.put({
         preview: preview(sessionData),
         ...sessionData
       })
+      }catch(e){}
     })
     
     window.onbeforeunload = () => book.refresh()
@@ -113,14 +139,38 @@ const Session = function(book, defaultBookData){
   }
 
   const open = async(params) => {
+    window.onbeforeunload = () => {}
+    book.refresh()
+
+    const id = randomString(IDLength)
+    localStorage.setItem('mage-session-last', id)
+
     const sessionData = {
-      id: randomString(IDLength),
+      id,
       file:{name: "New"},
       time: new Date().getTime(),
       ...params,
     }
-    await db.sessions.put(sessionData)
+    localStorage.setItem('mage-session-last-data', JSON.stringify(sessionData))
+    try {
+      await db.sessions.put(sessionData)
+    }catch(e){}
     location.replace(`#msession=${sessionData.id}`)
+  }
+
+  this.duplicate = async(params) => {
+    
+    open({
+      file: this.file,
+      data: book.get(),
+      ...params,
+    })
+  }
+
+  this.lock = () => {
+    localStorage.setItem(`mage-lock-${sessionName}`, lock)
+    lockStore.set({ lock: false })
+    book.refresh()
   }
 
 

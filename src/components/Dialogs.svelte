@@ -6,6 +6,7 @@
   
   */
   const dialogStore = writable({})
+  const lockStore   = writable(false)
   const dialog = (component, ...params) =>
     new Promise((resolve) =>
       dialogStore.set({
@@ -17,7 +18,7 @@
         params: writable(params),
       })
     )
-  export { dialog, dialogStore }
+  export { dialog, dialogStore, lockStore }
 </script>
 
 <script>
@@ -26,8 +27,9 @@
 
 
   /* Dialog component */
-  let component, callback, params
+  let lock = false, session, component, callback, params
 
+  lockStore.subscribe (data => ({lock, session} = data) )
 
   dialogStore.subscribe( async(data) => {
     // Retrieve basic info
@@ -40,6 +42,18 @@
     if(button) button.focus()
   })
 </script>
+
+{#if lock}
+  <div class="dialog-mask"/>
+  <div class="dialog-container">
+    <div class="dialog lock">
+      <h3>{$_('dialogs.lock.title')}</h3>
+      <p>{@html $_('dialogs.lock.text')}</p>
+      <button class="ok" on:click={() => session.duplicate()}>{$_('dialogs.lock.new')}</button>
+      <button class="error" on:click={() => session.lock()}>{$_('dialogs.lock.overwrite')}</button>
+    </div>
+  </div>
+{/if}
 
 {#if component}
   <div class="dialog-mask" on:click|self={() => callback(false)}/>
@@ -86,6 +100,8 @@
     background-color: #fff;
     opacity: 1;
     margin-bottom: 80px;
+    margin-left: 12px;
+    margin-right: 12px;
   }
 
   @media (max-height: 450px){
@@ -103,7 +119,7 @@
     }
   }
 
-  :global(.dialog-container button.ok, .dialog-container button.cancel) {
+  :global(.dialog-container button.ok, .dialog-container button.cancel, .dialog-container button.error) {
     border: 0;
     box-sizing: border-box;
     height: 2.5rem;
@@ -115,7 +131,7 @@
     cursor: pointer;
   }
 
-  :global(.dialog-container button.ok:hover, .dialog-container button.cancel:hover) {
+  :global(.dialog-container button.ok:hover, .dialog-container button.cancel:hover,  .dialog-container button.error:hover) {
     opacity: 0.7;
   }
 
@@ -129,6 +145,14 @@
     color: #222;
   }
 
+  :global(.dialog-container button.error) {
+    background-color: #a64646;
+    color: white;
+  }
 
 
+  .lock {
+    max-width: 450px;
+
+  }
 </style>
