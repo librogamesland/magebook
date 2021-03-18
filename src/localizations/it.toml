@@ -83,8 +83,8 @@ link  = "Aggiungi link (ctrl+L)"
 [about]
 contact = "Contattami"
 text = """
-Lgcjs è un editor di librogame sviluppato da <b>Luca Fabbian</b> con il supporto della community di Lgl,
-basato su LibroGameCreator3 di <b>Matteo Poropat</b>."""
+Magebook è un editor di librogame sviluppato da <b>Luca Fabbian</b> con il supporto della community di Lgl,
+ispirato a LibroGameCreator3 di <b>Matteo Poropat</b>."""
 
 [book]
 guide = ""

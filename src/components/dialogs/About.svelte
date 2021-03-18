@@ -10,10 +10,10 @@
 
 <div class="dialog">
   <h3>Lgcjs - v. {manifest.version}</h3>
-  <img src="./static/img/logo.png" alt="Lgcjs logo">
+  <img src="./static/img/logo.png" alt="Magebook logo">
   <br>
   <p>{@html $_('about.text')}</p>
-  <p>{$_('about.contact')}: <a target="_blank" rel="noopener" href="mailto:luc.fabbian@gmail.com?subject=Lgcjs%20-%20Segnalazione">luc.fabbian@gmail.com</a></p>
+  <p>{$_('about.contact')}: <a target="_blank" rel="noopener" href="mailto:luca.fabbian.1999@gmail.com?subject=Magebook%20-%20Segnalazione">luc.fabbian@gmail.com</a></p>
   <button class="ok" on:click={() => callback(true)}>{$_('dialogs.ok')}</button>
 </div>
 
