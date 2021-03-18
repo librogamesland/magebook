@@ -1,5 +1,5 @@
 # Magebook web editor
-A web editor for gamebook writing. Try it here: [https://librogamesland.github.io/magebook](https://librogamesland.github.io/magebook)
+A web editor for gamebook writing. Try it here: [https://librogamesland.github.io/magebook/alpha](https://librogamesland.github.io/magebook/alpha)
 
 <img src="https://librogamesland.github.io/magebook/screenshots/1.jpg" alt="magebook screenshot" style="max-width:100%;">
 
