@@ -3,5 +3,5 @@ workbox.setConfig({debug: false})
 
 workbox.routing.registerRoute(
   /\//,
-  new workbox.strategies.NetworkFirst(),
+  new workbox.strategies.StaleWhileRevalidate(),
 );
