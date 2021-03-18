@@ -7,24 +7,26 @@ import babel from '@rollup/plugin-babel';
 import css from 'rollup-plugin-css-only';
 import json from '@rollup/plugin-json';
 import { terser } from 'rollup-plugin-terser';
-import externalGlobals from "rollup-plugin-external-globals";
 
 
 const production = !process.env.ROLLUP_WATCH;
 
 
 const babelPreset = {
-  babelHelpers: 'bundled',
+  exclude: ['node_modules/**'],
+  babelHelpers: 'runtime',
   extensions: ['.js', '.mjs', '.html', '.svelte'],
   "presets": [
     ["@babel/preset-env",
       {"targets": {
-        "chrome": "60",
-        "firefox": "52",
+        "chrome": "55",
+        "firefox": "45",
       }},
     ]
   ],
-
+  "plugins": [
+      ["@babel/transform-runtime"]
+  ],
 }
 
 
@@ -42,11 +44,6 @@ export default [{
       svelte({ compilerOptions: {	dev: !production	}}),
       css({ output: 'bundle.css' }),
       json(),
-      externalGlobals({
-        'docx': "docx",
-        'dexie': 'Dexie',
-
-      }),
       resolve({
         browser: true,
         dedupe: ['svelte']

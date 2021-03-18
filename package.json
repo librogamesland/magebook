@@ -31,6 +31,7 @@
   },
   "devDependencies": {
     "@babel/core": "^7.13.8",
+    "@babel/plugin-transform-runtime": "^7.13.10",
     "@babel/preset-env": "^7.13.9",
     "@babel/runtime": "^7.13.9",
     "@codemirror/basic-setup": "^0.17.1",
@@ -43,6 +44,8 @@
     "@rollup/plugin-node-resolve": "^11.2.0",
     "@rollup/pluginutils": "^4.1.0",
     "babel-preset-env": "^1.7.0",
+    "dexie": "^3.0.3",
+    "docx": "^5.5.0",
     "file-saver": "^2.0.5",
     "marked": "^2.0.1",
     "pkg": "^4.4.9",
