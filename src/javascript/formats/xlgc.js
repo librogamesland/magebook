@@ -1,5 +1,6 @@
 import {isNumber} from '../utils.js'
 import {encodeToHTML, raw, mangle} from '../encoder.js'
+import {Book} from '../book.js'
 
 const mimetype = 'application/xml'
 
@@ -129,6 +130,7 @@ const encodeEntity = (key, entity) =>
 
 // Codifica il libro
 const encode = book => {
+  if(!book["__is_book"]) book = new Book(book)
   const {key : currentKey, chapters, properties} = book.get()
   return `<?xml version="1.0" encoding="UTF-8"?><entities>${
       encodeProperties(properties, currentKey) +

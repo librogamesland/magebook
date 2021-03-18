@@ -69,6 +69,7 @@ const decode = (file) => {
 
 
 const encode = (book) => {
+  if(!book["__is_book"]) book = new Book(book)
   const {key : currentKey, chapters, properties} = book.get()
   let s = `# ${properties.title}\n`
   Object.entries({

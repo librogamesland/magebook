@@ -58,7 +58,7 @@
       <p on:click={() => download('docx', book)}>{$_('navbar.export.docx')}</p>
       <p on:click={() => download('fodt', book)}>{$_('navbar.export.fodt')}</p>
       <p on:click={() => download('xlgc', book)}>{$_('navbar.export.xlgc')}</p>
-      <p>{$_('navbar.export.vuejs')}</p>
+      <!-- <p>{$_('navbar.export.vuejs')}</p> -->
     </div>
   </div>
 

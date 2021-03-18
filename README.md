@@ -37,6 +37,32 @@ const data = {
 
 ```
 
+#### Encode/decode formats
+```javascript
+const {formats} = require('magebook')
+const fs = require('fs')
+
+
+const test = `
+# My Book
+author: Luca Fabbian
+
+
+### 1
+Welcome`
+
+// Check avaiable formats, current are: md, xlgc, fodt and docx
+console.log(formats)
+
+// Get file string as standard data format (as above)
+const data = formats.md.decode(test)
+
+// Write to fodt file 
+fs.writeFileSync('example.fodt', formats.fodt.encode(data))
+
+
+```
+
 #### Rollup plugin
 To import a `.md` file inside a javascript code, you need a bundler. Magebook includes a rollup plugin already configured for that. It will read the book and transpile it to a standard format book (like above). 
 

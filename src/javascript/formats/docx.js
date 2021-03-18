@@ -2,6 +2,7 @@ import docx from 'docx'
 import saveAs from 'file-saver'
 import {raw, mangle, encodeToHTML} from '../encoder.js'
 import {isNumber} from '../utils.js'
+import {Book} from '../book.js'
 
 const textNodesUnder = (el) => {
   var n, a=[], walk=document.createTreeWalker(el,NodeFilter.SHOW_TEXT);
@@ -104,6 +105,7 @@ const addChapter = (key, chapters ) => {
 
 
 const encode = (book) => {
+  if(!book["__is_book"]) book = new Book(book)
   const name = 'example'
   const doc = new docx.Document({
     styles: {

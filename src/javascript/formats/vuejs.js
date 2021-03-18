@@ -1,4 +1,6 @@
 import marked from 'marked'
+import {Book} from '../book.js'
+
 
 const renderer = {
   paragraph: (text) => `${text}<br>`,

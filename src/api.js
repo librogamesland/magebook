@@ -1,4 +1,7 @@
-import md from './javascript/formats/md.js'
+import md   from './javascript/formats/md.js'
+import fodt from './javascript/formats/fodt.js'
+import xlgc from './javascript/formats/xlgc.js'
+import docx from './javascript/formats/docx.js'
 import {encodeToHTML, raw, mangle } from './javascript/encoder.js'
 import { createFilter } from '@rollup/pluginutils';
 
@@ -27,5 +30,7 @@ const rollupMagebook = ( options = {} ) => {
   };
 }
 
+const formats = { md, fodt, docx, xlgc}
 
-export {rollupMagebook, htmlToText, textToHtml, encodeChapter }
+
+export {rollupMagebook, htmlToText, textToHtml, encodeChapter, formats}

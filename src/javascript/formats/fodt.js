@@ -1,6 +1,8 @@
 import {template} from './fodt-template.js'
 import {isNumber} from '../utils.js'
 import {encodeToHTML, raw, mangle} from '../encoder.js'
+import {Book} from '../book.js'
+
 
 
 const mimetype = 'application/vnd.oasis.opendocument.text'
@@ -38,6 +40,7 @@ const encodeChapter = (key, chapters) => {
 
 
 const encode = (book) => {
+  if(!book["__is_book"]) book = new Book(book)
   const {chapters} = book.get()
   return template(book.sortedKeys().reduce( (acc, key) => acc + encodeChapter(key, chapters), ''))
 }

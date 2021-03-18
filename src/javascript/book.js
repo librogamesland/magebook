@@ -17,6 +17,8 @@ const Book = function(data = empty){
 
   const {set, subscribe} = new writable(data)
 
+
+
   const newChapter = () => ({title: "", group: "", flags:[], text: ""})
   const sanitizeKey = key => key.replace(/[^a-z0-9]/gi,'')
 
@@ -34,6 +36,8 @@ const Book = function(data = empty){
     }
     set(data) 
   }
+
+
 
   const availableKey = () => {
     for (let i = 1; i < 5000; i++) {
@@ -125,8 +129,15 @@ const Book = function(data = empty){
     return newData
   }
 
+
+  Object.defineProperty(this, "data", {
+    get : () => get(),
+    set: (value) => update( ()=> value)
+  });
+
   // Return
   Object.assign(this, {
+    "__is_book": true,
     beforeUpdate,
     update, 
     refresh,
@@ -138,7 +149,7 @@ const Book = function(data = empty){
     sortedKeys,
     linksTo,
     fullTitle,
-    shuffle
+    shuffle,
   })
 }
 
