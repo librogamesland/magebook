@@ -63,7 +63,7 @@ const Session = function(book, defaultBookData){
           }
         }
       }
-      return localStorage.getItem('mage-session-last') || randomString()
+      return localStorage.getItem('mage-session-last') ||  randomString(IDLength)
     })()
     location.replace(`#msession=${sessionName}`) // Set dell'url
     
