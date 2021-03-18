@@ -1,0 +1,91 @@
+
+[dialogs]
+confirm = "Confermi?"
+error   = "Errore"
+ok      = "Ok"
+cancel  = "Annulla"
+
+[dialogs.chapter]
+add    = "Aggiungi paragrafo"
+edit   = "Modifica paragrafo"
+delete = "Il paragrafo verrà eliminato"
+exist  = "Questo paragrafo esiste già"
+
+name   = "Key*"
+title  = "Titolo"
+group  = "Gruppo*"
+hint   = "*Key e Gruppo possono contenere solo caratteri alfanumerici (a-z, A-Z, 0-9)"
+
+
+[dialogs.newbook]
+new    = "Crea un nuovo Libro"
+title  = "Titolo"
+author = "Autore"
+hint   = "<b>Attenzione:</b> il libro attuale verrà sovrascritto se non salvato."
+
+[dialogs.shuffle]
+title      = "Rimescola"
+hint       = "Rimescola i paragrafi con chiave numerica. Puoi scegliere di mescolare solo i paragrafi che fanno parte di alcuni gruppi, o di escludere i paragrafi con determinati simboli."
+group      = "Filtro gruppi"
+flags      = "Escludi simboli"
+
+
+
+[navbar.file]
+title   = "File"
+new     = "Nuovo"
+open    = "Apri..."
+save    = "Salva"
+recover = "Recupera sessione"
+
+[navbar.book]
+title   = "Libro"
+graph   = "Visualizza grafico"
+shuffle = "Rimescola"
+
+[navbar.export]
+title = "Esporta"
+docx  = "Word (.docx)"
+fodt  = "Libreoffice (.fodt)"
+xlgc  = "LibroGameCreator 3"
+json  = "Json"
+vuejs = "Vue.js"
+
+[navbar.help]
+title     = "Aiuto"
+guide     = "Guida"
+guidefile = "guide-it.pdf" 
+forum     = "Forum Lgl"
+about     = "Info"
+
+[sidemenu]
+toggle    = "Apri menu laterale"
+chapters  = "Paragrafi"
+allgroup  = "Tutti"
+linkshere = "Link al par."
+
+[sidemenu.actions]
+add      = "Aggiungi entità (ctrl+R)"
+edit     = "Modifica entità (ctrl+E)"
+delete   = "Elimina entità (ctrl+D)"
+
+
+[editor.buttons]
+quicklink  = "Link al primo paragrafo disponibile (ctrl+K)"
+link  = "Aggiungi link (ctrl+L)"
+
+
+[about]
+contact = "Contattami"
+text = """
+Lgcjs è un editor di librogame sviluppato da <b>Luca Fabbian</b> con il supporto della community di Lgl,
+basato su LibroGameCreator3 di <b>Matteo Poropat</b>."""
+
+[book]
+guide = ""
+welcome = """
+# Welcome
+author: 
+
+
+"""

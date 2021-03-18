@@ -1,0 +1,81 @@
+
+[dialogs]
+confirm = "Confirm?"
+error   = "Error"
+ok      = "Ok"
+cancel  = "Cancel"
+
+[dialogs.chapter]
+add    = "Add chapter"
+edit   = "Edit chapter"
+delete = "Chapter will be deleted"
+exists = "Chapter already exists"
+
+name   = "Key*"
+title  = "Title"
+group  = "Group*"
+hint   = "*Key and Group may contain only alphanumeric characters (a-z,A-Z,0-9)"
+
+
+[dialogs.newbook]
+new    = "Create a New Book"
+title  = "Title"
+author = "Author"
+hint   = "<b>Warning:</b> current book will be overwritten if not saved."
+
+[dialogs.shuffle]
+title      = "Shuffle"
+hint       = "Shuffle chapters with numeric key. You may choose to shuffle only chapters belonging to some groups, or to exclude chapters based on their flags."
+group      = "Group filter"
+flags      = "Exclude flags"
+
+
+[navbar.file]
+title   = "File"
+new     = "New"
+open    = "Open..."
+save    = "Save"
+recover = "Recover session"
+
+[navbar.book]
+title   = "Book"
+graph   = "View graph"
+shuffle = "Shuffle"
+
+[navbar.export]
+title = "Export"
+docx  = "Word (.docx)"
+fodt  = "Libreoffice (.fodt)"
+xlgc  = "LibroGameCreator 3"
+json  = "Json"
+vuejs = "Vue.js"
+
+[navbar.help]
+title     = "Help"
+guide     = "Guide"
+guidefile = "guide-en.pdf" 
+forum     = "Lgl forum"
+about     = "About"
+
+[sidemenu]
+toggle    = "Toggle sidemenu"
+chapters  = "Chapters"
+allgroup  = "All"
+linkshere = "Links to"
+
+[sidemenu.actions]
+add      = "Add entity (ctrl+R)"
+edit     = "Edit entity (ctrl+E)"
+delete   = "Delete entity (ctrl+D)"
+
+
+[editor.buttons]
+quicklink = "Link to the first avaiable chapter (ctrl+K)"
+link      = "Add link (ctrl+L)"
+
+
+[about]
+contact = "Contact me"
+text = """
+Lgcjs is a gamebook web editor developed by <b>Luca Fabbian</b> with support of Lgl community,
+based on LibroGameCreator3 by <b>Matteo Poropat</b>."""
