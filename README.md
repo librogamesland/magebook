@@ -7,7 +7,7 @@ A web editor for gamebook writing. Try it here: [https://librogamesland.github.i
 Magebook provides a javascript ([Node.js](https://nodejs.org/)) api to work with Magebook md format. You can use it to convert book formats, analyze books, or bundle your book inside a web app with [Rollup](https://rollupjs.org/).
 
 ---
-Looking for an app template working out of the box? --> [https://github.com/magebook-template](https://github.com/magebook-template)
+Looking for an app template working out of the box? --> [https://github.com/librogamesland/magebook-template](https://github.com/librogamesland/magebook-template)
 
 ---
 Otherwise, install the api as a Node module using `npm install magebook`
