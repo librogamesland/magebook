@@ -52,7 +52,7 @@ const Book = function(data = empty){
 
   const linksTo = (chapterKey) => {
     const escapeRegex = (string) => string.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
-    const keyRegex =     new RegExp(String.raw`\[([^\[]*)\](\(\s*\#${escapeRegex(chapterKey)}\s*\))`, 'g')
+    const keyRegex =     new RegExp(String.raw`\[([^\[]*)\](\(\s*\#${escapeRegex(chapterKey)}\s*\))`, '')
     return Object.keys(data.chapters).filter( key => keyRegex.test(data.chapters[key].text) )
   }
 

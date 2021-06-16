@@ -70,8 +70,10 @@ const decode = xlgc => {
     })
     // Inserisce nel jlgc l'oggetto section appena creato
     chapter.text =  raw(chapter.text.replace(/\<\/\p\>/g,'\n').replace(/\<\p\>/g,'')
-      .replace(/\<b\>/g,'**').replace(/\<\/b\>/g,'**')
-      .replace(/\<i\>/g,'*').replace(/\<\/i\>/g,'*')
+      .replace(/\<b\>(\s*)<i\>(\s*)/g,'$1$2***').replace(/(\s*)\<\/i\>(\s*)\<\/b\>/g,'**$1$2')
+      .replace(/\<i\>(\s*)<b\>(\s*)/g,'$1$2***').replace(/(\s*)\<\/b\>(\s*)\<\/i\>/g,'**$1$2')
+      .replace(/\<b\>(\s*)/g,'$1**').replace(/(\s*)\<\/b\>/g,'**$1')
+      .replace(/\<i\>(\s*)/g,'$1*').replace(/(\s*)\<\/i\>/g,'*$1')
       .replace(/{link (\w+):([^\}\{]+)}/g, (...all) =>`[${all[2].trim() == '@T' ? '': all[2]}](#${all[1]})`  )
       .replace(/[\n\s]+$/, ""))
     chapters[id] = chapter
