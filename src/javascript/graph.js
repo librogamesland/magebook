@@ -18,6 +18,7 @@ const generateGraph = (book) => {
 
 // Return the src attribute of an img tag
 const graphToImg = async(book) => {
+  console.log(generateGraph(book))
   const element = await viz.renderImageElement(generateGraph(book))
   return element.getAttribute('src');
 }

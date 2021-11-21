@@ -56,10 +56,12 @@
     "rollup-plugin-svelte": "^7.1.0",
     "rollup-plugin-terser": "^7.0.2",
     "rollup-plugin-toml": "^1.0.0",
+    "smooth-scroll-into-view-if-needed": "^1.1.32",
     "svelte": "^3.35.0",
     "svelte-i18n": "^3.3.6"
   },
   "dependencies": {
+    "firebase": "^9.5.0",
     "jsdom": "^16.5.1"
   }
 }

@@ -66,7 +66,7 @@ about     = "About"
 [sidemenu]
 toggle    = "Toggle sidemenu"
 chapters  = "Chapters"
-allgroup  = "All"
+allgroup  = "All chapters"
 linkshere = "Links to"
 
 [sidemenu.actions]

@@ -91,7 +91,7 @@
     background-color: #333;
     color: #fff;
     user-select: none;
-    padding-left: calc(5.5vw - 24px);
+   /*padding-left: calc(5.5vw - 24px);*/ 
     box-sizing: border-box;
   }
 

@@ -1,20 +1,43 @@
 <script>
   import { _ } from 'svelte-i18n'
+  import { tick } from 'svelte';
   import {book, chapter} from '../javascript/store.js'
+  import {newBook, bookIndex, currentChapter} from '../javascript/new-book.js'
+  import scrollIntoView from 'smooth-scroll-into-view-if-needed';
+
 
   import ActionButtons from './ActionButtons.svelte'
 
-  let selectedGroup = 'allgroupidtag'
-  $: groups = [...new Set(Object.values($book.chapters).map(value => value.group || ''))].filter(key => (key && key != ''))
 
-  $: filterChapters = book.sortedKeys($book.chapters).filter( key => {
+  $: { if($currentChapter != '') {
+    (async () =>{
+      await tick();
+      scrollIntoView(document.querySelector('aside ul.chapters li.selected'), {
+        behavior: 'smooth',
+        scrollMode: 'if-needed',
+      });
+    })()
+  }else{
+    (async () =>{
+      await tick();
+      scrollIntoView(document.querySelector('aside ul.chapters li'), {
+        behavior: 'smooth',
+        scrollMode: 'if-needed',
+      });
+    })()    
+  }}
+
+  let selectedGroup = 'allgroupidtag'
+
+  $: filterChapters = [...($bookIndex.chapters)].filter( ([key, chapter]) => {
     if(!selectedGroup || selectedGroup == 'allgroupidtag') return true
-    const group = $book.chapters[key].group
+    const group = chapter.group
     return group && group == selectedGroup
   })
 
+  console.log($bookIndex.groups)
   $: {
-    if(![...groups, 'allgroupidtag'].includes(selectedGroup)){
+    if(![...($bookIndex.groups), 'allgroupidtag'].includes(selectedGroup)){
       selectedGroup = 'allgroupidtag'
     }
   }
@@ -37,11 +60,11 @@
 
 
 <aside class={showSidemenu ? 'foreground' : ''}>
-  <h1>{$_('sidemenu.chapters')}:
+  <h1>
     <span class="select-dropdown">
       <select bind:value={selectedGroup}>
         <option value="allgroupidtag">{$_('sidemenu.allgroup')}</option>
-        {#each groups as group}
+        {#each [...($bookIndex.groups)] as group}
           <option value={group}>{group}</option>
         {/each}
       </select>
@@ -49,13 +72,13 @@
   </h1>
   <ActionButtons bind:showSidemenu/>
   <ul class="chapters">
-    {#each filterChapters as chapterKey}
+    {#each [...($bookIndex.chapters)] as [key, chapter]}
     <li
-      class:selected={chapterKey == $chapter.key}
-      on:click={() => setBookKey(chapterKey)}>
-      {chapterKey}
-      <b>{$book.chapters[chapterKey].title || ''}</b>
-      {#each $book.chapters[chapterKey].flags || [] as flag}
+      class:selected={key === $currentChapter}
+      on:click={() => setBookKey(key)}>
+      {key}
+      <b>{chapter.title || ''}</b>
+      {#each chapter.flags || [] as flag}
         <img src={`./static/img/flags/${flag}.png`} alt={flag}/>
       {/each}
     </li>

@@ -2,13 +2,66 @@
   import { _ } from 'svelte-i18n'
 	import { onMount } from 'svelte'
   import { book, chapter } from '../javascript/store.js'
-  import {EditorState, EditorView, EditorSelection, defaultExtensions} from '../javascript/codemirror.js'
+  import { currentChapter, cursorPosition } from '../javascript/new-book'
+//  import {EditorState, EditorView, EditorSelection, defaultExtensions} from '../javascript/codemirror.js'
   import { ctrlShortcuts } from '../javascript/shortcuts.js'
+
+  
   
   export let showSidemenu
 
 
   let textarea, editor
+
+
+
+$: {
+  console.log($currentChapter)
+}
+
+
+  onMount(() => {
+    editor = ace.edit("main-editor");
+    window.editor = editor
+    editor.setTheme("ace/theme/chrome");
+    editor.session.setMode("ace/mode/markdown");
+    editor.session.setUseWorker(false);
+
+    editor.setOptions({
+      showPrintMargin: false,
+      wrap: true,
+    })
+
+    editor.session.selection.on('changeCursor', () => cursorPosition.lazySet(editor.selection.getCursor()))
+
+    editor.container.style.lineHeight = 1.4
+
+    editor.renderer.updateFontSize()
+      //// Initialize Firebase.
+      //// TODO: replace with your Firebase project configuration.
+      var config = {
+        apiKey: "AIzaSyAfP5gcmH8wtXGCzPFqBWYcwNxG31JXSas",
+        authDomain: "magebook.firebaseapp.com",
+        databaseURL: "https://magebook-default-rtdb.europe-west1.firebasedatabase.app",
+        projectId: "magebook",
+        storageBucket: "magebook.appspot.com",
+        messagingSenderId: "827898413639",
+        appId: "1:827898413639:web:cc786d0d158890d8d7a762",
+        measurementId: "G-FZQ13Y7R84"
+      };
+      const app = firebase.initializeApp(config);
+
+// Get a reference to the database service
+const database = firebase.database(app);
+
+
+      //// Create Firepad.
+      var firepad = Firepad.fromACE(database.ref(), editor, {
+        defaultText: '// JavaScript Editing with Firepad!\nfunction go() {\n  var message = "Hello, world.";\n  console.log(message);\n}'
+      });
+  })
+
+  /*
   const extensions = defaultExtensions( (link) => {
     if(link.startsWith('#')){
       const key = link.substr(1) 
@@ -48,6 +101,8 @@
     }
   }}
 
+  */
+
   const addLink = () => {
     editor.dispatch(editor.state.changeByRange(range => ({
       changes: [{from: range.from, insert: "[](#"}, {from: range.to, insert: ")"}],
@@ -57,6 +112,8 @@
 
     editor.focus()
   }
+
+  
 
   const addQuickLink = () => {
     let key = book.availableKey()
@@ -98,12 +155,36 @@
     </div>
     <div on:click={addLink} title={$_('editor.buttons.link')}>#L</div>
   </div>  
-  <div class="textarea" bind:this={textarea}>
+  <div class="textarea" id="main-editor" bind:this={textarea}>
     
   </div>
 </main>
 
 <style>
+  
+
+  :global(.firepad){
+    display: flex;
+  }
+
+  :global(.firepad > div){
+    flex-grow: 1;
+  }
+
+  :global(.ace_cursor){
+    margin-top: 5px !important;
+    height: 16px !important;
+  }
+
+  :global(.ace_heading){
+    color:/* #c60000*/ #000 !important;
+    font-weight: 700;
+  }
+
+  :global(.ace_gutter-cell){
+    color: #888;
+  }
+
 
   /* Markup del componente */
   main {
@@ -111,7 +192,7 @@
 
     display: grid;
     grid-template-columns: 100%;
-    grid-template-rows: auto 1fr;
+    grid-template-rows: 0px 1fr;
     grid-gap: 1px;
     grid-template-areas: 
       "toolbar"
@@ -120,6 +201,7 @@
   }
 
   .toolbar {
+    opacity: 0;
     background-color: #fff;
     display: flex;
     flex-direction: row;
@@ -177,11 +259,14 @@
 
 
   :global(.editor *) {
-    font-family: Arial, sans-serif;
+    /*font-family: Arial, sans-serif;*/
     font-size: 20px;
     outline: none !important;
   }
 
+  :global(.ace_underline){
+    pointer-events: auto !important;
+  }
   :global(.cm-scroller){
     padding-bottom: 25px;
   }
