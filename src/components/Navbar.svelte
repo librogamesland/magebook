@@ -47,7 +47,7 @@
   <div>
     <h1>{$_('navbar.book.title')}</h1>
     <div class="content">
-      <p on:click={() => dialog(Img, graphToImg(book))}>{$_('navbar.book.graph')}</p>
+      <p on:click={() => dialog(Img, () => graphToImg(book))}>{$_('navbar.book.graph')}</p>
       <p on:click={() => dialog(Shuffle)}>{$_('navbar.book.shuffle')}</p>
     </div>
   </div>

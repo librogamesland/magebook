@@ -35,6 +35,10 @@ text       = "Un'altra tab ha modificato i dati di questa sessione. Se sovrascri
 new        = "Apri nuova sessione"
 overwrite  = "Sovrascrivi"
 
+[dialogs.graph]
+loading    = "Caricamento grafo..."
+open       = "Apri un una nuova pagina"
+
 
 [navbar.file]
 title   = "File"

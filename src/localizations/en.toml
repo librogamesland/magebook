@@ -35,6 +35,10 @@ text       = "Another tab has written changes on this session. If you overwrite,
 new        = "Open in new session"
 overwrite  = "Overwrite"
 
+[dialogs.graph]
+loading    = "Loading graph..."
+open       = "Open in new tab"
+
 
 [navbar.file]
 title   = "File"
