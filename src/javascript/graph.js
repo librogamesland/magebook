@@ -21,16 +21,9 @@ const generateGraph = (book) => {
 
 
 // Return the src attribute of an img tag
-<<<<<<< HEAD
-const graphToImg = async(book) => {
-  console.log(generateGraph(book))
-  const element = await viz.renderImageElement(generateGraph(book))
-  return element.getAttribute('src');
-=======
 const graphToImg = (book) => {
   console.log("generating graph..")
   return hpccWasm.graphviz.layout(generateGraph(book), "svg", "dot")
->>>>>>> main
 }
 
 export {generateGraph, graphToImg}

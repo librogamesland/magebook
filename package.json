@@ -22,8 +22,9 @@
   "main": "index.js",
   "scripts": {
     "build": "rollup -c",
-    "clean": "rm -fr ./alpha; rm -fr ./editor; rm -fr ./dist/build",
+    "clean": "rm -fr ./alpha2; rm -fr ./editor; rm -fr ./dist/build",
     "alpha": "npm run clean; npm run build; mkdir ./alpha; cp -fr ./dist/* ./alpha",
+    "alpha2": "npm run clean; npm run build; mkdir ./alpha2; cp -fr ./dist/* ./alpha2",
     "release": "npm run clean; npm run build; mkdir ./editor; cp -fr ./dist/* ./editor",
     "dev": "rollup -c -w",
     "api-build": "rollup -c 'rollup-api.config.js'",

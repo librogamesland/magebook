@@ -8,14 +8,13 @@
   import Editor  from './components/Editor.svelte'
   import Sidebar from './components/Sidebar.svelte'
 
-  import { book } from './javascript/store.js'
+  import { bookIndex } from './javascript/new-book.js'
   import { handleShortcuts } from './javascript/shortcuts.js'
 
   let showSidemenu = false
   $: { if(!(/bot|google|baidu|bing|msn|duckduckbot|teoma|slurp|yandex/i.test(navigator.userAgent))){
-    if($book.properties.title){
-      document.title = ($book.properties.title || "") + "(" + 
-      String($book.properties.revision || "1").trim() + ") - Magebook"
+    if($bookIndex && $bookIndex.properties.title){
+      document.title = $bookIndex.properties.title + " - Magebook"
     }
   } }
 </script>

@@ -2,28 +2,33 @@
   import { _ } from 'svelte-i18n'
   import { tick } from 'svelte';
   import {book, chapter} from '../javascript/store.js'
-  import {newBook, bookIndex, currentChapter} from '../javascript/new-book.js'
+  import { bookIndex } from '../javascript/new-book.js'
+  import { currentChapterKey, goToChapter } from '../javascript/editor.js'
   import scrollIntoView from 'smooth-scroll-into-view-if-needed';
 
 
   import ActionButtons from './ActionButtons.svelte'
 
 
-  $: { if($currentChapter != '') {
+  $: { if($currentChapterKey != '') {
     (async () =>{
       await tick();
-      scrollIntoView(document.querySelector('aside ul.chapters li.selected'), {
-        behavior: 'smooth',
-        scrollMode: 'if-needed',
-      });
+      try{
+        scrollIntoView(document.querySelector('aside ul.chapters li.selected'), {
+          behavior: 'smooth',
+          scrollMode: 'if-needed',
+        });
+      }catch(e){}
     })()
   }else{
     (async () =>{
       await tick();
-      scrollIntoView(document.querySelector('aside ul.chapters li'), {
-        behavior: 'smooth',
-        scrollMode: 'if-needed',
-      });
+      try{
+        scrollIntoView(document.querySelector('aside ul.chapters li'), {
+          behavior: 'smooth',
+          scrollMode: 'if-needed',
+        });
+      }catch(e){}
     })()    
   }}
 
@@ -48,7 +53,7 @@
   }
 
   // Regex per matchare i link in markdown
-  $: linksHere = book.linksTo($chapter.key)
+  $: linksHere = [... ($bookIndex.linksToChapter.get($currentChapterKey) || new Set())]
   export let showSidemenu = false
 
 </script>
@@ -74,8 +79,8 @@
   <ul class="chapters">
     {#each [...($bookIndex.chapters)] as [key, chapter]}
     <li
-      class:selected={key === $currentChapter}
-      on:click={() => setBookKey(key)}>
+      class:selected={key === $currentChapterKey}
+      on:click={() => goToChapter(key)}>
       {key}
       <b>{chapter.title || ''}</b>
       {#each chapter.flags || [] as flag}
@@ -84,15 +89,15 @@
     </li>
     {/each}
   </ul>
-  <h1>{$_("sidemenu.linkshere")} {$chapter.key}:</h1>
+  <h1>{$_("sidemenu.linkshere")} {$currentChapterKey}:</h1>
   <ul class="links-here">
-    {#each linksHere as chapterKey}
+    {#each linksHere as key}
     <li
-      class:selected={chapterKey == $chapter.key}
-      on:click={() => setBookKey(chapterKey)}>
-      {chapterKey}
-      <b>{$book.chapters[chapterKey].title || ''}</b>
-      {#each $book.chapters[chapterKey].flags || [] as flag}
+      class:selected={key === $currentChapterKey}
+      on:click={() => goToChapter(key)}>
+      {key}
+      <b>{$bookIndex.chapters.get(key).title || ''}</b>
+      {#each $bookIndex.chapters.get(key).flags || [] as flag}
         <img src={`./static/img/flags/${flag}.png`} alt={flag}/>
       {/each}
     </li>
@@ -118,9 +123,9 @@
     font-weight: 700;
     font-size: 1.3rem;
     box-sizing: border-box;
-    padding: 0.6rem;
     padding-top: 1.8rem;
-    padding-left: 0.6rem;
+    padding-bottom: 0.6rem;
+    padding-left: 3px;
     margin: 0;
   }
 

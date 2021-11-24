@@ -1,8 +1,9 @@
 <script>
   import { _ } from 'svelte-i18n'
-	import { onMount } from 'svelte'
+	import { onMount, tick } from 'svelte'
   import { book, chapter } from '../javascript/store.js'
-  import { currentChapter, cursorPosition } from '../javascript/new-book'
+  import { bookIndex } from '../javascript/new-book.js'
+  import { initEditor, getEditor, currentChapterKey, cursorPosition, currentChapterFullTitle } from '../javascript/editor'
 //  import {EditorState, EditorView, EditorSelection, defaultExtensions} from '../javascript/codemirror.js'
   import { ctrlShortcuts } from '../javascript/shortcuts.js'
 
@@ -11,54 +12,18 @@
   export let showSidemenu
 
 
-  let textarea, editor
+  let editor
 
+  const fullTitle = (chapterKey) => {
+    if(chapterKey == '') return ' '
+    const chapter = $bookIndex.chapters.get(chapterKey)
+    return chapterKey + (chapter.title ? ' - ' + chapter.title : '')
+  }
 
-
-$: {
-  console.log($currentChapter)
-}
 
 
   onMount(() => {
-    editor = ace.edit("main-editor");
-    window.editor = editor
-    editor.setTheme("ace/theme/chrome");
-    editor.session.setMode("ace/mode/markdown");
-    editor.session.setUseWorker(false);
-
-    editor.setOptions({
-      showPrintMargin: false,
-      wrap: true,
-    })
-
-    editor.session.selection.on('changeCursor', () => cursorPosition.lazySet(editor.selection.getCursor()))
-
-    editor.container.style.lineHeight = 1.4
-
-    editor.renderer.updateFontSize()
-      //// Initialize Firebase.
-      //// TODO: replace with your Firebase project configuration.
-      var config = {
-        apiKey: "AIzaSyAfP5gcmH8wtXGCzPFqBWYcwNxG31JXSas",
-        authDomain: "magebook.firebaseapp.com",
-        databaseURL: "https://magebook-default-rtdb.europe-west1.firebasedatabase.app",
-        projectId: "magebook",
-        storageBucket: "magebook.appspot.com",
-        messagingSenderId: "827898413639",
-        appId: "1:827898413639:web:cc786d0d158890d8d7a762",
-        measurementId: "G-FZQ13Y7R84"
-      };
-      const app = firebase.initializeApp(config);
-
-// Get a reference to the database service
-const database = firebase.database(app);
-
-
-      //// Create Firepad.
-      var firepad = Firepad.fromACE(database.ref(), editor, {
-        defaultText: '// JavaScript Editing with Firepad!\nfunction go() {\n  var message = "Hello, world.";\n  console.log(message);\n}'
-      });
+    initEditor("main-editor")
   })
 
   /*
@@ -142,25 +107,85 @@ const database = firebase.database(app);
     'K': () => addQuickLink(),
     'L': () => addLink()
   })
+
+
 </script>
 
 <main class="editor">
   <div class="toolbar">
     <h1 on:click={ () => showSidemenu = !showSidemenu}>
-      {book.fullTitle($chapter.key)}
+      {$currentChapterFullTitle}
       <span class="group">{$chapter.value.group ? ` (${$chapter.value.group})` : ''}</span>
     </h1>
+    <div class="only-desktop" on:click={async() => {
+      getEditor().execCommand('find')
+  }} title={$_('editor.buttons.link')}><span class="icon-search"/></div>
+    <div class="only-desktop" on:click={addLink} title={$_('editor.buttons.link')}><span class="icon-ccw"/></div>
+    <div class="only-desktop" on:click={addLink} title={$_('editor.buttons.link')}><span class="icon-cw"/></div>
     <div on:click={addQuickLink} title={$_('editor.buttons.quicklink')}>
       <span class="link">#<span class="icon-flash"/></span>
     </div>
     <div on:click={addLink} title={$_('editor.buttons.link')}>#L</div>
   </div>  
-  <div class="textarea" id="main-editor" bind:this={textarea}>
+  <div class="textarea" id="main-editor">
     
   </div>
 </main>
 
 <style>
+/*
+  :global(.ace_mobile-menu) {
+    display: none;
+  } */
+
+
+  :global(.ace_mobile-menu){
+    transform: translateY(-4px);
+  }
+  :global(.ace_mobile-button){
+    line-height: 2;
+    padding-bottom: 8px;
+    padding-top: 8px;
+  }
+
+  :global(.ace_mobile-button[action=find]:after){
+    padding: 8px;
+    font-family: "fontello";
+    content: '\e800';
+  }
+
+  :global(.ace_mobile-button[action=undo]:after){
+    padding: 8px;
+    font-family: "fontello";
+    content: '\e804';
+  }
+
+  :global(.ace_mobile-button[action=copy]:after){
+    padding: 8px;
+    font-family: "fontello";
+    content: '\f0c5';
+  }
+
+  :global(.ace_mobile-button[action=cut]:after){
+    padding: 8px;
+    font-family: "fontello";
+    content: '\e803';
+  }
+
+  :global(.ace_mobile-button[action=paste]:after){
+    padding: 8px;
+    font-family: "fontello";
+    content: '\f0ea';
+  }
+
+  :global(.ace_mobile-button[action=selectall]){
+    display: none;
+  }
+
+  :global(.ace_mobile-button[action=openCommandPallete]){
+    display: none;
+  }
+  
   
 
   :global(.firepad){
@@ -171,13 +196,9 @@ const database = firebase.database(app);
     flex-grow: 1;
   }
 
-  :global(.ace_cursor){
-    margin-top: 5px !important;
-    height: 16px !important;
-  }
 
   :global(.ace_heading){
-    color:/* #c60000*/ #000 !important;
+    /*#c60000*/color: #000 !important;
     font-weight: 700;
   }
 
@@ -189,10 +210,9 @@ const database = firebase.database(app);
   /* Markup del componente */
   main {
     grid-area: editor;
-
     display: grid;
     grid-template-columns: 100%;
-    grid-template-rows: 0px 1fr;
+    grid-template-rows: auto 1fr;
     grid-gap: 1px;
     grid-template-areas: 
       "toolbar"
@@ -201,17 +221,18 @@ const database = firebase.database(app);
   }
 
   .toolbar {
-    opacity: 0;
     background-color: #fff;
     display: flex;
     flex-direction: row;
     align-items: center;
+    min-height: calc(1.67rem + 18px);
   }
 
   h1 {
-    max-width: 380px;
     flex-grow: 1;
-    padding: 1.2rem 0 0.8rem;
+    text-overflow: ellipsis;
+    font-size: 18px;
+    padding: 0.6rem 0 0.3rem;
     margin-block: 0;
     margin-inline: 0;
 
@@ -237,7 +258,6 @@ const database = firebase.database(app);
 
   .textarea {
     grid-area: textarea;
-    background-color: #fff;
     overflow-y: auto;
     display: grid;
     grid-template-columns: 100%;
@@ -245,34 +265,44 @@ const database = firebase.database(app);
     padding-bottom: 22px;
   }
 
+
   @media only screen and (max-width: 680px) {
+    .only-desktop {
+      display: none;
+    }
     span.group {
       display: none;
     }
-  }
-  
-  @media (any-pointer: coarse) {
-    h1 {
-      padding: 1.3rem 0 1.1rem;
+
+    :global(.ace_search_field){
+      min-width: 0 !important;
     }
   }
+
+  @media only screen and (max-width: 420px) {
+    :global(.ace_search){
+      width: 100% !important;
+      box-sizing: border-box;
+    }
+  }
+
 
 
   :global(.editor *) {
     /*font-family: Arial, sans-serif;*/
-    font-size: 20px;
     outline: none !important;
   }
 
   :global(.ace_underline){
     pointer-events: auto !important;
+    cursor: pointer;
   }
   :global(.cm-scroller){
     padding-bottom: 25px;
   }
 
   .toolbar{
-    padding-left: calc(6.5vw - 8px);
+    padding-left: calc(6vw - 8px);
   }
   :global(.cm-line){
     padding: 7px calc(6.5vw - 10px) !important;

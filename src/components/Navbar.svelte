@@ -107,8 +107,8 @@
 
   h1, .dropbtn, .content > * {
     display: block;
-    padding: 0.9rem calc(0.8rem + 1.5vw);
-    font-size: 1.1rem !important;
+    padding: 0.65rem calc(0.8rem + 1.5vw);
+    font-size: 1rem !important;
     margin: 0;
     font-weight: normal;
     cursor: pointer;

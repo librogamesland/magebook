@@ -89,6 +89,7 @@
 </script>
 
 <div class="buttons">
+  <div class="icon-back" on:click={add} title={$_('sidemenu.actions.add')} />
   <div class="icon-plus" on:click={add} title={$_('sidemenu.actions.add')} />
   <div class="icon-pencil" on:click={edit} title={$_('sidemenu.actions.edit')} />
   <div class="icon-trash" on:click={del} title={$_('sidemenu.actions.delete')} />
