@@ -2,7 +2,6 @@
  Importa App.svelte, aggiunge supporto multilingua e offline
  @Luca Fabbian - v1.0 */
 import App from './App.svelte'
-import {session} from './javascript/store.js'
 
 // Multi language support
 import { addMessages, init, getLocaleFromNavigator } from 'svelte-i18n'
@@ -23,8 +22,6 @@ if ('serviceWorker' in navigator) {
     navigator.serviceWorker.register('./sw.js')
   })
 }
-
-session.load()
 
 new App({
   target: document.body,

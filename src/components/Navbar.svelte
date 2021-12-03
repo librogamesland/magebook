@@ -3,8 +3,7 @@
   import { ctrlShortcuts } from '../javascript/shortcuts.js'
   import { graphToImg } from '../javascript/graph.js'
   import { open, download } from '../javascript/file.js'
-  import { encode } from '../javascript/formats/vuejs.js'
-  import {newBook} from '../javascript/new-book.js'
+  import { newBook } from '../javascript/new-book.js'
 
   import { showSidemenu } from '../javascript/editor.js'
 
@@ -107,7 +106,7 @@
 
   h1, .dropbtn, .content > * {
     display: block;
-    padding: 0.65rem calc(0.8rem + 1.5vw);
+    padding: 0.8rem calc(0.8rem + 1.5vw);
     font-size: 1rem !important;
     margin: 0;
     font-weight: normal;

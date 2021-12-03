@@ -1,6 +1,6 @@
 import { get } from 'svelte/store'
 import { getEditor, currentChapterKey } from "./editor.js";
-import { bookIndex } from "./new-book.js";
+import { newBook, bookIndex } from "./new-book.js";
 
 
 const firstAvaiableKey = ()  => {
@@ -53,9 +53,9 @@ const addChapter = (key, text) => {
   const index = getRightOrderKey(key)
 
 
-  console.log(index)
   getEditor().session.replace(new ace.Range(index, Infinity, index, Infinity), '\n' + text);
 
+  newBook.flush()
 }
 
 

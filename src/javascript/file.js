@@ -3,6 +3,8 @@ import xlgc from './formats/xlgc.js'
 import fodt from './formats/fodt.js'
 import docx from './formats/docx.js'
 
+import {session} from './database.js'
+
 
 
 const formats = {
@@ -21,16 +23,27 @@ const open = (elem) => {
 
   // Usa un fileReader per leggere il file come testo
   const reader = new FileReader()
-  reader.onload = () => {
+  reader.onload = async() => {
     const extension = name.substr(name.lastIndexOf('.') + 1)
     if(!['md', 'xlgc'].includes(extension)){
       console.error("Unsupported format")
       return
     }
 
+    const book = reader.result
+    const decodedMd = formats[extension].decode(book)
+    const encodedBook = (extension === 'md') 
+      ? book
+      : await Promise.resolve(formats['md'].encode(decodedMd))
+
+
+    
     session.open({
-      file: {name: name.substr(0, name.lastIndexOf('.'))},
-      data: formats[extension].decode(reader.result),
+      data: {
+        book: encodedBook,
+        cursor: {row: 0, column: 0},
+        title: decodedMd.title,
+      }
     })
 
     elem.value = ''

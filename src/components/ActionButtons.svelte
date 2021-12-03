@@ -1,7 +1,6 @@
 <script>
   import { _ } from 'svelte-i18n'
-  import {book, chapter} from '../javascript/store.js'
-  import {bookIndex, newBook} from '../javascript/new-book.js'
+  import { sanitizeKey, bookIndex, newBook} from '../javascript/new-book.js'
   import { currentChapterKey, getEditor, showSidemenu } from '../javascript/editor.js'
   import { firstAvaiableKey, addChapter, generateChapterText } from '../javascript/actions.js'
   import { historyCanGoBack, goBack, goToChapter} from '../javascript/navigator.js'
@@ -27,8 +26,8 @@
     )
     if(!result) return
     let { key, value } = result
-    key = book.sanitizeKey(key)
-    value.group = book.sanitizeKey(value.group || '')
+    key = sanitizeKey(key)
+    value.group = sanitizeKey(value.group || '')
     if (!key) return
     addChapter(key, generateChapterText({
       spacelines: 2,
@@ -52,8 +51,8 @@
     )
     if(!result) return
     let { key, value } = result
-    key = book.sanitizeKey(key)
-    value.group = book.sanitizeKey(value.group || '')
+    key = sanitizeKey(key)
+    value.group = sanitizeKey(value.group || '')
     if (!key) return
     const chapter =  $bookIndex.chapters.get(cKey)
     const content = getEditor().session.doc.getTextRange(new ace.Range(chapter.contentStart + 1, 0, chapter.contentEnd + 1, 0))

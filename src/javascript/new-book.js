@@ -4,7 +4,9 @@ import { debounced } from './debounced-store.js'
 const isLoaded = writable(false)
 
 
-const newBook = debounced(100, '') 
+const newBook = debounced(100, '')
+
+export const sanitizeKey = key => key.replace(/[^a-z0-9]/gi,'')
 
 
 const decode = (file) => {
@@ -103,7 +105,6 @@ const decode = (file) => {
     result.chapters.set(key, chapter)
   }
 
-  console.log(result.chapters)
   return result
 }
 

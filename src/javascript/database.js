@@ -1,39 +1,46 @@
 import Dexie from 'dexie'
+import queryString from 'query-string'
+
+import { get, derived } from 'svelte/store'
+import { _ } from 'svelte-i18n'
+
 import { randomString } from './utils.js'
 import {lockStore} from '../components/Dialogs.svelte'
+import {newBook, bookIndex, isLoaded} from './new-book.js'
+import {cursorPosition, initEditor} from './editor.js'
 
 
 
-window.lo = lockStore
+const parsedHash = queryString.parse(location.hash);
+
+
+
 // Database: declare tables, IDs and indexes
-const db = new Dexie('magebook');
+const db = new Dexie('magebook2');
 db.version(1).stores({
   sessions: '&id, time, preview'
 });
 
 
 // Session previews
-const previews = async() => {
-
-  return (await db.sessions.orderBy('preview').keys()).reverse().map( key => ({
+const previews = async() => (await db.sessions.orderBy('preview').keys()).reverse().map( key => ({
       time: new Date(Number(key.substr(0, 30))),
       id: key.substr(31, 20),
-      revision: String(Number(key.substr(52, 6))),
-      name: key.substr(59, 30)
+      name: key.substr(52, 30)
     }))
-}
+
 
 // Session class
-const Session = function(book, defaultBookData){
+const session = new (function(){
   // Generate unique identifier for this session
+  let data
   const IDLength = 20 
   const lock = randomString(IDLength)
 
   // Session hash preview
   const preview = (sessionData)  => {
-    const name = sessionData.file.name.padEnd(30, '').substr(0, 30)
-    const revision = String(sessionData.data.properties.revision || "1").trim().padStart(6, '0')
-    return `${String(sessionData.time).padStart(30, '0')}-${sessionData.id}-${revision}-${name}`
+    const name = (sessionData.data.title || 'no title').padEnd(30, '').substr(0, 30)
+    return `${String(sessionData.time).padStart(30, '0')}-${sessionData.id}-${name}`
   }
 
   // Session cleaner
@@ -99,14 +106,23 @@ const Session = function(book, defaultBookData){
         info =  (await db.sessions.get(sessionName)) 
       }catch(e){}
     }
-    info = info || {data: defaultBookData, file: {name: defaultBookData.properties.title}} 
+    info = info || {
+      data:{book: get(_)('books.local'), cursor: {row: 0, column: 0}} 
+    }
      
-    const {data} = info
-    this.file = info.file
-    book.update( () => data)
+    initEditor(info.data)
+
+    data = derived(
+      [newBook, cursorPosition, bookIndex],
+      ([$newBook, $cursorPosition, $bookIndex]) => ({
+        book: $newBook,
+        cursor: $cursorPosition,
+        title: $bookIndex.properties.title
+      })
+    )
 
     // Save book on changes
-    book.subscribe( async(bookData) => {
+    data.subscribe( async(bookData) => {
       if(localStorage.getItem(`mage-lock-${sessionName}`) != lock ){
         lockStore.set( {
           lock: true,
@@ -117,7 +133,6 @@ const Session = function(book, defaultBookData){
 
       localStorage.setItem('mage-session-last', sessionName)
       const sessionData = {
-        file: this.file,
         id: sessionName,
         data: bookData,
         time: new Date().getTime(),
@@ -129,18 +144,21 @@ const Session = function(book, defaultBookData){
         preview: preview(sessionData),
         ...sessionData
       })
-      }catch(e){}
+      }catch(e){console.log(e)}
     })
     
-    window.onbeforeunload = () => book.refresh()
-    setInterval( () => book.refresh(), 10000)
+    window.onbeforeunload = (e) => {
+      newBook.flush()
+      delete e['returnValue'];
+
+    }
+    setInterval( () => newBook.flush(), 10000)
 
     cleanOldSessions()
   }
 
   const open = async(params) => {
     window.onbeforeunload = () => {}
-    book.refresh()
 
     const id = randomString(IDLength)
     localStorage.setItem('mage-session-last', id)
@@ -161,8 +179,7 @@ const Session = function(book, defaultBookData){
   this.duplicate = async(params) => {
     
     open({
-      file: this.file,
-      data: book.get(),
+      data: get(data),
       ...params,
     })
   }
@@ -176,6 +193,6 @@ const Session = function(book, defaultBookData){
 
   // Session exports
   Object.assign(this, {sessionName, load, open})
-}
+})()
 
-export { db, Session, previews}
+export { db, session, previews}

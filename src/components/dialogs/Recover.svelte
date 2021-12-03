@@ -14,7 +14,7 @@
   {:then sessions}
   <ul>
     {#each sessions as session}
-    <li><a href={'#msession=' + session.id}>{session.name} (rev. {session.revision})
+    <li><a href={'#msession=' + session.id}>{session.name}
         <span>{session.time.toLocaleDateString()} {session.time.toLocaleTimeString()}</span></a></li>
     {/each}
   </ul>

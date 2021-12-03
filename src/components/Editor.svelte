@@ -1,105 +1,49 @@
 <script>
   import { _ } from 'svelte-i18n'
 	import { onMount, tick } from 'svelte'
-  import { book, chapter } from '../javascript/store.js'
-  import { bookIndex } from '../javascript/new-book.js'
-  import { initEditor, getEditor, currentChapterKey, cursorPosition, currentChapterFullTitle } from '../javascript/editor'
+  import { session } from '../javascript/database.js'
+  import { cursorPosition, getEditor, editorComponentID, currentChapterFullTitle } from '../javascript/editor.js'
   import { ctrlShortcuts } from '../javascript/shortcuts.js'
 
   import { showSidemenu } from '../javascript/editor.js'
+  import { firstAvaiableKey, addChapter} from '../javascript/actions.js'
+
 
   
   
-
-  let editor
-
-  const fullTitle = (chapterKey) => {
-    if(chapterKey == '') return ' '
-    const chapter = $bookIndex.chapters.get(chapterKey)
-    return chapterKey + (chapter.title ? ' - ' + chapter.title : '')
-  }
-
-
 
   onMount(() => {
-    initEditor("main-editor")
+    session.load()
   })
 
-  /*
-  const extensions = defaultExtensions( (link) => {
-    if(link.startsWith('#')){
-      const key = link.substr(1) 
-      // TODO: AGGIUNGERE MESSAGGIO DI ERRORE
-      if(key != book.sanitizeKey(key)) return
-      book.update(({chapters}) => {
-        if(!chapters[key]) chapters[key] = book.newChapter()
-        return {chapters, key}
-      })
-    }
-  })
-
-	onMount(() => {
-    editor = new EditorView({
-      state: EditorState.create({ doc: $chapter.value.text, extensions }),
-      parent: textarea
-    })
-  })
-
-  book.beforeUpdate( ({chapters, key}) => {
-    if(editor){
-      chapters[key].text = editor.state.doc.toString().replace(/[\n\s]+$/, "")
-      return {chapters}
-    }
-  })
-
-  $: { if(editor){
-    const text = $chapter.value.text
-      if( text !== editor.state.doc.toString()){
-        editor.setState(EditorState.create({
-        doc: text,
-        extensions,
-        selection: EditorSelection.range(text.length, text.length),
-      }))
-      editor.focus()
-      editor.scrollDOM.scrollTo(0,0)
-    }
-  }}
-
-  */
 
   const addLink = () => {
-    editor.dispatch(editor.state.changeByRange(range => ({
-      changes: [{from: range.from, insert: "[](#"}, {from: range.to, insert: ")"}],
-      range: EditorSelection.range(range.from + 4, range.to +4),
-      scrollIntoView: true,
-    })))
+    const { row, column} = $cursorPosition
+    
+    getEditor().session.replace(new ace.Range(row, column, row, column), '[](#)');
+    getEditor().clearSelection()
+    getEditor().moveCursorTo(row, column + 4);
 
-    editor.focus()
+    getEditor().focus()
+
+
   }
 
   
 
   const addQuickLink = () => {
-    let key = book.availableKey()
-    const quickLink = "[](#" + key + ")"
+    const { row, column} = $cursorPosition
+    
+    const key = firstAvaiableKey()
+    const link = `[](#${firstAvaiableKey()})`
 
-    let pos
-    editor.dispatch(editor.state.changeByRange(range => {
-      pos = range.from + quickLink.length - 1;
-      return {
-        changes: [{from: range.from, insert: quickLink}],
-        range: EditorSelection.range(range.from + quickLink.length, range.from + quickLink.length),
-      }
-    }))
+    addChapter(key, `\n\n### ${key}`)
 
-    book.update(({chapters}) => {
-      chapters[key] = book.newChapter()
-      return {chapters}
-    })
+    getEditor().session.replace(new ace.Range(row, column, row, column), link);
+    getEditor().clearSelection()
+    getEditor().moveCursorTo(row, column + link.length);
 
-
-    editor.focus()
-    editor.scrollPosIntoView(pos)
+    getEditor().focus()
   }
 
   ctrlShortcuts({
@@ -114,7 +58,6 @@
   <div class="toolbar">
     <h1 on:click={ () => $showSidemenu = !$showSidemenu}>
       {$currentChapterFullTitle}
-      <span class="group">{$chapter.value.group ? ` (${$chapter.value.group})` : ''}</span>
     </h1>
     
     <div class="only-desktop" on:click={async() => {
@@ -136,17 +79,13 @@
     <div on:click={addLink} title={$_('editor.buttons.link')}>#L</div>
   </div>
   
-  <div class="textarea" id="main-editor">
+  <div class="textarea" id={editorComponentID}>
     
   </div>
+  <div class="margin"></div>
 </main>
 
 <style>
-/*
-  :global(.ace_mobile-menu) {
-    display: none;
-  } */
-
 
   :global(.ace_mobile-menu){
     transform: translateY(-4px);
@@ -221,11 +160,12 @@
     grid-area: editor;
     display: grid;
     grid-template-columns: 100%;
-    grid-template-rows: auto 1fr;
+    grid-template-rows: auto 1fr 16px;
     grid-gap: 1px;
     grid-template-areas: 
       "toolbar"
-      "textarea";
+      "textarea"
+      "margin";
     background-color: rgb(192, 192, 192);
   }
 
@@ -241,7 +181,7 @@
     flex-grow: 1;
     text-overflow: ellipsis;
     font-size: 18px;
-    padding: 0.6rem 0 0.3rem;
+    padding: 0.4rem 0 0.3rem;
     margin-block: 0;
     margin-inline: 0;
 
@@ -271,7 +211,16 @@
     display: grid;
     grid-template-columns: 100%;
     grid-template-rows: 100%;
-    padding-bottom: 22px;
+  }
+
+  .margin {
+    margin-top: -5px;
+    grid-area: margin;
+    overflow-y: auto;
+    display: grid;
+    grid-template-columns: 100%;
+    grid-template-rows: 100%;
+    background-color: #fff;
   }
 
 
@@ -279,9 +228,7 @@
     .only-desktop {
       display: none;
     }
-    span.group {
-      display: none;
-    }
+
 
     :global(.ace_search_field){
       min-width: 0 !important;

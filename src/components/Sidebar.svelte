@@ -1,7 +1,6 @@
 <script>
   import { _ } from 'svelte-i18n'
   import { tick } from 'svelte';
-  import {book, chapter} from '../javascript/store.js'
   import { bookIndex } from '../javascript/new-book.js'
   import { currentChapterKey } from '../javascript/editor.js'
   import { goToChapter } from '../javascript/navigator.js'
@@ -43,7 +42,6 @@
     return group && group == selectedGroup
   })
 
-  console.log($bookIndex.groups)
   $: {
     if(![...($bookIndex.groups), 'allgroupidtag'].includes(selectedGroup)){
       selectedGroup = 'allgroupidtag'

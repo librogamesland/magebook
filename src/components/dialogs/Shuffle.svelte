@@ -1,7 +1,10 @@
 <script>
   import { _ } from "svelte-i18n";
   import { tick } from "svelte";
-  import { session, book } from '../../javascript/store.js'
+  import { Book } from '../../javascript/book.js'
+  import md from '../../javascript/formats/md.js'
+  import { newBook, bookIndex } from '../../javascript/new-book.js'
+  import { session } from '../../javascript/database.js'
   export let params;
   export let callback;
 
@@ -14,8 +17,7 @@
   }
 
   let selectedGroup = 'allgroupidtag'
-  $: groups = [...new Set(Object.values($book.chapters).map(value => value.group || ''))].filter(key => (key && key != ''))
-
+  $: groups = [...$bookIndex.groups]
 
   $: {
     if(selectedGroup != 'allgroupidtag'){
@@ -29,11 +31,15 @@
   const shuffle = ()  => {
     const selectedFlags = Object.keys(flags).filter((key) => flags[key]);
     const filter = groupFilter.split(',').map( s => s.trim()).filter(s => s)
+
+    const book = new Book(md.decode($newBook))
+
     session.open({
-      file: {
-        name: session.file.name
-      },
-      data: book.shuffle(selectedFlags, filter, true)
+      data: {
+        book: md.encode(book.shuffle(selectedFlags, filter, true)),
+        cursor: {row: 0, column: 0},
+        title: $bookIndex.properties.title
+      }
     })
   }
 </script>

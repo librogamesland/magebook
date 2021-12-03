@@ -94,11 +94,17 @@ text = """
 Magebook è un editor di librogame sviluppato da <b>Luca Fabbian</b> con il supporto della community di Lgl,
 ispirato a LibroGameCreator3 di <b>Matteo Poropat</b>."""
 
-[book]
-guide = ""
-welcome = """
-# Welcome
-author: 
+[books]
+local = """
+# Titolo
+author: Nome e Cognome
 
 
+### 1
+Esempio di paragrafo. Puoi modificarlo sfruttando i tasti a destra.
+Questo è un link verso il paragrafo [](#2). I link sono nel formato [Testo](#paragrafo), dove Testo è opzionale.
+
+
+### Paragrafo con titolo {#2}
+Questo è il secondo paragrafo. I paragrafi possono contenere anche testo in *corsivo* o **grassetto**.
 """

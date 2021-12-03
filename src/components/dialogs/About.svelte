@@ -9,7 +9,7 @@
 </script>
 
 <div class="dialog">
-  <h3>Lgcjs - v. {manifest.version}</h3>
+  <h3>Magebook - v. {manifest.version}</h3>
   <img src="./static/img/logo.png" alt="Magebook logo">
   <br>
   <p>{@html $_('about.text')}</p>

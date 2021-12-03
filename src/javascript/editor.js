@@ -2,6 +2,10 @@ import { writable, derived } from 'svelte/store';
 import { debounced } from './debounced-store.js'
 import { newBook, bookIndex, isLoaded} from './new-book.js'
 
+
+export const editorComponentID = 'main-editor'
+
+
 let editor = null
 let firepad = null
 
@@ -50,8 +54,8 @@ const currentChapterFullTitle = derived(
   }
 )
 
-const initEditor = (componentID) => {
-  editor = ace.edit(componentID);
+const initEditor = (data) => {
+  editor = ace.edit(editorComponentID);
   window.editor = editor
   editor.setTheme("ace/theme/chrome");
   editor.session.setMode("ace/mode/markdown");
@@ -62,6 +66,7 @@ const initEditor = (componentID) => {
     wrap: true,
     fontSize: 16,
     showGutter: window.innerWidth > 430,
+    scrollPastEnd: 0.7,
   })
   
   editor.session.selection.on('changeCursor', () => cursorPosition.lazySet(editor.selection.getCursor()))
@@ -80,30 +85,43 @@ const initEditor = (componentID) => {
     name: "find",
     readOnly: true
   })
+
+  delete editor.keyBinding.$defaultHandler.commandKeyBinding['ctrl-k']
+  delete editor.keyBinding.$defaultHandler.commandKeyBinding['ctrl-l']
   
   editor.renderer.updateFontSize()
-    var config = {
-      apiKey: "AIzaSyAfP5gcmH8wtXGCzPFqBWYcwNxG31JXSas",
-      databaseURL: "https://magebook-default-rtdb.europe-west1.firebasedatabase.app",
-    };
-    const app = firebase.initializeApp(config);
-  
-    // Get a reference to the database service
-    const database = firebase.database(app);
+  editor.session.on('change', function() {
+    newBook.lazySet(editor.getValue())
+  });
 
-    window.db = database
 
-    editor.session.on('change', function() {
-        newBook.lazySet(editor.getValue())
-    });
-  
-  
-    //// Create Firepad.
-    firepad = window.Firepad.fromACE(database.ref("Libro2"), editor, {
-      defaultText: '// JavaScript Editing with Firepad!\nfunction go() {\n  var message = "Hello, world.";\n  console.log(message);\n}'
-    });
+  editor.getSession().setValue(data.book);
+  editor.moveCursorTo(data.cursor.row,data.cursor.column);
 
-    isLoaded.set(true)
+  
+
+
+
+  /*
+  var config = {
+    apiKey: "AIzaSyAfP5gcmH8wtXGCzPFqBWYcwNxG31JXSas",
+    databaseURL: "https://magebook-default-rtdb.europe-west1.firebasedatabase.app",
+  };
+  const app = firebase.initializeApp(config);
+
+  // Get a reference to the database service
+  const database = firebase.database(app);
+
+  window.db = database
+
+
+
+  //// Create Firepad.
+  firepad = window.Firepad.fromACE(database.ref("Libro2"), editor, {
+    defaultText: '// JavaScript Editing with Firepad!\nfunction go() {\n  var message = "Hello, world.";\n  console.log(message);\n}'
+  });*/
+
+  isLoaded.set(true)
 }
 
 

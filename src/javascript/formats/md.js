@@ -59,6 +59,7 @@ const decode = (file) => {
     const groupIndex = line.indexOf('[group]:<> ("')
     if(groupIndex != -1){
       result.chapters[key].group = line.substr(groupIndex + 13, line.lastIndexOf('")') - groupIndex - 13)
+      if(line.replaceAll(/\[group\]:<>[ ]*\([ ]*"[^"]*"[ ]*\)/g, '').trim() == '') return
     }
     result.chapters[key].text += oLine + '\n'
   })

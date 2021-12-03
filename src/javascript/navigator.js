@@ -1,5 +1,5 @@
 import { get, writable } from 'svelte/store'
-import { getEditor, currentChapterKey, showSidemenu } from './editor.js'
+import { getEditor, currentChapterKey, showSidemenu, editorComponentID } from './editor.js'
 import { newBook, bookIndex, isLoaded } from './new-book.js'
 import { addChapter, generateChapterText } from './actions.js'
 
@@ -22,9 +22,13 @@ const goToChapter = (key, updateHistory = true) => {
     chapterHistory.push($currentChapterKey)
     historyCanGoBack.set(true)
   }
-  editor.gotoLine( $bookIndex.chapters.get(key).contentEnd + 1, Infinity)
+  editor.gotoLine( $bookIndex.chapters.get(key).contentEnd, Infinity)
   showSidemenu.set(false)
+  
   editor.focus()
+  editor.scrollToLine($bookIndex.chapters.get(key).contentEnd + 5, true, true, function () {});
+
+  editor.moveCursorTo( $bookIndex.chapters.get(key).contentEnd, Infinity)
 
 }
 
@@ -48,7 +52,7 @@ isLoaded.subscribe( value => {
 
   }
 
-  document.getElementById('main-editor').onclick = onLinkClick
+  document.getElementById(editorComponentID).onclick = onLinkClick
 })
 
 export {goToChapter, historyCanGoBack, goBack}
