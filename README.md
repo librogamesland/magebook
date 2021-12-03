@@ -1,10 +1,12 @@
 # Magebook web editor
-A web editor for gamebook writing. Try it here: [https://librogamesland.github.io/magebook/alpha2](https://librogamesland.github.io/magebook/alpha2) NEW VERSION!
+A web editor for gamebook writing. Try NEW VERSION here: [https://librogamesland.github.io/magebook/alpha2](https://librogamesland.github.io/magebook/alpha2) 
 
-Old version here: [https://librogamesland.github.io/magebook/alpha](https://librogamesland.github.io/magebook/alpha)
 
 
 <img src="https://librogamesland.github.io/magebook/screenshots/1.jpg" alt="magebook screenshot" style="max-width:100%;">
+
+Old version here: [https://librogamesland.github.io/magebook/alpha](https://librogamesland.github.io/magebook/alpha)
+
 
 ## Developer api
 Magebook provides a javascript ([Node.js](https://nodejs.org/)) api to work with Magebook md format. You can use it to convert book formats, analyze books, or bundle your book inside a web app with [Rollup](https://rollupjs.org/).
