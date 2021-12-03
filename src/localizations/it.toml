@@ -8,13 +8,13 @@ cancel  = "Annulla"
 [dialogs.chapter]
 add    = "Aggiungi paragrafo"
 edit   = "Modifica paragrafo"
-delete = "Il paragrafo verrà eliminato"
+delete = "Il paragrafo “%1” verrà eliminato"
 exist  = "Questo paragrafo esiste già"
 
 name   = "Key*"
 title  = "Titolo"
 group  = "Gruppo*"
-hint   = "*Key e Gruppo possono contenere solo caratteri alfanumerici (a-z, A-Z, 0-9)"
+hint   = "*Key e Gruppo dovrebbero contenere solo caratteri alfanumerici (a-z, A-Z, 0-9)"
 
 
 [dialogs.newbook]
@@ -74,12 +74,16 @@ allgroup  = "Tutti i paragrafi"
 linkshere = "Link al par."
 
 [sidemenu.actions]
+goback   = "Vai indietro"
 add      = "Aggiungi entità (ctrl+R)"
 edit     = "Modifica entità (ctrl+E)"
 delete   = "Elimina entità (ctrl+D)"
 
 
 [editor.buttons]
+find = "Cerca (ctrl+F)"
+undo = "Annulla ultimo cambiamento (ctrl+Z)"
+redo = "Ripristina ultimo cambiamento (ctrl+shift+Z)"
 quicklink  = "Link al primo paragrafo disponibile (ctrl+K)"
 link  = "Aggiungi link (ctrl+L)"
 

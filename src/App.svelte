@@ -11,7 +11,6 @@
   import { bookIndex } from './javascript/new-book.js'
   import { handleShortcuts } from './javascript/shortcuts.js'
 
-  let showSidemenu = false
   $: { if(!(/bot|google|baidu|bing|msn|duckduckbot|teoma|slurp|yandex/i.test(navigator.userAgent))){
     if($bookIndex && $bookIndex.properties.title){
       document.title = $bookIndex.properties.title + " - Magebook"
@@ -23,9 +22,9 @@
 <svelte:window on:keydown={handleShortcuts}/>
 
 <Dialogs />
-<Navbar bind:showSidemenu />
-<Sidebar bind:showSidemenu />
-<Editor bind:showSidemenu />
+<Navbar />
+<Sidebar />
+<Editor />
 
 
 <style>

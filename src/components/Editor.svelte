@@ -4,13 +4,12 @@
   import { book, chapter } from '../javascript/store.js'
   import { bookIndex } from '../javascript/new-book.js'
   import { initEditor, getEditor, currentChapterKey, cursorPosition, currentChapterFullTitle } from '../javascript/editor'
-//  import {EditorState, EditorView, EditorSelection, defaultExtensions} from '../javascript/codemirror.js'
   import { ctrlShortcuts } from '../javascript/shortcuts.js'
 
-  
-  
-  export let showSidemenu
+  import { showSidemenu } from '../javascript/editor.js'
 
+  
+  
 
   let editor
 
@@ -113,20 +112,30 @@
 
 <main class="editor">
   <div class="toolbar">
-    <h1 on:click={ () => showSidemenu = !showSidemenu}>
+    <h1 on:click={ () => $showSidemenu = !$showSidemenu}>
       {$currentChapterFullTitle}
       <span class="group">{$chapter.value.group ? ` (${$chapter.value.group})` : ''}</span>
     </h1>
+    
     <div class="only-desktop" on:click={async() => {
       getEditor().execCommand('find')
-  }} title={$_('editor.buttons.link')}><span class="icon-search"/></div>
-    <div class="only-desktop" on:click={addLink} title={$_('editor.buttons.link')}><span class="icon-ccw"/></div>
-    <div class="only-desktop" on:click={addLink} title={$_('editor.buttons.link')}><span class="icon-cw"/></div>
+    }} title={$_('editor.buttons.find')}><span class="icon-search"/></div>
+
+    <div class="only-desktop" on:click={async() => {
+      getEditor().execCommand('undo')
+    }} title={$_('editor.buttons.undo')}><span class="icon-ccw"/></div>
+
+    <div class="only-desktop" on:click={async() => {
+      getEditor().execCommand('redo')
+    }} title={$_('editor.buttons.redo')}><span class="icon-cw"/></div>
+    
     <div on:click={addQuickLink} title={$_('editor.buttons.quicklink')}>
       <span class="link">#<span class="icon-flash"/></span>
     </div>
+
     <div on:click={addLink} title={$_('editor.buttons.link')}>#L</div>
-  </div>  
+  </div>
+  
   <div class="textarea" id="main-editor">
     
   </div>

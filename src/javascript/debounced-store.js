@@ -9,11 +9,14 @@ export const debounced = (millis, defaultValue = null)  => {
   const flush = () => {
     clearTimeout(timer)
     set(value)
+    return value
   }
 
 	return {
 		subscribe,
     flush,
+
+    get: flush,
 
     set: (newValue) => {
       value = newValue

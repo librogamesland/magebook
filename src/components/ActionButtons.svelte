@@ -1,6 +1,10 @@
 <script>
   import { _ } from 'svelte-i18n'
   import {book, chapter} from '../javascript/store.js'
+  import {bookIndex, newBook} from '../javascript/new-book.js'
+  import { currentChapterKey, getEditor, showSidemenu } from '../javascript/editor.js'
+  import { firstAvaiableKey, addChapter, generateChapterText } from '../javascript/actions.js'
+  import { historyCanGoBack, goBack, goToChapter} from '../javascript/navigator.js'
   import { ctrlShortcuts } from '../javascript/shortcuts.js'
   // Dialogs
   import { dialog } from './Dialogs.svelte'
@@ -8,91 +12,93 @@
   import Confirm    from './dialogs/Confirm.svelte'
   import Alert      from './dialogs/Alert.svelte'
 
-  export let showSidemenu
 
   const add = async () => {
-    const newChapter = book.newChapter()
     const result = await dialog(
       Chapter,
       $_('dialogs.chapter.add'),
-      book.availableKey(),
-      newChapter
-      
+      firstAvaiableKey(),
+      {
+        title: "", 
+        group: $currentChapterKey == '' ? '' : $bookIndex.chapters.get($currentChapterKey).group || '', 
+        flags:[], 
+        text: ""
+      }
     )
     if(!result) return
     let { key, value } = result
     key = book.sanitizeKey(key)
     value.group = book.sanitizeKey(value.group || '')
-
-
     if (!key) return
-    book.update( ({chapters }) => {
-      if (key in chapters) {
-        dialog(Alert, $_('dialogs.error'), $_('dialogs.chapter.exists'))
-        return {}
-      }
-
-      chapters[key] = value
-      return {key, chapters}
-    })
-    showSidemenu = false
+    addChapter(key, generateChapterText({
+      spacelines: 2,
+      key,
+      title: value.title || '',
+      group: value.group,
+      flags: value.flags || [],
+    }))
+    $showSidemenu = false
+    newBook.flush()
+    goToChapter(key)
   }
-
-
   const edit = async () => {
+    const cKey = $currentChapterKey
+    if(cKey == '') return
     const result = await dialog(
       Chapter,
       $_('dialogs.chapter.edit'),
-      $chapter.key,
-      $chapter.value
+      cKey,
+      $bookIndex.chapters.get(cKey)
     )
     if(!result) return
     let { key, value } = result
     key = book.sanitizeKey(key)
     value.group = book.sanitizeKey(value.group || '')
-
-
     if (!key) return
-    book.update( ({chapters }) => {
-      // Non permette la sovrascrittura di altri
-      // paragrafi oltre a quello attuale
-      if (key !== $chapter.key && key in chapters) {
-        dialog(Alert, $_('dialogs.error'), $_('dialogs.chapter.exists'))
-        return {}
-      }
-
-      delete chapters[$chapter.key]
-      chapters[key] = value
-      return {key, chapters}
-    })
-    showSidemenu = false
+    const chapter =  $bookIndex.chapters.get(cKey)
+    const content = getEditor().session.doc.getTextRange(new ace.Range(chapter.contentStart + 1, 0, chapter.contentEnd + 1, 0))
+      .split('\n').filter( line => !(line.includes('[group]:<>') || line.includes('![flag-'))).join('\n').trim()
+    getEditor().session.replace(new ace.Range(chapter.start, 0, chapter.contentEnd + 1, 0), "");
+    newBook.flush()
+    addChapter(key, generateChapterText({
+      spacelines: 2,
+      key,
+      title: value.title || '',
+      group: value.group,
+      flags: value.flags || [],
+      content
+    }))
+    newBook.flush()
+    goToChapter(key)
+    $showSidemenu = false
   }
 
 
   const del = async () => {
-    if (await dialog(Confirm, $_('dialogs.confirm'), $_(`dialogs.chapter.delete`))) {
-      book.update( ({chapters }) => {
-        const index = Object.keys(chapters).indexOf($chapter.key) - 1
-        delete chapters[$chapter.key]
-        return { key: Object.keys(chapters)[index], chapters}
-      })
-      showSidemenu = false
+    const key = $currentChapterKey
+    if(key == '') return
+    if (await dialog(Confirm, $_('dialogs.confirm'), $_(`dialogs.chapter.delete`).replace("%1", key))) {
+      const chapter = $bookIndex.chapters.get(key)
+      console.log("maigd", chapter)
+
+      getEditor().session.replace(new ace.Range(chapter.start, 0, chapter.contentEnd + 1, 0), "");
+      $showSidemenu = false
     }
   }
+
 
   ctrlShortcuts({
     'R': () => add(),
     'E': () => edit(),
     'D': () => del(),
   })
-
 </script>
 
 <div class="buttons">
-  <div class="icon-back" on:click={add} title={$_('sidemenu.actions.add')} />
+  <div class="icon-back" on:click={goBack} title={$_('sidemenu.actions.add')} disabled={!$historyCanGoBack} />
   <div class="icon-plus" on:click={add} title={$_('sidemenu.actions.add')} />
-  <div class="icon-pencil" on:click={edit} title={$_('sidemenu.actions.edit')} />
-  <div class="icon-trash" on:click={del} title={$_('sidemenu.actions.delete')} />
+  <div class="icon-pencil" on:click={edit} title={$_('sidemenu.actions.edit')}  disabled={$currentChapterKey == ""} />
+  <div class="icon-trash" on:click={del} title={$_('sidemenu.actions.delete')} disabled={$currentChapterKey == ""} />
 </div>
 
 <style>
@@ -102,10 +108,13 @@
     box-sizing: border-box;
     border: 1px solid #666;
     border-bottom: none;
-
     background-color: #f1f1f1;
   }
-
+  .buttons > div[disabled=true] {
+    opacity: 0.3;
+    pointer-events:none;
+    cursor: not-allowed; /* nota: dovrei usare un wrapper, perché cursor not allowed non funziona quando pointer-events = none*/
+  }
   .buttons > div {
     cursor: pointer;
     display: block;
@@ -116,9 +125,7 @@
     content: ' ';
     font-size: 1.3rem;
   }
-
   .buttons > div:hover {
     background-color: #ddd;
   }
-
 </style>

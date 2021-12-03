@@ -1,10 +1,14 @@
 <script>
   import { _ } from 'svelte-i18n'
   import { ctrlShortcuts } from '../javascript/shortcuts.js'
-  import { book } from '../javascript/store.js';
   import { graphToImg } from '../javascript/graph.js'
   import { open, download } from '../javascript/file.js'
   import { encode } from '../javascript/formats/vuejs.js'
+  import {newBook} from '../javascript/new-book.js'
+
+  import { showSidemenu } from '../javascript/editor.js'
+
+
   // Dialogs
   import { dialog } from './Dialogs.svelte'
   import About      from './dialogs/About.svelte'
@@ -15,14 +19,10 @@
 
 
 
-  encode(book)
-
-  export let showSidemenu = false
-
 
   ctrlShortcuts({
     'N': () => newClick(),
-    'S': () => download('md', book),
+    'S': () => download('md', newBook.flush()),
     'O': () => document.getElementById('open').click()
   })
 
@@ -39,7 +39,7 @@
         accept=".xlgc,.md"
         on:change={e => open(e.target )} />
       <label for="open">{$_("navbar.file.open")} </label>
-      <p on:click={() => download('md', book)}>{$_('navbar.file.save')}</p>
+      <p on:click={() => download('md', newBook.flush())}>{$_('navbar.file.save')}</p>
       <p on:click={() => dialog(Recover)}>{$_('navbar.file.recover')}</p>
     </div>
   </div>
@@ -47,7 +47,7 @@
   <div>
     <h1>{$_('navbar.book.title')}</h1>
     <div class="content">
-      <p on:click={() => dialog(Img, () => graphToImg(book))}>{$_('navbar.book.graph')}</p>
+      <p on:click={() => dialog(Img, () => graphToImg(newBook.flush()))}>{$_('navbar.book.graph')}</p>
       <p on:click={() => dialog(Shuffle)}>{$_('navbar.book.shuffle')}</p>
     </div>
   </div>
@@ -55,9 +55,9 @@
   <div>
     <h1>{$_('navbar.export.title')}</h1>
     <div class="content">
-      <p on:click={() => download('docx', book)}>{$_('navbar.export.docx')}</p>
-      <p on:click={() => download('fodt', book)}>{$_('navbar.export.fodt')}</p>
-      <p on:click={() => download('xlgc', book)}>{$_('navbar.export.xlgc')}</p>
+      <p on:click={() => download('docx', newBook.flush())}>{$_('navbar.export.docx')}</p>
+      <p on:click={() => download('fodt', newBook.flush())}>{$_('navbar.export.fodt')}</p>
+      <p on:click={() => download('xlgc', newBook.flush())}>{$_('navbar.export.xlgc')}</p>
       <!-- <p>{$_('navbar.export.vuejs')}</p> -->
     </div>
   </div>
@@ -78,7 +78,7 @@
 
   <div class="sidemenu-button">
     <span aria-label={$_('sidemenu.toggle')} class="dropbtn icon-menu"
-      on:click={() => (showSidemenu = !showSidemenu)} />
+      on:click={() => ($showSidemenu = !$showSidemenu)} />
   </div>
 </nav>
 

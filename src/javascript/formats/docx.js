@@ -18,7 +18,7 @@ const renderer = (chapters) => ({
   codespan:  text => '',
   code: (code, lang) => '',
   link: (key, i, text) => `<mage-link to="${key.replace('#', '')}">${
-    text.trim() || chapters[key.replace('#', '')].title.trim() || key.replace('#', '')
+    text.trim() || chapters[key.replace('#', '')]?.title.trim() || key.replace('#', '')
   }</mage-link>`,
 })
 
@@ -106,7 +106,6 @@ const addChapter = (key, chapters ) => {
 
 const encode = (book) => {
   if(!book["__is_book"]) book = new Book(book)
-  const name = 'example'
   const doc = new docx.Document({
     styles: {
     paragraphStyles: [
@@ -130,7 +129,8 @@ const encode = (book) => {
   });
 
   const children = []
-  const {chapters} = book.get()
+  const {chapters, properties} = book.get()
+  const name = properties.title || 'magebook'
   book.sortedKeys().forEach( key => {
     children.push(...addChapter(key, chapters))
   })

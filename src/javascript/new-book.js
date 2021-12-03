@@ -1,11 +1,10 @@
 import { writable, derived } from 'svelte/store';
 import { debounced } from './debounced-store.js'
 
-const loaded = writable(false)
+const isLoaded = writable(false)
 
 
 const newBook = debounced(100, '') 
-
 
 
 const decode = (file) => {
@@ -19,10 +18,16 @@ const decode = (file) => {
   let key = ''
   let chapter
 
+  let lastLineHadContent = false
+  let lastContentLinePlusOne = 1
 
-  file.split('\n').forEach( (oLine, zeroIndexlineNumber) => { 
+  const lines = file.split('\n')
+  lines.forEach( (oLine, zeroIndexlineNumber) => { 
     const i = zeroIndexlineNumber  // We keep zero indexed as reference
     const line = oLine.trim()
+
+    if(lastLineHadContent) lastContentLinePlusOne = i 
+    lastLineHadContent = (line !== '')
   
     // Parsing dell'header
     if(key === '' && !line.startsWith('### ')) {
@@ -39,7 +44,11 @@ const decode = (file) => {
   
     // Parsing del testo
     if(line.startsWith('### ')){
-      if(key !== '') result.chapters.set(key, chapter)
+      if(key !== ''){
+        chapter.contentEnd = lastContentLinePlusOne - 1
+        chapter.end = i - 1
+        result.chapters.set(key, chapter)
+      }
       // crea nuova entità
       key = line.substr(4).trim()
       let title = ''
@@ -51,15 +60,15 @@ const decode = (file) => {
       chapter = {
         title,
         group: '',
-        start: i,
+        start: lastContentLinePlusOne,
+        contentStart: i,
+        contentEnd: i,
         end: i,
         flags: [],
         links: new Set(),
       }
       return
     }
-
-    if(line !== '') chapter.end = i
   
     if(line.includes('![flag-')){
       ;['final', 'fixed', 'death'].forEach( (flag) => {
@@ -88,10 +97,13 @@ const decode = (file) => {
 
   })
 
-  if(key !== '') result.chapters.set(key, chapter)
+  if(key !== ''){
+    chapter.contentEnd = lastContentLinePlusOne - 1
+    chapter.end = lines.length - 1
+    result.chapters.set(key, chapter)
+  }
 
-  console.log(result.linksToChapter)
-  //result.key = String(result.properties['last_edited'] || Object.keys(result.chapters)[0]).trim()
+  console.log(result.chapters)
   return result
 }
 
@@ -104,6 +116,4 @@ const bookIndex = derived(
 
 
 
-
-
-export {loaded, newBook, bookIndex, $bookIndex}
+export {isLoaded, newBook, bookIndex, $bookIndex}

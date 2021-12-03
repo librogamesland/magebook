@@ -8,13 +8,13 @@ cancel  = "Cancel"
 [dialogs.chapter]
 add    = "Add chapter"
 edit   = "Edit chapter"
-delete = "Chapter will be deleted"
+delete = "Chapter “%1” will be deleted"
 exists = "Chapter already exists"
 
 name   = "Key*"
 title  = "Title"
 group  = "Group*"
-hint   = "*Key and Group may contain only alphanumeric characters (a-z,A-Z,0-9)"
+hint   = "*Key and Group should contain only alphanumeric characters (a-z,A-Z,0-9)"
 
 
 [dialogs.newbook]
@@ -74,12 +74,16 @@ allgroup  = "All chapters"
 linkshere = "Links to"
 
 [sidemenu.actions]
+goback   = "Go back"
 add      = "Add entity (ctrl+R)"
 edit     = "Edit entity (ctrl+E)"
 delete   = "Delete entity (ctrl+D)"
 
 
 [editor.buttons]
+find = "Find (ctrl+F)"
+undo = "Undo last change (ctrl+Z)"
+redo = "Redo last change (ctrl+shift+Z)"
 quicklink = "Link to the first avaiable chapter (ctrl+K)"
 link      = "Add link (ctrl+L)"
 

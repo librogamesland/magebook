@@ -3,8 +3,11 @@
   import { tick } from 'svelte';
   import {book, chapter} from '../javascript/store.js'
   import { bookIndex } from '../javascript/new-book.js'
-  import { currentChapterKey, goToChapter } from '../javascript/editor.js'
+  import { currentChapterKey } from '../javascript/editor.js'
+  import { goToChapter } from '../javascript/navigator.js'
   import scrollIntoView from 'smooth-scroll-into-view-if-needed';
+
+  import { showSidemenu } from '../javascript/editor.js'
 
 
   import ActionButtons from './ActionButtons.svelte'
@@ -49,22 +52,21 @@
 
   const setBookKey = (key) => {
     book.update(() => ({key}))
-    showSidemenu = false
+    $showSidemenu = false
   }
 
   // Regex per matchare i link in markdown
   $: linksHere = [... ($bookIndex.linksToChapter.get($currentChapterKey) || new Set())]
-  export let showSidemenu = false
 
 </script>
 
 <div
-  class={`mask ${showSidemenu ? 'foreground' : ''}`}
-  on:click={() => showSidemenu = false}
+  class={`mask ${$showSidemenu ? 'foreground' : ''}`}
+  on:click={() => $showSidemenu = false}
 />
 
 
-<aside class={showSidemenu ? 'foreground' : ''}>
+<aside class={$showSidemenu ? 'foreground' : ''}>
   <h1>
     <span class="select-dropdown">
       <select bind:value={selectedGroup}>
@@ -75,7 +77,7 @@
       </select>
     </span>
   </h1>
-  <ActionButtons bind:showSidemenu/>
+  <ActionButtons />
   <ul class="chapters">
     {#each [...($bookIndex.chapters)] as [key, chapter]}
     <li

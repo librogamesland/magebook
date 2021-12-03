@@ -1,9 +1,12 @@
 import { writable, derived } from 'svelte/store';
 import { debounced } from './debounced-store.js'
-import { newBook, bookIndex, $bookIndex} from './new-book.js'
+import { newBook, bookIndex, isLoaded} from './new-book.js'
 
 let editor = null
 let firepad = null
+
+
+export const showSidemenu = writable(false)
 
 
 function absorbEvent_(event) {
@@ -28,7 +31,7 @@ const currentChapterKey = derived(
     let cursorRow = $cursorPosition.row
     let lastWorkingKey = ''
     for(const [key, chapter] of $bookIndex.chapters.entries()) {
-      if(chapter.start <= cursorRow){
+      if(chapter.contentStart <= cursorRow){
         lastWorkingKey = key
       } else {
         return lastWorkingKey
@@ -72,58 +75,40 @@ const initEditor = (componentID) => {
     description: "Find",
     exec: (...e) => {
       findF(...e)
-      setTimeout(() => preventClickPropagation(document.querySelector('.ace_search')), 200)
+      setTimeout(() => preventClickPropagation(document.querySelector('.ace_search')), 400)
     },
     name: "find",
     readOnly: true
   })
   
   editor.renderer.updateFontSize()
-    //// Initialize Firebase.
-    //// TODO: replace with your Firebase project configuration.
     var config = {
       apiKey: "AIzaSyAfP5gcmH8wtXGCzPFqBWYcwNxG31JXSas",
-      authDomain: "magebook.firebaseapp.com",
       databaseURL: "https://magebook-default-rtdb.europe-west1.firebasedatabase.app",
-      projectId: "magebook",
-      storageBucket: "magebook.appspot.com",
-      messagingSenderId: "827898413639",
-      appId: "1:827898413639:web:cc786d0d158890d8d7a762",
-      measurementId: "G-FZQ13Y7R84"
     };
     const app = firebase.initializeApp(config);
   
     // Get a reference to the database service
     const database = firebase.database(app);
 
-    editor.session.on('change', function(delta) {
+    window.db = database
+
+    editor.session.on('change', function() {
         newBook.lazySet(editor.getValue())
     });
   
   
     //// Create Firepad.
-    firepad = window.Firepad.fromACE(database.ref(), editor, {
+    firepad = window.Firepad.fromACE(database.ref("Libro2"), editor, {
       defaultText: '// JavaScript Editing with Firepad!\nfunction go() {\n  var message = "Hello, world.";\n  console.log(message);\n}'
     });
+
+    isLoaded.set(true)
 }
 
 
-const firstAvaibleKey = ()  => {
-  for(let i = 1; i < 10000; i++){
-    if(!$bookIndex.chapters.has(String(i))) return String(i)
-  }
-
-  return 10000
-}
-
-
-const goToChapter = (key) => {
-  console.log(firstAvaibleKey())
-  editor.gotoLine( $bookIndex.chapters.get(key).end + 1, Infinity)
-  editor.focus()
-}
 
 const getEditor = () => editor 
 
 
-export {initEditor, getEditor, cursorPosition, currentChapterKey, currentChapterFullTitle, goToChapter }
+export {bookIndex, initEditor, getEditor, cursorPosition, currentChapterKey, currentChapterFullTitle }

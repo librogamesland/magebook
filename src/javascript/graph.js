@@ -1,9 +1,14 @@
+import md   from './formats/md.js'
+import {Book}   from './book.js'
+
+
 const hpccWasm = window["@hpcc-js/wasm"];
 
 
 const sanitizeLabel = (text) => text.replace(/\//g, "\\").replace(/\"/g, '\"')
 
 const generateGraph = (book) => {
+  book = new Book(md.decode(book))
   const data = book.get()
   let s = `digraph{
     graph [fontname="arial", fontsize=10]; 

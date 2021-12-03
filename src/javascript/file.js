@@ -1,4 +1,3 @@
-import { session } from './store.js'
 import md   from './formats/md.js'
 import xlgc from './formats/xlgc.js'
 import fodt from './formats/fodt.js'
@@ -42,17 +41,22 @@ const open = (elem) => {
 
 // Download file
 const download = async(formatKey, book) => {
+
   const format = formats[formatKey]
-  var element = document.createElement('a')
-  book.refresh(true)
-  const encodedBook = await Promise.resolve(format.encode(book))
-  console.log(encodedBook)
+  const decodedMd = md.decode(book)
+
+  const encodedBook = (formatKey === 'md') 
+    ? book
+    : await Promise.resolve(format.encode(decodedMd))
+
   if(!encodedBook) return
+
+  const element = document.createElement('a')
   element.setAttribute(
     'href',
     `data:${format.mimetype};charset=utf-8,${encodeURIComponent(encodedBook)}`
   )
-  element.setAttribute('download', session.file.name + '.' + formatKey)
+  element.setAttribute('download', (decodedMd.properties.title || 'magebook') + '.' + formatKey)
 
   element.style.display = 'none'
   document.body.appendChild(element)
