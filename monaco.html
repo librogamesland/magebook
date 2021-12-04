@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta name="viewport" content="width=device-width" />
+    <title>Test prompt</title>
+</head>
+<body>
+   <div id="editor"> 
+
+   </div>
+
+   <form id="loginform" action="login.php" onSubmit="return login(this);">
+    <input name="username" type="text" />
+    <input name="password" type="password" />
+    <input name="doLogin"  type="submit" value="Login" />
+   </form>
+
+   <script>
+       function login(f){
+    var username = f.username.value;
+    var password = f.password.value;
+
+    console.log(username, password)
+    /* Make your validation and ajax magic here. */
+
+    return false; //or the form will post your data to login.php
+}
+   </script>
+</body>
+</html>
