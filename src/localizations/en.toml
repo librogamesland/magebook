@@ -23,6 +23,11 @@ title  = "Title"
 author = "Author"
 hint   = "<b>Warning:</b> current book will be overwritten if not saved."
 
+[dialogs.newfirebook]
+new    = "Create or load a New Book"
+book   = "Book name"
+getStarted = """Con questa funzione puoi collegare Magebook al tuo account Google, così da creare libri che si possono modificare in simultanea, proprio come i Documenti Google.<br>Prima di iniziare, dovrai collegare Magebook al tuo account <a href="../docs/it/index.html#/?id=progetti-collaborativi">seguendo questa guida</a>."""
+
 [dialogs.shuffle]
 title      = "Shuffle"
 hint       = "Shuffle chapters with numeric key. You may choose to shuffle only chapters belonging to some groups, or to exclude chapters based on their flags."
@@ -41,11 +46,13 @@ open       = "Open in new tab"
 
 
 [navbar.file]
-title   = "File"
-new     = "New"
-open    = "Open..."
-save    = "Save"
-recover = "Recover session"
+title      = "File"
+new        = "New"
+newFire    = "New collaborative"
+share      = "Share"
+open       = "Open..."
+save       = "Save"
+recover    = "Recover session"
 
 [navbar.book]
 title   = "Book"
@@ -108,4 +115,12 @@ This is a link going to [](#2). Links are done with [Text](#chapter), where text
 
 ### Chapter with a long title {#2}
 This is the second chapter. Chapters may include *italic* or **bold** text.
+"""
+fire = """
+# %1
+author: Name and Surname
+
+
+### 1
+Questo è un libro collaborativo memorizzato sul tuo account Google e che può essere modificato da più persone contemporaneamente. Salva questa pagina fra i segnalibri del tuo browser e inviala a chi vuoi, vedrai le modifiche sincronizzate in tempo reale.
 """

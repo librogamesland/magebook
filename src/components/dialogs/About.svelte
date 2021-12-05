@@ -19,7 +19,7 @@
 
 <style>
   .dialog {
-    width: 440px;
+    width: 500px;
     max-width: calc(100vw - 30px);
     text-align: center;
   }

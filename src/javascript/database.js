@@ -1,13 +1,13 @@
 import Dexie from 'dexie'
 import queryString from 'query-string'
 
-import { get, derived } from 'svelte/store'
+import { get, derived, writable } from 'svelte/store'
 import { _ } from 'svelte-i18n'
 
 import { randomString } from './utils.js'
 import {lockStore} from '../components/Dialogs.svelte'
 import {newBook, bookIndex, isLoaded} from './new-book.js'
-import {cursorPosition, initEditor} from './editor.js'
+import {cursorPosition, initEditorLocal, initEditorFirebase} from './editor.js'
 
 
 
@@ -18,9 +18,11 @@ const parsedHash = queryString.parse(location.hash);
 // Database: declare tables, IDs and indexes
 const db = new Dexie('magebook2');
 db.version(1).stores({
-  sessions: '&id, time, preview'
+  sessions: '&id, time, preview',
+  fireSessions: '&id, time, preview'
 });
 
+export const isFirebase = writable(false)
 
 // Session previews
 const previews = async() => (await db.sessions.orderBy('preview').keys()).reverse().map( key => ({
@@ -59,6 +61,22 @@ const session = new (function(){
   // Session loader
   let sessionName
   const load = async() => {
+
+    if(parsedHash.fsession){
+
+      window.addEventListener('hashchange', () => {
+        window.location.reload()
+      }, false);
+  
+
+      isFirebase.set(true)
+
+      initEditorFirebase(JSON.parse(atob(decodeURIComponent(parsedHash.fsession))))
+
+      return
+    }
+
+
     if(sessionName){
       console.error("Session loaded twice!")
       return
@@ -110,7 +128,7 @@ const session = new (function(){
       data:{book: get(_)('books.local'), cursor: {row: 0, column: 0}} 
     }
      
-    initEditor(info.data)
+    initEditorLocal(info.data)
 
     data = derived(
       [newBook, cursorPosition, bookIndex],
@@ -173,7 +191,7 @@ const session = new (function(){
     try {
       await db.sessions.put(sessionData)
     }catch(e){}
-    location.replace(`#msession=${sessionData.id}`)
+    location.assign(`#msession=${sessionData.id}`)
   }
 
   this.duplicate = async(params) => {

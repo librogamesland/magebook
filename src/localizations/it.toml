@@ -23,6 +23,11 @@ title  = "Titolo"
 author = "Autore"
 hint   = "<b>Attenzione:</b> il libro attuale verrà sovrascritto se non salvato."
 
+[dialogs.newfirebook]
+new    = "Crea o accedi a un Libro Collaborativo"
+book   = "Nome libro"
+getStarted = """Con questa funzione puoi collegare Magebook al tuo account Google, così da creare libri che si possono modificare in simultanea, proprio come i Documenti Google.<br>Prima di iniziare, dovrai collegare Magebook al tuo account <a target="_blank" href="../docs/it/index.html#/?id=progetti-collaborativi">seguendo questa guida</a>."""
+
 [dialogs.shuffle]
 title      = "Rimescola"
 hint       = "Rimescola i paragrafi con chiave numerica. Puoi scegliere di mescolare solo i paragrafi che fanno parte di alcuni gruppi, o di escludere i paragrafi con determinati simboli."
@@ -41,11 +46,13 @@ open       = "Apri un una nuova pagina"
 
 
 [navbar.file]
-title   = "File"
-new     = "Nuovo"
-open    = "Apri..."
-save    = "Salva"
-recover = "Recupera sessione"
+title      = "File"
+new        = "Nuovo"
+newFire    = "Nuovo collaborativo"
+share      = "Condividi"
+open       = "Apri..."
+save       = "Salva"
+recover    = "Recupera sessione"
 
 [navbar.book]
 title   = "Libro"
@@ -107,4 +114,12 @@ Questo è un link verso il paragrafo [](#2). I link sono nel formato [Testo](#pa
 
 ### Paragrafo con titolo {#2}
 Questo è il secondo paragrafo. I paragrafi possono contenere anche testo in *corsivo* o **grassetto**.
+"""
+fire = """
+# %1
+author: Nome e Cognome
+
+
+### 1
+Questo è un libro collaborativo memorizzato sul tuo account Google e che può essere modificato da più persone contemporaneamente. Salva questa pagina fra i segnalibri del tuo browser e inviala a chi vuoi, vedrai le modifiche sincronizzate in tempo reale.
 """

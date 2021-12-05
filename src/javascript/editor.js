@@ -1,6 +1,7 @@
-import { writable, derived } from 'svelte/store';
+import { writable, derived, get } from 'svelte/store';
 import { debounced } from './debounced-store.js'
 import { newBook, bookIndex, isLoaded} from './new-book.js'
+import { _ } from 'svelte-i18n'
 
 
 export const editorComponentID = 'main-editor'
@@ -54,7 +55,7 @@ const currentChapterFullTitle = derived(
   }
 )
 
-const initEditor = (data) => {
+const setupAce = () => {
   editor = ace.edit(editorComponentID);
   window.editor = editor
   editor.setTheme("ace/theme/chrome");
@@ -94,19 +95,23 @@ const initEditor = (data) => {
     newBook.lazySet(editor.getValue())
   });
 
+}
+
+
+const initEditorLocal = (data) => {
+  setupAce()
 
   editor.getSession().setValue(data.book);
   editor.moveCursorTo(data.cursor.row,data.cursor.column);
 
-  
+  isLoaded.set(true)
+}
 
 
+const initEditorFirebase = (config) => {
+  setupAce()
 
-  /*
-  var config = {
-    apiKey: "AIzaSyAfP5gcmH8wtXGCzPFqBWYcwNxG31JXSas",
-    databaseURL: "https://magebook-default-rtdb.europe-west1.firebasedatabase.app",
-  };
+
   const app = firebase.initializeApp(config);
 
   // Get a reference to the database service
@@ -117,11 +122,12 @@ const initEditor = (data) => {
 
 
   //// Create Firepad.
-  firepad = window.Firepad.fromACE(database.ref("Libro2"), editor, {
-    defaultText: '// JavaScript Editing with Firepad!\nfunction go() {\n  var message = "Hello, world.";\n  console.log(message);\n}'
-  });*/
+  firepad = window.Firepad.fromACE(database.ref(config.book), editor, {
+    defaultText: get(_)('books.fire').replace('%1', config.book)
+  });
 
   isLoaded.set(true)
+
 }
 
 
@@ -129,4 +135,4 @@ const initEditor = (data) => {
 const getEditor = () => editor 
 
 
-export {bookIndex, initEditor, getEditor, cursorPosition, currentChapterKey, currentChapterFullTitle }
+export {bookIndex, initEditorLocal, initEditorFirebase, getEditor, cursorPosition, currentChapterKey, currentChapterFullTitle }

@@ -1,0 +1,79 @@
+<script>
+  import { _ } from 'svelte-i18n'
+  import { session } from '../../javascript/database.js'
+  export let params
+  export let callback
+
+
+  // Entity input bindings
+  let apiKey, databaseURL, book
+
+  const newBook = () => {
+
+    const config = encodeURIComponent(btoa(JSON.stringify({
+        apiKey: apiKey.replaceAll('",', '').replaceAll('"', '').replaceAll('apiKey:', '').trim(),
+        databaseURL: databaseURL.replaceAll('",', '').replaceAll('"', '').replaceAll('databaseURL:', '').trim(),
+        book
+      })))
+    location.assign(`#fsession=${config}`)
+    location.reload()
+  }
+
+
+
+</script>
+<div class="dialog">
+  <h3>{$_('dialogs.newfirebook.new')}</h3>
+
+  <div class="input">
+    <span>apiKey:</span>
+    <input bind:value={apiKey} type="text" />
+  </div>
+  <div class="input">
+    <span>databaseURL:</span>
+    <input bind:value={databaseURL} type="text" />
+  </div>
+  <div class="input">
+    <span>{$_('dialogs.newfirebook.book')}:</span>
+    <input bind:value={book} type="text" />
+  </div>
+  <p class="getstarted" style="margin: 1rem 0">{@html $_('dialogs.newfirebook.getStarted')}</p>
+
+  <button
+    class="ok"
+    on:click={() => newBook()}>
+    {$_('dialogs.ok')}
+  </button>
+  <button class="cancel" on:click={() => callback(false)}>{$_('dialogs.cancel')}</button>
+</div>
+
+<style>
+  :global(.getstarted br) {
+    line-height: 1rem;
+    content: " ";
+    display: block;
+    margin: 10px;
+  }
+
+  .dialog {
+    width: 550px;
+    max-width: calc(100vw - 30px);
+  }
+
+  .input {
+    width: 100%;
+    display: flex;
+    align-items: center;
+  }
+  
+  .input > input {
+    height: 1rem;
+    margin: 0.5rem 0;
+    flex-grow: 1;
+    flex-shrink: 1;
+    min-width: 0;
+  } 
+  .input > span {
+    min-width: calc(75px + 4vw);
+  } 
+</style>

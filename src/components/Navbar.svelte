@@ -6,15 +6,17 @@
   import { newBook } from '../javascript/new-book.js'
 
   import { showSidemenu } from '../javascript/editor.js'
+  import { isFirebase }   from '../javascript/database.js'
 
 
   // Dialogs
-  import { dialog } from './Dialogs.svelte'
-  import About      from './dialogs/About.svelte'
-  import Img        from './dialogs/Img.svelte'
-  import Shuffle    from './dialogs/Shuffle.svelte'
-  import NewBook    from './dialogs/NewBook.svelte'
-  import Recover    from './dialogs/Recover.svelte'
+  import { dialog }     from './Dialogs.svelte'
+  import About          from './dialogs/About.svelte'
+  import Img            from './dialogs/Img.svelte'
+  import Shuffle        from './dialogs/Shuffle.svelte'
+  import NewBook        from './dialogs/NewBook.svelte'
+  import NewFirebook    from './dialogs/NewFirebook.svelte'
+  import Recover        from './dialogs/Recover.svelte'
 
 
 
@@ -34,6 +36,9 @@
     <h1>{$_('navbar.file.title')}</h1>
     <div class="content">
       <p on:click={() => dialog(NewBook)}>{$_('navbar.file.new')}</p>
+      <hr>
+      <p on:click={() => dialog(NewFirebook)}>{$_('navbar.file.newFire')}</p>
+      <hr>
       <input type="file" name="open" id="open"
         accept=".xlgc,.md"
         on:change={e => open(e.target )} />
@@ -83,6 +88,11 @@
 
 
 <style>
+
+  hr {
+    padding: 0 !important;
+  }
+
   nav {
     grid-area: navbar;
     display: flex;
