@@ -1,6 +1,6 @@
 # Magebook
 
-Magebook è un editor per *librogame*, cioè testi divisi in paragrafi numerati. A fine di ogni paragrafo ci sono link verso gli altri paragrafi.
+Magebook è un editor per *librogame*, cioè testi divisi in paragrafi numerati. A fine di ogni paragrafo ci sono link verso gli altri paragrafi. Il lettore non deve quindi leggere dall'inizio alla fine, ma saltare 
 
 
 
@@ -9,15 +9,24 @@ Esempio:
 # Titolo libro
 author: Nome Autore
 
+
 ### 1
+Dove vuoi andare? [A destra 2](#2) o [a sinistra 3](#3)?
 
 
+### 2
+Sei andato a destra.
+
+
+### 3
+Sei andato a sinistra.
 ```
+Magebook ti aiuterà a scrivere il tuo *librogame* con una serie di funzioni pensate pensate apposta per il genere.
 
 
 # Progetti collaborativi
 
-Grazie a questa funzionalità
+Non solo Magebook consente di lavorare su file locali, ma si può anche usare per progetti condivisi, che possono essere modificati da più dispositivi contemporaneamente, con le modifiche sincronizzate in tempo reale. Grazie a questa funzionalità è possibile collegare a Magebook il proprio account Google attraverso Google Firebase, che è gratuito fino a 1GB di memoria (circa 500 librogame completi).
 
 ## Abilita e collega il tuo account Google
 
@@ -68,3 +77,9 @@ Apri Magebook, dalla barra di navigazione in alto seleziona `File -> Nuovo Colla
 Una volta terminato, verrai portato a una pagina di Magebook con il nuovo libro. Salva l'URL della pagina fra i segnalibri (così da poterlo ritrovare in seguito) e condividilo con chi vuoi.
 
 Fatto!
+
+
+# Licenza e autori
+Magebook è un software gratuito e open-source (licenza MIT) sviluppato da Luca Fabbian <luca.fabbian.1999@gmail.com>, con il supporto della community di [Librogame's Land](http://librogame.net).
+
+Il progetto nasce come versione browser di [LibroGameCreator 3](http://www.matteoporopat.com/librogame/libro-game-creator-3/).
