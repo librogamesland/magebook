@@ -1,5 +1,5 @@
 # Magebook web editor
-A web editor for gamebook writing. Try NEW VERSION here: [https://librogamesland.github.io/magebook/alpha2](https://librogamesland.github.io/magebook/alpha2) 
+A web editor for gamebook writing. Try NEW VERSION here: [https://librogamesland.github.io/magebook/alpha2](https://librogamesland.github.io/magebook/editor)
 
 
 

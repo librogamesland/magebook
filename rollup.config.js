@@ -36,7 +36,7 @@ export default [{
       sourcemap: !production,
       format: 'iife',
       name: 'app',
-      file: 'dist/build/bundle.js'
+      file: 'editor/build/bundle.js'
     },
     watch: { clearScreen: true },
     plugins: [
@@ -54,7 +54,7 @@ export default [{
       !production && serve({         // Open browser on watch
         open: true,
         contentBase: '../',
-        openPage: '/magebook/dist/index.html',
+        openPage: '/magebook/editor/index.html',
         host: '0.0.0.0',
         port: 10015,
       }),
