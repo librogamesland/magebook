@@ -14,7 +14,7 @@ import (
 
 )
 
-//go:embed dist
+//go:embed editor
 var fs embed.FS
 
 
@@ -51,7 +51,7 @@ func doUpdate(url string) error {
 			return err
 	}
 	defer resp.Body.Close()
-	err := update.Apply(resp.Body, update.Options{})
+	err = update.Apply(resp.Body, update.Options{})
 	if err != nil {
 			// error handling
 	}
@@ -92,7 +92,7 @@ func main() {
 	}
 	defer ln.Close()
 	go http.Serve(ln, http.FileServer(http.FS(fs)))
-	ui.Load(fmt.Sprintf("http://%s/dist", ln.Addr()))
+	ui.Load(fmt.Sprintf("http://%s/editor", ln.Addr()))
 
 	getVersion()
 

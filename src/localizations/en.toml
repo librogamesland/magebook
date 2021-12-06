@@ -70,7 +70,7 @@ vuejs = "Vue.js"
 [navbar.help]
 title     = "Help"
 guide     = "Guide"
-guidefile = "guide-en.pdf" 
+guidefile = "https://librogamesland.github.io/magebook" 
 forum     = "Lgl forum"
 about     = "About"
 

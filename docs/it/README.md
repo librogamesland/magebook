@@ -24,6 +24,11 @@ Sei andato a sinistra.
 Magebook ti aiuterà a scrivere il tuo *librogame* con una serie di funzioni pensate pensate apposta per il genere.
 
 
+# Download
+
+
+# Funzionalità base
+
 # Progetti collaborativi
 
 Non solo Magebook consente di lavorare su file locali, ma si può anche usare per progetti condivisi, che possono essere modificati da più dispositivi contemporaneamente, con le modifiche sincronizzate in tempo reale. Grazie a questa funzionalità è possibile collegare a Magebook il proprio account Google attraverso Google Firebase, che è gratuito fino a 1GB di memoria (circa 500 librogame completi).
@@ -80,6 +85,6 @@ Fatto!
 
 
 # Licenza e autori
-Magebook è un software gratuito e open-source (licenza MIT) sviluppato da Luca Fabbian <luca.fabbian.1999@gmail.com>, con il supporto della community di [Librogame's Land](http://librogame.net).
+Magebook è un software gratuito e open-source (licenza MIT) sviluppato da **Luca Fabbian** <luca.fabbian.1999@gmail.com>, con il supporto della community di [Librogame's Land](http://librogame.net).
 
 Il progetto nasce come versione browser di [LibroGameCreator 3](http://www.matteoporopat.com/librogame/libro-game-creator-3/).

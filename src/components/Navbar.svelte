@@ -70,7 +70,7 @@
   <div>
     <h1>{$_('navbar.help.title')}</h1>
     <div class="content">
-      <a href={'../guide/pdf/' + $_('navbar.help.guidefile')} target="_blank" rel="noopener">
+      <a href={$_('navbar.help.guidefile')} target="_blank" rel="noopener">
         {$_('navbar.help.guide')}
       </a>
       <a href="http://www.librogame.net/index.php/forum/topic?id=5182&p=1#p148583" target="_blank" rel="noopener">
