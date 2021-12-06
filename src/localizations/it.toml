@@ -26,7 +26,7 @@ hint   = "<b>Attenzione:</b> il libro attuale verrà sovrascritto se non salvato
 [dialogs.newfirebook]
 new    = "Crea o accedi a un Libro Collaborativo"
 book   = "Nome libro"
-getStarted = """Con questa funzione puoi collegare Magebook al tuo account Google, così da creare libri che si possono modificare in simultanea, proprio come i Documenti Google.<br>Prima di iniziare, dovrai collegare Magebook al tuo account <a target="_blank" href="../docs/it/index.html#/?id=progetti-collaborativi">seguendo questa guida</a>."""
+getStarted = """Con questa funzione puoi collegare Magebook al tuo account Google, così da creare libri che si possono modificare in simultanea, proprio come i Documenti Google.<br>Prima di iniziare, dovrai collegare Magebook al tuo account <a target="_blank" href="https://librogamesland.github.io/magebook/#/?id=progetti-collaborativi">seguendo questa guida</a>."""
 
 [dialogs.shuffle]
 title      = "Rimescola"
