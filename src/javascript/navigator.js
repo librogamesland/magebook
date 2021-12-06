@@ -26,7 +26,7 @@ const goToChapter = (key, updateHistory = true) => {
   showSidemenu.set(false)
   
   editor.focus()
-  editor.scrollToLine($bookIndex.chapters.get(key).contentEnd + 5, true, true, function () {});
+  editor.scrollToLine($bookIndex.chapters.get(key).contentStart -1, false, true, function () {});
 
   editor.moveCursorTo( $bookIndex.chapters.get(key).contentEnd, Infinity)
 
