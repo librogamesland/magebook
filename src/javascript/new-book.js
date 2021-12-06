@@ -100,8 +100,8 @@ const decode = (file) => {
   })
 
   if(key !== ''){
-    chapter.contentEnd = lastContentLinePlusOne - 1
     chapter.end = lines.length - 1
+    chapter.contentEnd = lastLineHadContent ? chapter.end : lastContentLinePlusOne - 1
     result.chapters.set(key, chapter)
   }
 
@@ -115,6 +115,8 @@ const bookIndex = derived(
 	$book => (Object.assign($bookIndex, decode($book)), $bookIndex)
 );
 
+
+window.c = () => $bookIndex.chapters
 
 
 export {isLoaded, newBook, bookIndex, $bookIndex}
