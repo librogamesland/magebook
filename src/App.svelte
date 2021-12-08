@@ -7,9 +7,11 @@
   import Navbar  from './components/Navbar.svelte'
   import Editor  from './components/Editor.svelte'
   import Sidebar from './components/Sidebar.svelte'
+  import LocalOnboarding from './components/LocalOnboarding.svelte'
 
   import { bookIndex } from './javascript/new-book.js'
   import { handleShortcuts } from './javascript/shortcuts.js'
+  import { isApp, appPath } from './javascript/appMode.js'
 
   $: { if(!(/bot|google|baidu|bing|msn|duckduckbot|teoma|slurp|yandex/i.test(navigator.userAgent))){
     if($bookIndex && $bookIndex.properties.title){
@@ -21,10 +23,15 @@
 
 <svelte:window on:keydown={handleShortcuts}/>
 
-<Dialogs />
-<Navbar />
-<Sidebar />
-<Editor />
+{#if $isApp && $appPath == ''}
+  <LocalOnboarding  />
+{:else}
+
+  <Dialogs />
+  <Navbar />
+  <Sidebar />
+  <Editor />
+{/if}
 
 
 <style>

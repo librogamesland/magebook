@@ -7,12 +7,17 @@
 
   import { showSidemenu } from '../javascript/editor.js'
   import { firstAvaiableKey, addChapter} from '../javascript/actions.js'
+  import { isApp, loadAppMode } from '../javascript/appMode.js'
 
 
   
   
 
   onMount(() => {
+    if($isApp){
+      loadAppMode()
+      return
+    }
     session.load()
   })
 

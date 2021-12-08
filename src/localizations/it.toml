@@ -123,3 +123,6 @@ author: Nome e Cognome
 ### 1
 Questo è un libro collaborativo memorizzato sul tuo account Google e che può essere modificato da più persone contemporaneamente. Salva questa pagina fra i segnalibri del tuo browser e inviala a chi vuoi, vedrai le modifiche sincronizzate in tempo reale.
 """
+
+[app]
+openlocal = "Create or open local file"

@@ -11,7 +11,7 @@ import {cursorPosition, initEditorLocal, initEditorFirebase} from './editor.js'
 
 
 
-const parsedHash = queryString.parse(location.hash);
+export const parsedHash = queryString.parse(location.hash);
 
 
 
@@ -23,6 +23,9 @@ db.version(1).stores({
 });
 
 export const isFirebase = writable(false)
+
+
+
 
 // Session previews
 const previews = async() => (await db.sessions.orderBy('preview').keys()).reverse().map( key => ({
@@ -63,14 +66,11 @@ const session = new (function(){
   const load = async() => {
 
     if(parsedHash.fsession){
-
+      isFirebase.set(true)
       window.addEventListener('hashchange', () => {
         window.location.reload()
       }, false);
   
-
-      isFirebase.set(true)
-
       initEditorFirebase(JSON.parse(atob(decodeURIComponent(parsedHash.fsession))))
 
       return

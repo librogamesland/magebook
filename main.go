@@ -4,13 +4,19 @@ import (
 	"fmt"
 	"embed"
 	"io/ioutil"
+	"os"
+	"path/filepath"
 	"net"
 	"net/http"
 	"log"
 	"encoding/json"
-
-	"github.com/sandro/lorca"
+	"runtime"
+  
+  "github.com/juju/fslock"
+	"github.com/ncruces/zenity"
+	"github.com/zserge/lorca"
 	"github.com/inconshreveable/go-update"
+	"github.com/jpillora/overseer"
 
 )
 
@@ -23,42 +29,41 @@ type PackageInfo struct {
 }
 
 
-func getVersion() string {
-	url := "https://librogamesland.github.io/magebook/package.json"
-	response, err := http.Get(url)
-	if err != nil {
-			log.Fatal(err)
-	}
-	defer response.Body.Close()
-
-	responseData, err := ioutil.ReadAll(response.Body)
-	if err != nil {
-			log.Fatal(err)
-	}
-
-	responseString := string(responseData)
 
 
-
-	var packageInfo PackageInfo	
-	json.Unmarshal([]byte(responseString), &packageInfo)
-	return packageInfo.Version
+type FileInfo struct{
+  Timestamp int64
+	Data string 
 }
 
-func doUpdate(url string) error {
-	resp, err := http.Get(url)
-	if err != nil {
-			return err
-	}
-	defer resp.Body.Close()
-	err = update.Apply(resp.Body, update.Options{})
-	if err != nil {
-			// error handling
-	}
-	return err
-}
 
 func main() {
+	overseer.Run(overseer.Config{
+		Program: prog,
+	})
+}
+
+
+func prog(overseer.State) {
+
+	homedir, err := os.UserHomeDir()
+	if err != nil {
+			log.Fatal( err )
+	}
+
+
+	var lock *fslock.Lock  = nil
+
+
+
+	db := filepath.Join(homedir, ".magebook")
+
+	err = os.MkdirAll(db, os.ModePerm)
+	if err != nil {
+		fmt.Println("Error", err)
+	}
+
+
 	ui, err := lorca.New("data:text/html,<title>Magebook web editor</title>", "", 1000, 600)
 	if err != nil {
 		log.Fatal(err)
@@ -66,25 +71,106 @@ func main() {
 	defer ui.Close()
 
 
-	// Data model: number of ticks
-	// Bind Go functions to JS
-
-	ui.Bind("filesAdded", func(listVar string, length int) []string {
-		paths := make([]string, length)
-		for i := 0; i < length; i++ {
-			tm, err := ui.EvalRaw(fmt.Sprintf("window.%s[%d]", listVar, i))
-			if err != nil {
-				log.Printf("error evaluating window.%s. err: %s\n", listVar, err)
-			}
-			path, err := lorca.GetFilePath(ui, tm.Result.Result.ObjectID)
-			if err != nil {
-				log.Println(err)
-			} else {
-				paths[i] = path
-			}
-		}
-		return paths
+	ui.Bind("saveRecent", func(filename string, data string ) {
+		ioutil.WriteFile(filepath.Join(db, filename), []byte(data), 0644)
 	})
+
+
+	ui.Bind("loadRecents", func() string {
+		filesMap := make(map[string] FileInfo)
+
+		items, _ := ioutil.ReadDir(db)
+		for _, item := range items {
+				if !item.IsDir() && item.Size() < 10000 {
+					filename := filepath.Join(db, item.Name())
+					content, _ := ioutil.ReadFile(filename)
+
+					filesMap[item.Name()] = FileInfo{ Timestamp: item.ModTime().Unix(), Data: string(content)}
+				}
+		}
+		jsonString, _ := json.Marshal(filesMap)
+
+		return string(jsonString)
+	})
+
+	ui.Bind("readFile", func(filename string) string {
+		if lock != nil {
+			lock.Unlock()
+		}
+		lock = fslock.New(filename)
+		lockErr := lock.TryLock()
+		if lockErr != nil {
+				fmt.Println("falied to acquire lock > " + lockErr.Error())
+				// TODO
+		}
+		content, _ := ioutil.ReadFile(filename)
+		return string(content)
+	})
+
+	ui.Bind("releaseLock", func() {
+		if lock != nil {
+			lock.Unlock()
+		}
+		lock = nil
+	})
+
+
+	ui.Bind("writeFile", func(filename string, data string) {
+		ioutil.WriteFile(filename, []byte(data), 0644)
+	})
+
+
+	ui.Bind("dialogFile", func(title string) string {
+		filename, _ := zenity.SelectFileSave(
+			zenity.Title(title),
+			zenity.FileFilters{
+				{"Magebook documents", []string{"*.md", "*.xlgc"}},
+			})
+	
+		return filename
+	})
+
+	ui.Bind("appGetVersion", func () string {
+		url := "https://librogamesland.github.io/magebook/package.json"
+		response, err := http.Get(url)
+		if err != nil {
+				log.Fatal(err)
+		}
+		defer response.Body.Close()
+	
+		responseData, err := ioutil.ReadAll(response.Body)
+		if err != nil {
+				log.Fatal(err)
+		}
+	
+		responseString := string(responseData)
+	
+		var packageInfo PackageInfo	
+		json.Unmarshal([]byte(responseString), &packageInfo)
+		return packageInfo.Version	
+	})
+
+	ui.Bind("appUpdate", func () {
+		var url = "https://librogamesland.github.io/magebook/dist/magebook-windows"
+		if runtime.GOOS == "linux" {
+			url = "https://librogamesland.github.io/magebook/dist/magebook-linux"
+		}
+		if runtime.GOOS == "darwin" {
+			url = "https://librogamesland.github.io/magebook/dist/magebook-macos"
+		}
+		resp, err := http.Get(url)
+		if err != nil {
+			return //err
+		}
+		defer resp.Body.Close()
+		err = update.Apply(resp.Body, update.Options{})
+		if err != nil {
+				// error handling
+		}
+		overseer.Restart()
+	})
+
+
 
 	ln, err := net.Listen("tcp", "localhost:0")
 	if err != nil {
@@ -92,16 +178,21 @@ func main() {
 	}
 	defer ln.Close()
 	go http.Serve(ln, http.FileServer(http.FS(fs)))
-	ui.Load(fmt.Sprintf("http://%s/editor", ln.Addr()))
+	ui.Load(fmt.Sprintf("http://%s/editor/index-local.html#app=enabled", ln.Addr()))
 
-	getVersion()
+//	getVersion()
 
 
 	// Start ticker goroutine
 	go func() {
 
-		ui.Eval(fmt.Sprintf(`console.log("maeffds %s")`, getVersion()))
+		//ui.Eval(fmt.Sprintf(`console.log("maeffds %s")`, getVersion()))
 		
 	}()
 	<-ui.Done()
+
+	if lock != nil {
+		lock.Unlock()
+	}
+
 }

@@ -8,6 +8,9 @@
   import { showSidemenu } from '../javascript/editor.js'
   import { isFirebase }   from '../javascript/database.js'
 
+  import { isApp, appReload }   from '../javascript/appMode.js'
+
+
 
   // Dialogs
   import { dialog }     from './Dialogs.svelte'
@@ -35,16 +38,20 @@
   <div>
     <h1>{$_('navbar.file.title')}</h1>
     <div class="content">
-      <p on:click={() => dialog(NewBook)}>{$_('navbar.file.new')}</p>
-      <hr>
-      <p on:click={() => dialog(NewFirebook)}>{$_('navbar.file.newFire')}</p>
-      <hr>
-      <input type="file" name="open" id="open"
-        accept=".xlgc,.md"
-        on:change={e => open(e.target )} />
-      <label for="open">{$_("navbar.file.open")} </label>
-      <p on:click={() => download('md', newBook.flush())}>{$_('navbar.file.save')}</p>
-      <p on:click={() => dialog(Recover)}>{$_('navbar.file.recover')}</p>
+      {#if $isApp}
+        <p on:click={appReload}>Scegli un altro documento</p>
+      {:else}
+        <p on:click={() => dialog(NewBook)}>{$_('navbar.file.new')}</p>
+        <hr>
+        <p on:click={() => dialog(NewFirebook)}>{$_('navbar.file.newFire')}</p>
+        <hr>
+        <input type="file" name="open" id="open"
+          accept=".xlgc,.md"
+          on:change={e => open(e.target )} />
+        <label for="open">{$_("navbar.file.open")} </label>
+        <p on:click={() => download('md', newBook.flush())}>{$_('navbar.file.save')}</p>
+        <p on:click={() => dialog(Recover)}>{$_('navbar.file.recover')}</p>
+      {/if}
     </div>
   </div>
 

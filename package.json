@@ -22,6 +22,7 @@
   "main": "index.js",
   "scripts": {
     "build": "rollup -c",
+    "go": "GOOS=linux ",
     "clean": "rm -rf ./dist/build; rm -rf ./alpha2",
     "release": "npm run clean; npm run build; cp -r ./editor ./alpha2",
     "dev": "rollup -c -w",
@@ -60,6 +61,7 @@
     "svelte-i18n": "^3.3.6"
   },
   "dependencies": {
+    "@hpcc-js/wasm": "^1.12.6",
     "firebase": "^9.5.0",
     "jsdom": "^16.5.1",
     "query-string": "^7.0.1"
