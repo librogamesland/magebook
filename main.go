@@ -44,6 +44,8 @@ func main() {
 }
 
 
+var shouldRestart = false
+
 func prog(overseer.State) {
 
 	homedir, err := os.UserHomeDir()
@@ -151,6 +153,7 @@ func prog(overseer.State) {
 	})
 
 	ui.Bind("appUpdate", func () {
+		fmt.Println("UPDATING")
 		var url = "https://librogamesland.github.io/magebook/dist/magebook-windows"
 		if runtime.GOOS == "linux" {
 			url = "https://librogamesland.github.io/magebook/dist/magebook-linux"
@@ -160,14 +163,26 @@ func prog(overseer.State) {
 		}
 		resp, err := http.Get(url)
 		if err != nil {
+			fmt.Println("ERROR!")
 			return //err
 		}
+		fmt.Println("DOWNLOAD DONE")
+
 		defer resp.Body.Close()
 		err = update.Apply(resp.Body, update.Options{})
 		if err != nil {
+
+			fmt.Println("ERROR 2")
+
 				// error handling
 		}
-		overseer.Restart()
+
+		if lock != nil {
+			lock.Unlock()
+		}
+		fmt.Println("should restart")
+		shouldRestart = true
+		ui.Close()
 	})
 
 
@@ -193,6 +208,10 @@ func prog(overseer.State) {
 
 	if lock != nil {
 		lock.Unlock()
+	}
+
+	if shouldRestart {
+		overseer.Restart()
 	}
 
 }

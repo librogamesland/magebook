@@ -4,6 +4,9 @@ import { _ } from "svelte-i18n";
 import manifest from '../../package.json'
 
 
+let updating = false
+let updatingMsg = "Updating"
+
 const newFile = async() => {
   appPath.set(await window.dialogFile($_('app.openlocal')))
 }
@@ -27,7 +30,14 @@ $: {
 </script>
 
 
+{#if updating}
 
+  <div class="dialog-container">
+    <div class="spinner-1"></div>
+    <p>{updatingMsg}</p>  
+  </div>
+  
+{:else}
 <div class="dialog-container">
   <div style="display: flex; align-items: center; margin-top: 20px">
     <img src="./static/img/logo.png" alt="logo">
@@ -36,7 +46,12 @@ $: {
       {#await window.appGetVersion()}
         <p></p>
       {:then version}
-        <button class="error">Update to v {version}</button>
+        {#if version != manifest.version}
+          <button class="error" on:click={async() => {
+            updating = true
+            updatingMsg = await window.appUpdate()
+          }}>Update to v {version}</button>
+        {/if}
       {:catch error}
         <p style="color: red">{error.message}</p>
       {/await}
@@ -56,7 +71,7 @@ $: {
   </div>
   <p>Magebook editor - v {manifest.version}</p>
 </div>
-
+{/if}
 
 <style>
   div.dialog-container {
@@ -95,4 +110,22 @@ $: {
   img {
     max-height: calc(15vh + 50px);
   }
+
+
+  .spinner-1 {
+    margin-top: 20px;
+    display: inline-block;
+    width:50px;
+    height:50px;
+    border-radius:50%;
+    padding:1px;
+    background:conic-gradient(#0000 10%,#004cff) content-box;
+    -webkit-mask:
+      repeating-conic-gradient(#0000 0deg,#000 1deg 20deg,#0000 21deg 36deg),
+      radial-gradient(farthest-side,#0000 calc(100% - 9px),#000 calc(100% - 8px));
+    -webkit-mask-composite: destination-in;
+    mask-composite: intersect;
+    animation:s4 1s infinite steps(10);
+  }
+  @keyframes s4 {to{transform: rotate(1turn)}}
 </style>
