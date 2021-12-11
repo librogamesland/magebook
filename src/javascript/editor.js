@@ -103,6 +103,9 @@ const initEditorLocal = (data) => {
 
   editor.getSession().setValue(data.book);
   editor.moveCursorTo(data.cursor.row,data.cursor.column);
+  editor.scrollToLine(data.cursor.row || 0, true, true, function () {});
+  editor.focus()
+
 
   isLoaded.set(true)
 }

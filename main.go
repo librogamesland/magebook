@@ -7,10 +7,12 @@ import (
 	"os"
 	"path/filepath"
 	"net"
+	"net/url"
 	"net/http"
 	"log"
 	"encoding/json"
 	"runtime"
+	"time"
   
   "github.com/juju/fslock"
 	"github.com/ncruces/zenity"
@@ -28,7 +30,22 @@ type PackageInfo struct {
   Version string
 }
 
-
+func touch (fileName string) {
+	_, err := os.Stat(fileName)
+	if os.IsNotExist(err) {
+			file, err := os.Create(fileName)
+			if err != nil {
+					log.Fatal(err)
+			}
+			defer file.Close()
+	} else {
+			currentTime := time.Now().Local()
+			err = os.Chtimes(fileName, currentTime, currentTime)
+			if err != nil {
+					fmt.Println(err)
+			}
+	}
+}
 
 
 type FileInfo struct{
@@ -38,9 +55,13 @@ type FileInfo struct{
 
 
 func main() {
-	overseer.Run(overseer.Config{
-		Program: prog,
-	})
+	if lorca.LocateChrome() == "" {
+		lorca.PromptDownload()
+	}else {
+		overseer.Run(overseer.Config{
+			Program: prog,
+		})
+	}
 }
 
 
@@ -99,13 +120,19 @@ func prog(overseer.State) {
 		if lock != nil {
 			lock.Unlock()
 		}
+
+		touch(filename)
 		lock = fslock.New(filename)
-		lockErr := lock.TryLock()
+		/*lockErr := lock.TryLock()
 		if lockErr != nil {
-				fmt.Println("falied to acquire lock > " + lockErr.Error())
-				// TODO
+			zenity.Error(lockErr.Error())
+			return "%ERROR%%"
+		}*/
+		content, err := ioutil.ReadFile(filename)
+		if err != nil {
+			zenity.Error(err.Error())
+			return "%ERROR%%"
 		}
-		content, _ := ioutil.ReadFile(filename)
 		return string(content)
 	})
 
@@ -136,23 +163,27 @@ func prog(overseer.State) {
 		url := "https://librogamesland.github.io/magebook/package.json"
 		response, err := http.Get(url)
 		if err != nil {
-				log.Fatal(err)
+				return "ERROR: " + err.Error()
 		}
 		defer response.Body.Close()
 	
 		responseData, err := ioutil.ReadAll(response.Body)
 		if err != nil {
-				log.Fatal(err)
+			 return "ERROR: " + err.Error()
 		}
 	
 		responseString := string(responseData)
 	
 		var packageInfo PackageInfo	
-		json.Unmarshal([]byte(responseString), &packageInfo)
+		err = json.Unmarshal([]byte(responseString), &packageInfo)
+		if err != nil {
+			return "ERROR: " + err.Error()
+		}
+
 		return packageInfo.Version	
 	})
 
-	ui.Bind("appUpdate", func () {
+	ui.Bind("appUpdate", func () string {
 		fmt.Println("UPDATING")
 		var url = "https://librogamesland.github.io/magebook/dist/magebook-windows"
 		if runtime.GOOS == "linux" {
@@ -163,18 +194,14 @@ func prog(overseer.State) {
 		}
 		resp, err := http.Get(url)
 		if err != nil {
-			fmt.Println("ERROR!")
-			return //err
+			return "Download failed: " + err.Error()
 		}
 		fmt.Println("DOWNLOAD DONE")
 
 		defer resp.Body.Close()
 		err = update.Apply(resp.Body, update.Options{})
 		if err != nil {
-
-			fmt.Println("ERROR 2")
-
-				// error handling
+			return "Can't apply update: " + err.Error()
 		}
 
 		if lock != nil {
@@ -183,6 +210,7 @@ func prog(overseer.State) {
 		fmt.Println("should restart")
 		shouldRestart = true
 		ui.Close()
+		return "Update done!"
 	})
 
 
@@ -193,9 +221,12 @@ func prog(overseer.State) {
 	}
 	defer ln.Close()
 	go http.Serve(ln, http.FileServer(http.FS(fs)))
-	ui.Load(fmt.Sprintf("http://%s/editor/index-local.html#app=enabled", ln.Addr()))
+	if len(os.Args) > 1 {
+		ui.Load(fmt.Sprintf("http://%s/editor/index-local.html#app=enabled&path=%s", ln.Addr(), url.QueryEscape(os.Args[1])))
+	}else{
+		ui.Load(fmt.Sprintf("http://%s/editor/index-local.html#app=enabled", ln.Addr()))
+	}
 
-//	getVersion()
 
 
 	// Start ticker goroutine

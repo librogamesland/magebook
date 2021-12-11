@@ -39,7 +39,8 @@
     <h1>{$_('navbar.file.title')}</h1>
     <div class="content">
       {#if $isApp}
-        <p on:click={appReload}>Scegli un altro documento</p>
+        <p on:click={appReload}>{$_('app.chooseother')}</p>
+        <p on:click={() => download('md', newBook.flush())}>{$_('dialogs.shuffle.savecopy')}</p>
       {:else}
         <p on:click={() => dialog(NewBook)}>{$_('navbar.file.new')}</p>
         <hr>

@@ -3,9 +3,6 @@ const customStyles = `
   <style:style style:name="right" style:family="paragraph" style:parent-style-name="Standard">
     <style:paragraph-properties fo:text-align="end" style:justify-single-word="false"/>
   </style:style>
-  <style:style style:name="center" style:family="paragraph" style:parent-style-name="Standard">
-    <style:paragraph-properties fo:text-align="center" style:justify-single-word="false"/>
-  </style:style>
   <style:style style:name="justify" style:family="paragraph" style:parent-style-name="Standard">
     <style:paragraph-properties fo:text-align="justify" style:justify-single-word="false"/>
   </style:style>
@@ -24,7 +21,7 @@ const customStyles = `
 
 
 const testContent = `
-<text:p text:style-name="center"><text:span text:style-name="bold"><text:bookmark-start text:name="lgcjsintro"/>Introduzione<text:bookmark-end text:name="lgcjsintro"/></text:span></text:p>
+<text:p text:style-name="center"><text:span text:style-name="bold"><text:bookmark-start text:name="mageintro"/>Introduzione<text:bookmark-end text:name="lgcjsintro"/></text:span></text:p>
 <text:p text:style-name="Standard">Questa è l’introduzione. <text:span text:style-name="bold">Testo in grassetto. </text:span></text:p>
 <text:p text:style-name="Standard"><text:span text:style-name="italic">Testo in corsivo, <text:span text:style-name="bold">testo in grassetto corsivo</text:span>.</text:span></text:p>
 <text:p text:style-name="Standard"><text:span text:style-name="underline">Testo underline.</text:span></text:p>
@@ -209,8 +206,13 @@ const template =  (content) =>
    <style:text-properties style:font-name="Times New Roman" fo:font-family="&apos;Times New Roman&apos;" style:font-style-name="Normale" style:font-family-generic="roman" style:font-pitch="variable" fo:language="zxx" fo:country="none"/>
   </style:style>
   <style:style style:name="Heading" style:family="paragraph" style:parent-style-name="Standard" style:next-style-name="Text_20_body" style:class="text">
-   <style:paragraph-properties fo:margin-top="0.423cm" fo:margin-bottom="0.212cm" loext:contextual-spacing="false" fo:keep-with-next="always"/>
    <style:text-properties style:font-name="Liberation Sans" fo:font-family="&apos;Liberation Sans&apos;" style:font-family-generic="swiss" style:font-pitch="variable" fo:font-size="14pt" style:font-name-asian="Noto Sans CJK SC Regular" style:font-family-asian="&apos;Noto Sans CJK SC Regular&apos;" style:font-family-generic-asian="system" style:font-pitch-asian="variable" style:font-size-asian="14pt" style:font-name-complex="FreeSans" style:font-family-complex="FreeSans" style:font-family-generic-complex="system" style:font-pitch-complex="variable" style:font-size-complex="14pt"/>
+  </style:style>
+  <style:style style:name="Heading_3" style:family="paragraph" style:display-name="Heading 3" style:parent-style-name="Heading" style:next-style-name="Standard" style:default-outline-level="3" style:class="text">
+    <style:paragraph-properties fo:text-align="center" style:justify-single-word="false"/>
+    <style:text-properties fo:font-weight="bold" style:font-weight-asian="bold" style:font-weight-complex="bold"/>
+    <style:paragraph-properties fo:line-height="115%" style:page-number="auto"/>
+    <style:text-properties style:font-name="Times New Roman" fo:font-family="&apos;Times New Roman&apos;" style:font-style-name="Normale" style:font-family-generic="roman" fo:font-size="12pt" style:font-pitch="variable" fo:language="zxx" fo:country="none"/>
   </style:style>
   <style:style style:name="Text_20_body" style:display-name="Text body" style:family="paragraph" style:parent-style-name="Standard" style:class="text">
    <style:paragraph-properties fo:margin-top="0cm" fo:margin-bottom="0.247cm" loext:contextual-spacing="false" fo:line-height="120%"/>

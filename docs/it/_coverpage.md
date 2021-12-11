@@ -6,7 +6,7 @@
 Inizia subito grazie alla versione web, o scaricalo per averlo sempre con te.
 
 [Guida](#magebook)
-[Download](https://github.com/docsifyjs/docsify/)
+[Download](#download)
 [Versione Web](https://librogamesland.github.io/magebook/editor/)
 
 

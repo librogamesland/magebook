@@ -30,9 +30,10 @@ getStarted = """Con questa funzione puoi collegare Magebook al tuo account Googl
 
 [dialogs.shuffle]
 title      = "Rimescola"
-hint       = "Rimescola i paragrafi con chiave numerica. Puoi scegliere di mescolare solo i paragrafi che fanno parte di alcuni gruppi, o di escludere i paragrafi con determinati simboli."
+hint       = "Rimescola i paragrafi con chiave numerica. Puoi scegliere di mescolare solo i paragrafi che fanno parte di alcuni gruppi, o di escludere i paragrafi con determinati simboli. Per sicurezza, dovresti salvare una copia del libro prima di mescolare."
 group      = "Filtro gruppi"
 flags      = "Escludi simboli"
+savecopy   = "Salva una copia"
 
 [dialogs.lock]
 title      = "Attenzione"
@@ -101,6 +102,7 @@ text = """
 Magebook è un editor di librogame sviluppato da <b>Luca Fabbian</b> con il supporto della community di Lgl,
 ispirato a LibroGameCreator3 di <b>Matteo Poropat</b>."""
 
+
 [books]
 local = """
 # Titolo
@@ -125,4 +127,6 @@ Questo è un libro collaborativo memorizzato sul tuo account Google e che può e
 """
 
 [app]
-openlocal = "Create or open local file"
+openlocal    = "Crea o apri file"
+openfire     = "Crea o accedi a un libro collaborativo"
+chooseother  = "Apri un altro"

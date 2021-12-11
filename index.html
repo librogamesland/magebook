@@ -22,7 +22,7 @@
     window.$docsify = {
       name: '<img src="./docs/logo/logo-light.png">',
       themeColor: '#4670a6',
-      basePath: './docs/it/',
+      basePath: navigator.language.includes('it') ? 'docs/it/' : 'docs/en/',
       repo: 'librogamesland/magebook',
       maxLevel: 1,
       coverpage: true,

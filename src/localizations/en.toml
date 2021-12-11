@@ -30,9 +30,10 @@ getStarted = """Con questa funzione puoi collegare Magebook al tuo account Googl
 
 [dialogs.shuffle]
 title      = "Shuffle"
-hint       = "Shuffle chapters with numeric key. You may choose to shuffle only chapters belonging to some groups, or to exclude chapters based on their flags."
+hint       = "Shuffle chapters with numeric key. You may choose to shuffle only chapters belonging to some groups, or to exclude chapters based on their flags. You should save a copy of your book before shuffling."
 group      = "Group filter"
 flags      = "Exclude flags"
+savecopy   = "Save a copy"
 
 [dialogs.lock]
 title      = "Warning"
@@ -129,4 +130,3 @@ Questo è un libro collaborativo memorizzato sul tuo account Google e che può e
 openlocal    = "Create or open local file"
 openfire     = "Create or access collaborative book"
 chooseother  = "Choose another book"
-savecopy     = "Save a copy"

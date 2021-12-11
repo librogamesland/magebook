@@ -23,8 +23,8 @@
   "scripts": {
     "build": "rollup -c",
     "go": "GOOS=linux ",
-    "clean": "rm -rf ./dist/build; rm -rf ./alpha2",
-    "release": "npm run clean; npm run build; cp -r ./editor ./alpha2",
+    "clean": "rm -rf ./dist/build; rm -rf ./alpha2;",
+    "release": "npm run clean; npm run build; cp -r ./editor ./alpha2; ./build-app.sh",
     "dev": "rollup -c -w",
     "api-build": "rollup -c 'rollup-api.config.js'",
     "api-dev": "rollup -c 'rollup-api.config.js' -w"

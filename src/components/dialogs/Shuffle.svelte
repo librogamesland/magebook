@@ -5,6 +5,10 @@
   import md from '../../javascript/formats/md.js'
   import { newBook, bookIndex } from '../../javascript/new-book.js'
   import { session } from '../../javascript/database.js'
+  import { download } from '../../javascript/file.js'
+  import { isFirebase } from '../../javascript/database.js'
+  import { isApp } from '../../javascript/appMode.js'
+  import { getEditor } from '../../javascript/editor.js'
   export let params;
   export let callback;
 
@@ -34,9 +38,16 @@
 
     const book = new Book(md.decode($newBook))
 
+    const shuffled = md.encode(book.shuffle(selectedFlags, filter, true))
+
+    if($isFirebase || $isApp){
+      getEditor().setValue(shuffled, -1)
+      callback(false)
+      return
+    }
     session.open({
       data: {
-        book: md.encode(book.shuffle(selectedFlags, filter, true)),
+        book: shuffled,
         cursor: {row: 0, column: 0},
         title: $bookIndex.properties.title
       }
@@ -76,6 +87,8 @@
   >
     {$_("dialogs.ok")}
   </button>
+  <button class="cancel" on:click={() => download('md', newBook.flush())}>{$_('dialogs.shuffle.savecopy')}</button>
+
   <button class="cancel" on:click={() => callback(false)}
     >{$_("dialogs.cancel")}</button
   >

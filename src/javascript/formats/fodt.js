@@ -27,14 +27,14 @@ const bookmark = (key, text) =>
 
 const encodeChapter = (key, chapters) => {
   let result = ''
-  const isNumeric = isNumber(key)
+  const isNumeric = false //isNumber(key)
 
-  if(!isNumeric) result+= `<text:p text:style-name="center">${bookmark(key, chapters[key].title.trim() || key)}</text:p>`
+  if(!isNumeric) result+= `<text:p text:style-name="Heading_3" text:outline-level="3">${bookmark(key, chapters[key].title.trim() || key)}</text:p>`
   result += encodeToHTML(chapters[key].text, renderer(chapters))
   result = result.trim() || `<text:p text:style-name="justify"> </text:p>`
   if(isNumeric) result = result.replace('>', '>' + bookmark(key, (chapters[key].title.trim() || key) + '. '))
 
-  result += `<text:p text:style-name="${!isNumeric ? 'break' : 'Standard'}"/>`
+  result +=  `<text:p text:style-name="${isNumeric ? 'break' : 'Standard'}"/>`
   return result
 }
 
@@ -42,7 +42,8 @@ const encodeChapter = (key, chapters) => {
 const encode = (book) => {
   if(!book["__is_book"]) book = new Book(book)
   const {chapters} = book.get()
-  return template(book.sortedKeys().reduce( (acc, key) => acc + encodeChapter(key, chapters), ''))
+  const result = template(book.sortedKeys().reduce( (acc, key) => acc + encodeChapter(key, chapters), ''))
+  return result.split('\n').map( line  => line.trim()).join('')
 }
 
 export default { encode, mimetype }

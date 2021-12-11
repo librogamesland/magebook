@@ -25,14 +25,15 @@ const renderer = (chapters) => ({
 const addChapter = (key, chapters ) => {
   const title = chapters[key].title || key
   const text = chapters[key].text || " "
-  const inlineStyle = isNumber(key)
-  const breakAfter = !isNumber(key)
+  const inlineStyle = false // isNumber(key)
+  const breakAfter =  false //!isNumber(key)
 
   // Create Bookmark
   const bookMark = new docx.Bookmark(`mage${key}`, '')
   bookMark.text  = new docx.TextRun({
       text: inlineStyle ? `${title}. ` : title,
       bold: true,
+      color: '#000000',
     })
 
   const l = document.createElement("div")
@@ -45,6 +46,7 @@ const addChapter = (key, chapters ) => {
     paragraphs.push(new docx.Paragraph({
         children: [bookMark],
         alignment: 'center',
+        heading: docx.HeadingLevel.HEADING_3
     }))
   }
 

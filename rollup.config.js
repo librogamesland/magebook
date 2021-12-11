@@ -19,8 +19,8 @@ const babelPreset = {
   "presets": [
     ["@babel/preset-env",
       {"targets": {
-        "chrome": "55",
-        "firefox": "45",
+        "chrome": "75",
+        "firefox": "65",
       }},
     ]
   ],

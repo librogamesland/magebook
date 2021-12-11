@@ -44,7 +44,7 @@ $: {
     <div style="margin-left:50px">
       <button class="ok" on:click={newFile}>{$_('app.openlocal')}</button><br>
       {#await window.appGetVersion()}
-        <p></p>
+        <!-- -->
       {:then version}
         {#if version != manifest.version}
           <button class="error" on:click={async() => {
@@ -65,7 +65,10 @@ $: {
         <div style="font-weight: bold">{recentBook.title || ""}</div>
         <div>{recentBook.path}</div>
       </div>
-      <div>20/09/2021</div>
+      <div>
+        <div>{new Date(recentBook.timestamp * 1000).toLocaleDateString()}</div>
+        <div>{new Date(recentBook.timestamp * 1000).toLocaleTimeString()}</div>
+      </div>
     </div>
     {/each}
   </div>

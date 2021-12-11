@@ -11,7 +11,9 @@ const decode = (file) => {
   let key = ''
 
   const sanitizeLastChapter = () => {
-    result.chapters[key].text = result.chapters[key].text.replace(/[\n\s]+$/, "")
+    try{
+    result.chapters[key].text = result.chapters[key]?.text?.replace(/[\n\s]+$/, "") || ""
+    }catch(e){}
   }
 
   file.split('\n').forEach( (oLine, i) => { 
