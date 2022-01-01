@@ -2,6 +2,7 @@
   /* Componente base dell'applicazione
   Importa gli altri componenti e li dispone a schermo
   @Luca Fabbian - v1.0 */
+  import {_} from 'svelte-i18n'
 
   import Dialogs from './components/Dialogs.svelte'
   import Navbar  from './components/Navbar.svelte'
@@ -12,6 +13,7 @@
   import { bookIndex } from './javascript/new-book.js'
   import { handleShortcuts } from './javascript/shortcuts.js'
   import { isApp, appPath } from './javascript/appMode.js'
+  import {isLoaded }from './javascript/new-book.js'
 
   $: { if(!(/bot|google|baidu|bing|msn|duckduckbot|teoma|slurp|yandex/i.test(navigator.userAgent))){
     if($bookIndex && $bookIndex.properties.title){
@@ -26,7 +28,15 @@
 {#if $isApp && $appPath == ''}
   <LocalOnboarding  />
 {:else}
-
+  {#if !$isLoaded}
+    <div class="loading-mask">
+      <div class="dialog" style="text-align: center; margin-top: 10vh">
+        <div class="spinner-1"></div>
+      
+      </div>
+      
+    </div>
+  {/if}
   <Dialogs />
   <Navbar />
   <Sidebar />
@@ -45,6 +55,7 @@
     overscroll-behavior-y: contain;
     overflow-x: hidden !important;
   }
+  
 
   :global(body){
     display: grid;
@@ -63,6 +74,16 @@
       "navbar"
       "editor"
     }
+  }
+
+  .loading-mask {
+    grid-column-start: 1;
+    grid-column-end: -1;
+    grid-row-start: 2;
+    grid-row-end: 2;
+    background-color: #252525;
+    opacity: 0.7;
+    z-index: 100;
   }
 
   :global(main, aside, nav){

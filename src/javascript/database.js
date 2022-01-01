@@ -6,7 +6,7 @@ import { _ } from 'svelte-i18n'
 
 import { randomString } from './utils.js'
 import {lockStore} from '../components/Dialogs.svelte'
-import {newBook, bookIndex, isLoaded} from './new-book.js'
+import {newBook, bookIndex } from './new-book.js'
 import {cursorPosition, initEditorLocal, initEditorFirebase} from './editor.js'
 
 

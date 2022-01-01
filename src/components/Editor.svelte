@@ -5,7 +5,7 @@
   import { cursorPosition, getEditor, editorComponentID, currentChapterFullTitle } from '../javascript/editor.js'
   import { ctrlShortcuts } from '../javascript/shortcuts.js'
 
-  import { showSidemenu } from '../javascript/editor.js'
+  import { showSidemenu, isSynced } from '../javascript/editor.js'
   import { firstAvaiableKey, addChapter} from '../javascript/actions.js'
   import { isApp, loadAppMode } from '../javascript/appMode.js'
 
@@ -87,7 +87,15 @@
   <div class="textarea" id={editorComponentID}>
     
   </div>
-  <div class="margin"></div>
+  <div class="margin">
+    {#if $isSynced === true}
+      <i class="icon-ok" style="color: green;"></i>
+    {:else if $isSynced === false}
+    <div>
+      <i class="icon-arrows-cw animate-spin" style="width: fit-content;"></i>
+    </div>
+    {/if}
+  </div>
 </main>
 
 <style>
@@ -226,6 +234,13 @@
     grid-template-columns: 100%;
     grid-template-rows: 100%;
     background-color: #fff;
+    text-align: right;
+    overflow: hidden;
+  }
+
+  .margin i {
+    font-size: 11px;
+    margin-top: 4px;
   }
 
 
@@ -268,6 +283,93 @@
   :global(.cm-line){
     padding: 7px calc(6.5vw - 10px) !important;
   }
+
+
+/*
+   Animation example, for spinners
+*/
+.animate-spin {
+  -moz-animation: spin 2s infinite linear;
+  -o-animation: spin 2s infinite linear;
+  -webkit-animation: spin 2s infinite linear;
+  animation: spin 2s infinite linear;
+  display: inline-block;
+}
+@-moz-keyframes spin {
+  0% {
+    -moz-transform: rotate(0deg);
+    -o-transform: rotate(0deg);
+    -webkit-transform: rotate(0deg);
+    transform: rotate(0deg);
+  }
+
+  100% {
+    -moz-transform: rotate(359deg);
+    -o-transform: rotate(359deg);
+    -webkit-transform: rotate(359deg);
+    transform: rotate(359deg);
+  }
+}
+@-webkit-keyframes spin {
+  0% {
+    -moz-transform: rotate(0deg);
+    -o-transform: rotate(0deg);
+    -webkit-transform: rotate(0deg);
+    transform: rotate(0deg);
+  }
+
+  100% {
+    -moz-transform: rotate(359deg);
+    -o-transform: rotate(359deg);
+    -webkit-transform: rotate(359deg);
+    transform: rotate(359deg);
+  }
+}
+@-o-keyframes spin {
+  0% {
+    -moz-transform: rotate(0deg);
+    -o-transform: rotate(0deg);
+    -webkit-transform: rotate(0deg);
+    transform: rotate(0deg);
+  }
+
+  100% {
+    -moz-transform: rotate(359deg);
+    -o-transform: rotate(359deg);
+    -webkit-transform: rotate(359deg);
+    transform: rotate(359deg);
+  }
+}
+@-ms-keyframes spin {
+  0% {
+    -moz-transform: rotate(0deg);
+    -o-transform: rotate(0deg);
+    -webkit-transform: rotate(0deg);
+    transform: rotate(0deg);
+  }
+
+  100% {
+    -moz-transform: rotate(359deg);
+    -o-transform: rotate(359deg);
+    -webkit-transform: rotate(359deg);
+    transform: rotate(359deg);
+  }
+}
+@keyframes spin {
+  0% {
+    -moz-transform: rotate(0deg);
+    -o-transform: rotate(0deg);
+    -webkit-transform: rotate(0deg);
+    transform: rotate(0deg);
+  }
+
+  100% {
+    -moz-transform: rotate(359deg);
+    -o-transform: rotate(359deg);
+    -webkit-transform: rotate(359deg);
+    transform: rotate(359deg);
+  }
+}
 </style>
 
 

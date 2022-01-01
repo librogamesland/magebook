@@ -12,6 +12,7 @@ let firepad = null
 
 
 export const showSidemenu = writable(false)
+export const isSynced = debounced(500, null)
 
 
 function absorbEvent_(event) {
@@ -129,7 +130,18 @@ const initEditorFirebase = (config) => {
     defaultText: get(_)('books.fire').replace('%1', config.book)
   });
 
-  isLoaded.set(true)
+  firepad.on('ready', function() {
+    isLoaded.set(true)
+  });
+
+  firepad.on('synced', function(newValue) {
+    if(newValue){
+      isSynced.set(true)
+    }else{
+      isSynced.lazySet(false)
+    }
+  });
+  
 
 }
 

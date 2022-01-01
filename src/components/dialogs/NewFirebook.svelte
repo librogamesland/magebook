@@ -1,8 +1,9 @@
 <script>
   import { _ } from 'svelte-i18n'
-  import { session } from '../../javascript/database.js'
   export let params
   export let callback
+
+  !params;
 
 
   // Entity input bindings

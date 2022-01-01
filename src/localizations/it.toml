@@ -37,7 +37,7 @@ savecopy   = "Salva una copia"
 
 [dialogs.lock]
 title      = "Attenzione"
-text       = "Un'altra tab ha modificato i dati di questa sessione. Se sovrascrivi, quei cambiamenti verranno persi. Se vuoi mantenere entrambe le versioni, puoi creare una nuova sessione e recuperare quella vecchia con <b>File -> Recupera sessione</b>."
+text       = "Un'altra tab ha modificato i dati di questa sessione. Se sovrascrivi, quei cambiamenti verranno persi. Se vuoi mantenere entrambe le versioni, puoi creare una nuova sessione e recuperare quella vecchia con <br><b>File -> Recupera sessione</b>."
 new        = "Apri nuova sessione"
 overwrite  = "Sovrascrivi"
 

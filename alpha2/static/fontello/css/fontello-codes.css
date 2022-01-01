@@ -7,6 +7,8 @@
 .icon-cw:before { content: '\e805'; } /* '' */
 .icon-back:before { content: '\e806'; } /* '' */
 .icon-flash:before { content: '\e807'; } /* '' */
+.icon-ok:before { content: '\e808'; } /* '' */
+.icon-arrows-cw:before { content: '\e809'; } /* '' */
 .icon-docs:before { content: '\f0c5'; } /* '' */
 .icon-menu:before { content: '\f0c9'; } /* '' */
 .icon-paste:before { content: '\f0ea'; } /* '' */

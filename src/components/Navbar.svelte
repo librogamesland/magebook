@@ -3,7 +3,7 @@
   import { ctrlShortcuts } from '../javascript/shortcuts.js'
   import { graphToImg } from '../javascript/graph.js'
   import { open, download } from '../javascript/file.js'
-  import { newBook } from '../javascript/new-book.js'
+  import { newBook, isLoaded } from '../javascript/new-book.js'
 
   import { showSidemenu } from '../javascript/editor.js'
   import { isFirebase }   from '../javascript/database.js'
@@ -55,7 +55,7 @@
       {/if}
     </div>
   </div>
-
+  {#if $isLoaded}
   <div>
     <h1>{$_('navbar.book.title')}</h1>
     <div class="content">
@@ -73,6 +73,7 @@
       <!-- <p>{$_('navbar.export.vuejs')}</p> -->
     </div>
   </div>
+  {/if}
 
   <!-- Help -->
   <div>
@@ -81,17 +82,19 @@
       <a href={$_('navbar.help.guidefile')} target="_blank" rel="noopener">
         {$_('navbar.help.guide')}
       </a>
-      <a href="http://www.librogame.net/index.php/forum/topic?id=5182&p=1#p148583" target="_blank" rel="noopener">
+      <a href="https://www.librogame.net/index.php/forum/topic?id=5182&p=1#p148583" target="_blank" rel="noopener">
         {$_('navbar.help.forum')}
       </a>
       <p on:click={() => dialog(About)}>{$_('navbar.help.about')}</p>
     </div>
   </div>
 
+  {#if $isLoaded}
   <div class="sidemenu-button">
     <span aria-label={$_('sidemenu.toggle')} class="dropbtn icon-menu"
       on:click={() => ($showSidemenu = !$showSidemenu)} />
   </div>
+  {/if}
 </nav>
 
 

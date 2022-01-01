@@ -20,7 +20,6 @@
   })
   
   onDestroy(unsubscribe)
-  if(callback){}
 </script>
 
 {#if loaded}
@@ -35,7 +34,7 @@
  <!-- -->
   </div>
   <button class="ok" on:click={ () => {
-    const blob = new Blob([src], { type: "image/svg+xml" });
+    const blob = new window.Blob([src], { type: "image/svg+xml" });
     // create an URI pointing to that blob
     const url = URL.createObjectURL(blob);
     const win = window.open(url);
@@ -60,7 +59,7 @@
     align-items: center;
   }
 
-  .spinner-1 {
+  :global(.spinner-1) {
     margin-top: 20px;
     display: inline-block;
     width:50px;

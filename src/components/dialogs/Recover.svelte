@@ -4,6 +4,8 @@
 
   export let params
   export let callback
+
+  !params;
 </script>
 
 

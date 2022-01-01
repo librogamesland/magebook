@@ -4,6 +4,8 @@
   export let params
   export let callback
 
+  !params;
+
   const newBook = () => session.open({
       data: {
         book: $_('books.local'),

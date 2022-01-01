@@ -5,7 +5,7 @@
   export let params
   export let callback
 
-  if(params){ }
+  !params;
 </script>
 
 <div class="dialog">

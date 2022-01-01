@@ -12,6 +12,8 @@
   export let params;
   export let callback;
 
+  !params;
+
   // Entity input bindings
   let groupFilter = "";
   let flags = {

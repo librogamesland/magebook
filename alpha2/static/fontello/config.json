@@ -77,6 +77,18 @@
       "css": "back",
       "code": 59398,
       "src": "entypo"
+    },
+    {
+      "uid": "12f4ece88e46abd864e40b35e05b11cd",
+      "css": "ok",
+      "code": 59400,
+      "src": "fontawesome"
+    },
+    {
+      "uid": "a73c5deb486c8d66249811642e5d719a",
+      "css": "arrows-cw",
+      "code": 59401,
+      "src": "fontawesome"
     }
   ]
 }

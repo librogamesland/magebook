@@ -14,7 +14,3 @@
   <p>{text}</p>
   <button class="ok" on:click={() => callback(true)}>{$_('dialogs.ok')}</button>
 </div>
-
-<style>
-  
-</style>
