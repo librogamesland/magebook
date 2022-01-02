@@ -9,7 +9,6 @@
   import { dialog } from './Dialogs.svelte'
   import Chapter    from './dialogs/Chapter.svelte'
   import Confirm    from './dialogs/Confirm.svelte'
-  import Alert      from './dialogs/Alert.svelte'
 
 
   const add = async () => {
@@ -94,7 +93,7 @@
 </script>
 
 <div class="buttons">
-  <div class="icon-back" on:click={goBack} title={$_('sidemenu.actions.add')} disabled={!$historyCanGoBack} />
+  <div class="icon-back" on:click={goBack} title={$_('sidemenu.actions.goback')} disabled={!$historyCanGoBack} />
   <div class="icon-plus" on:click={add} title={$_('sidemenu.actions.add')} />
   <div class="icon-pencil" on:click={edit} title={$_('sidemenu.actions.edit')}  disabled={$currentChapterKey == ""} />
   <div class="icon-trash" on:click={del} title={$_('sidemenu.actions.delete')} disabled={$currentChapterKey == ""} />

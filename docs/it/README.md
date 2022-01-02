@@ -23,9 +23,9 @@ Magebook ti aiuterà a scrivere il tuo *librogame* con una serie di funzioni pen
 Magebook nasce come [programma web](https://librogamesland.github.io/magebook/editor/) e solo la versione web include le funzionalità online come i libri collaborativi.
 
 Per lavorare sui file locali, scarica Magebook da qui (scegli il tuo sistema operativo):
-- [Windows](https://librogamesland.github.com/dist/magebook-windows.exe)
-- [Linux](https://librogamesland.github.com/dist/magebook-linux)
-- [MacOs](https://librogamesland.github.com/dist/magebook-macos)
+- [Windows](https://librogamesland.github.io/magebook/dist/magebook-windows.exe)
+- [Linux](https://librogamesland.github.io/magebook/dist/magebook-linux)
+- [MacOs](https://librogamesland.github.io/magebook/dist/magebook-macos)
 
 *NOTA*: per funzionare, Magebook richiede che sia installato Google Chrome o Microsoft Edge.
 
@@ -134,7 +134,7 @@ export-heading-style: inline
 ```
 
 
-# Trasforma il tuo libro in un'app
+# Trasforma il libro in app
 
 **(funzione ancora non disponibile! Work in progress!)**
 

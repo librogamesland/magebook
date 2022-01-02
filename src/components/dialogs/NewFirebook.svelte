@@ -24,15 +24,15 @@
 
 </script>
 <div class="dialog">
+  <form method="post" action="/signin" on:submit|preventDefault>
   <h3>{$_('dialogs.newfirebook.new')}</h3>
-
   <div class="input">
     <span>apiKey:</span>
-    <input bind:value={apiKey} type="text" />
+    <input bind:value={apiKey} name="password" type="password" />
   </div>
   <div class="input">
     <span>databaseURL:</span>
-    <input bind:value={databaseURL} type="text" />
+    <input bind:value={databaseURL} name="user" type="text" />
   </div>
   <div class="input">
     <span>{$_('dialogs.newfirebook.book')}:</span>
@@ -40,12 +40,12 @@
   </div>
   <p class="getstarted" style="margin: 1rem 0">{@html $_('dialogs.newfirebook.getStarted')}</p>
 
-  <button
+  <input type="submit"
     class="ok"
+    value={$_('dialogs.ok')}
     on:click={() => newBook()}>
-    {$_('dialogs.ok')}
-  </button>
   <button class="cancel" on:click={() => callback(false)}>{$_('dialogs.cancel')}</button>
+  </form>
 </div>
 
 <style>

@@ -52,9 +52,9 @@ const decode = (file) => {
       return
     }
   
-    if(line.includes('![flag-')){
+    if(line.includes('![flag-') || line.includes('![][flag-')){
       ;['final', 'fixed', 'death'].forEach( (flag) => {
-        if(line.includes(`![flag-${flag}]`)) result.chapters[key].flags.push(flag)
+        if(line.includes(`![flag-${flag}]`) || line.includes(`![][flag-${flag}]`)) result.chapters[key].flags.push(flag)
       })
       return
     }
@@ -76,11 +76,8 @@ const encode = (book) => {
   if(!book["__is_book"]) book = new Book(book)
   const {key : currentKey, chapters, properties} = book.get()
   let s = `# ${properties.title}\n`
-  Object.entries({
-    ...properties,
-    'last_edited': currentKey,
-  }).forEach(([key, value]) => {
-    if(key !== 'title')  s+=`${key}: ${value}\n`
+  Object.entries(properties).forEach(([key, value]) => {
+    if(key !== 'title')  s+=`${key}: ${value.trim()}\n`
   })
   s+='\n\n\n'
 
@@ -89,9 +86,9 @@ const encode = (book) => {
     s+= chapter.title ? `### ${chapter.title} {#${key}}\n` : `### ${key}\n`
     if(chapter.flags && chapter.flags.length){
       const flags = {
-        'death': '![flag-death](https://librogamesland.github.io/lgcjs/release/static/flags/death.png)',
-        'final': '![flag-final](https://librogamesland.github.io/lgcjs/release/static/flags/final.png)',
-        'fixed': '![flag-fixed](https://librogamesland.github.io/lgcjs/release/static/flags/fixed.png)',
+        'death': '![][flag-death]',
+        'final': '![][flag-final]',
+        'fixed': '![][flag-fixed]',
       }
       s+= chapter.flags.map( key => flags[key]).join(' ') + '\n'
     }

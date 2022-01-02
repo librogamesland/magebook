@@ -12,4 +12,6 @@
 .icon-docs:before { content: '\f0c5'; } /* '' */
 .icon-menu:before { content: '\f0c9'; } /* '' */
 .icon-paste:before { content: '\f0ea'; } /* '' */
+.icon-help:before { content: '\f128'; } /* '' */
+.icon-right:before { content: '\f178'; } /* '' */
 .icon-trash:before { content: '\f1f8'; } /* '' */

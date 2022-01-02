@@ -13,6 +13,7 @@ let firepad = null
 
 export const showSidemenu = writable(false)
 export const isSynced = debounced(500, null)
+export const initError = writable("")
 
 
 function absorbEvent_(event) {
@@ -113,35 +114,40 @@ const initEditorLocal = (data) => {
 
 
 const initEditorFirebase = (config) => {
-  setupAce()
+
+  try{
+    setupAce()
 
 
-  const app = firebase.initializeApp(config);
+    const app = firebase.initializeApp(config);
 
-  // Get a reference to the database service
-  const database = firebase.database(app);
+    // Get a reference to the database service
+    const database = firebase.database(app);
 
-  window.db = database
+    window.db = database
 
 
 
-  //// Create Firepad.
-  firepad = window.Firepad.fromACE(database.ref(config.book), editor, {
-    defaultText: get(_)('books.fire').replace('%1', config.book)
-  });
+    //// Create Firepad.
+    firepad = window.Firepad.fromACE(database.ref(config.book), editor, {
+      defaultText: get(_)('books.fire').replace('%1', config.book)
+    });
 
-  firepad.on('ready', function() {
-    isLoaded.set(true)
-  });
+    firepad.on('ready', function() {
+      isLoaded.set(true)
+    });
 
-  firepad.on('synced', function(newValue) {
-    if(newValue){
-      isSynced.set(true)
-    }else{
-      isSynced.lazySet(false)
-    }
-  });
-  
+    firepad.on('synced', function(newValue) {
+      if(newValue){
+        isSynced.set(true)
+      }else{
+        isSynced.lazySet(false)
+      }
+    });
+    
+  }catch(e){
+    initError.set(e.toString())
+  }
 
 }
 

@@ -21,7 +21,7 @@ hint   = "*Key and Group should contain only alphanumeric characters (a-z,A-Z,0-
 new    = "Create a New Book"
 title  = "Title"
 author = "Author"
-hint   = "<b>Warning:</b> current book will be overwritten if not saved."
+hint   = "You can recover the previous book with <b>File -> Recent sessions</b>"
 
 [dialogs.newfirebook]
 new    = "Create or load a New Book"
@@ -37,7 +37,7 @@ savecopy   = "Save a copy"
 
 [dialogs.lock]
 title      = "Warning"
-text       = "Another tab has written changes on this session. If you overwrite, those changes will be lost. You can open a new session instead, and recover the other session with the <br><b>File -> Recover session</b> tool."
+text       = "Another tab has written changes on this local session. If you overwrite, those changes will be lost. You can open a new session instead, and recover the other session with the <br><b>File -> Recent sessions</b> tool."
 new        = "Open in new session"
 overwrite  = "Overwrite"
 
@@ -53,7 +53,7 @@ newFire    = "New collaborative"
 share      = "Share"
 open       = "Open..."
 save       = "Save"
-recover    = "Recover session"
+recover    = "Recent sessions"
 
 [navbar.book]
 title   = "Book"
@@ -79,6 +79,7 @@ about     = "About"
 toggle    = "Toggle sidemenu"
 chapters  = "Chapters"
 allgroup  = "All chapters"
+allgrouperrors  = "Without links from/to"
 linkshere = "Links to"
 
 [sidemenu.actions]

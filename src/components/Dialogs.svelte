@@ -119,7 +119,7 @@
     }
   }
 
-  :global(.dialog-container button.ok, .dialog-container button.cancel, .dialog-container button.error) {
+  :global(.dialog-container button.ok, .dialog-container input[type=submit].ok, .dialog-container button.cancel, .dialog-container button.error) {
     border: 0;
     box-sizing: border-box;
     height: 2.5rem;
@@ -131,11 +131,11 @@
     cursor: pointer;
   }
 
-  :global(.dialog-container button.ok:hover, .dialog-container button.cancel:hover,  .dialog-container button.error:hover) {
+  :global(.dialog-container button.ok:hover, .dialog-container input[type=submit].ok:hover, .dialog-container button.cancel:hover,  .dialog-container button.error:hover) {
     opacity: 0.7;
   }
 
-  :global(.dialog-container button.ok) {
+  :global(.dialog-container button.ok, .dialog-container input[type=submit].ok) {
     background-color: #4670a6;
     color: white;
   }

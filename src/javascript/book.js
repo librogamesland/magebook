@@ -71,16 +71,9 @@ const Book = function(data = empty){
     if(aIsNumber && bIsNumber) return  parseInt(a, 10) - parseInt(b, 10)
   })
 
-  const refresh = (increaseRevision = false) => update(({properties}) => {
-    if(increaseRevision){
-      let revision = Number(properties.revision || "0")
-      properties.revision = String(revision + 1)
-      return {properties}
-    }
-    return {}
-  })
+  const refresh = () => {}
 
-  const shuffle = (selectedFlags = [], groupsFilter = [], increaseRevision = false) => {
+  const shuffle = (selectedFlags = [], groupsFilter = []) => {
     const toShuffle = []
     const toNotShuffle = []
 
@@ -108,14 +101,10 @@ const Book = function(data = empty){
     shuffleArray(shuffledKeys);
     const shuffled    = Object.fromEntries( toShuffle.map((k, i) =>[k, shuffledKeys[i]]))
     const shuffledRev = Object.fromEntries( toShuffle.map((k, i) =>[shuffledKeys[i], k]))
-    const getShuffledKey = key => toNotShuffle.includes(key) ? key : shuffled[key]
+    const getShuffledKey = key => (toNotShuffle.includes(key) ? key : shuffled[key]) || key
 
     shuffleArray(toShuffle)
     const newData = get()
-    if(increaseRevision){
-      let revision = Number(newData.properties.revision || "0")
-      newData.properties.revision = String(revision + 1)
-    }
     newData.key = getShuffledKey(data.key)
 
     Object.keys(data.chapters).forEach( (oldKey) => {

@@ -20,7 +20,7 @@ const getChapterFromKey = (key) => {
 const generateChapterText = ({spacelines = 2, key, title = '', group = '', flags = [], content}) => {
   let r = '\n'.repeat(spacelines)
   r += (title) ? `### ${title} {#${key}}` : `### ${key}`
-  if(flags) flags.forEach( flag => r += `\n![flag-${flag}](https://librogamesland.github.io/lgcjs/release/static/flags/${flag}.png)`)
+  if(flags)  r += "\n" + flags.map( flag => `![][flag-${flag}]`).join(' ')
   if(group) r+= `\n[group]:<> ("${group}")`
   if(content) r+= `\n${content}`
 

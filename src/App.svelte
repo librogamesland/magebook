@@ -10,16 +10,17 @@
   import Sidebar from './components/Sidebar.svelte'
   import LocalOnboarding from './components/LocalOnboarding.svelte'
 
-  import { bookIndex } from './javascript/new-book.js'
+  import { bookIndex, isLoaded } from './javascript/new-book.js'
   import { handleShortcuts } from './javascript/shortcuts.js'
   import { isApp, appPath } from './javascript/appMode.js'
-  import {isLoaded }from './javascript/new-book.js'
+  import { initError }from './javascript/editor.js'
 
   $: { if(!(/bot|google|baidu|bing|msn|duckduckbot|teoma|slurp|yandex/i.test(navigator.userAgent))){
     if($bookIndex && $bookIndex.properties.title){
       document.title = $bookIndex.properties.title + " - Magebook"
     }
   } }
+
 </script>
 
 
@@ -32,7 +33,7 @@
     <div class="loading-mask">
       <div class="dialog" style="text-align: center; margin-top: 10vh">
         <div class="spinner-1"></div>
-      
+        <p style="color:white">{$initError}</p>
       </div>
       
     </div>

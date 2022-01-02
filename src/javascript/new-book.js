@@ -72,9 +72,9 @@ const decode = (file) => {
       return
     }
   
-    if(line.includes('![flag-')){
+    if(line.includes('![flag-') || line.includes('![][flag-')){
       ;['final', 'fixed', 'death'].forEach( (flag) => {
-        if(line.includes(`![flag-${flag}]`)) chapter.flags.push(flag)
+        if(line.includes(`![flag-${flag}]`) || line.includes(`![][flag-${flag}]`)) chapter.flags.push(flag)
       })
       return
     }
@@ -116,7 +116,55 @@ const bookIndex = derived(
 );
 
 
-window.c = () => $bookIndex.chapters
+
+const shuffle = (selectedFlags = [], groupsFilter = [], increaseRevision = false) => {
+  const toShuffle = []
+  const toNotShuffle = []
+
+  // Divide le chiavi in due gruppi, da mescolare e da non mescolare
+  Object.entries(data.chapters).forEach( ([key, value]) => {
+    if(!isNumber(key)){
+      toNotShuffle.push(key)
+      return 
+    }
+    // Se la flag era fra quelle fisse, allora aggiungi la chiave a quella da non mischiare
+    if(value.flags && value.flags.some( flag => selectedFlags.includes(flag))){
+      toNotShuffle.push(key)
+      return
+    }
+    if(groupsFilter.length > 0){
+      if(!(value.group && groupsFilter.includes(value.group) )){
+        toNotShuffle.push(key)
+        return   
+      }
+    }
+    toShuffle.push(key)
+  })
+  // Mescola le chiavi e crea un dizionario
+  const shuffledKeys = JSON.parse(JSON.stringify(toShuffle));  // Obj copy
+  shuffleArray(shuffledKeys);
+  const shuffled    = Object.fromEntries( toShuffle.map((k, i) =>[k, shuffledKeys[i]]))
+  const shuffledRev = Object.fromEntries( toShuffle.map((k, i) =>[shuffledKeys[i], k]))
+  const getShuffledKey = key => (toNotShuffle.includes(key) ? key : shuffled[key]) || key
+
+  shuffleArray(toShuffle)
+  const newData = get()
+  if(increaseRevision){
+    let revision = Number(newData.properties.revision || "0")
+    newData.properties.revision = String(revision + 1)
+  }
+  newData.key = getShuffledKey(data.key)
+
+  Object.keys(data.chapters).forEach( (oldKey) => {
+    const newKey = toNotShuffle.includes(oldKey) ? oldKey : shuffledRev[oldKey]
+    newData.chapters[oldKey] = JSON.parse(JSON.stringify(data.chapters[newKey]))
+    newData.chapters[oldKey].text =  newData.chapters[oldKey].text
+      .replace(/\[([^\[]*)\](\(\s*#(\w+)\s*\))/g, (...all) => `[${all[1]}](#${getShuffledKey(all[3])})`) 
+
+  })
+
+  return newData
+}
 
 
 export {isLoaded, newBook, bookIndex, $bookIndex}

@@ -38,12 +38,18 @@
 
   $: filterChapters = [...($bookIndex.chapters)].filter( ([key, chapter]) => {
     if(!selectedGroup || selectedGroup == 'allgroupidtag') return true
+    if(selectedGroup == 'allgrouperrorsidtag'){
+      const linksHere = $bookIndex.linksToChapter.get(key)
+      const hasEntering = linksHere && linksHere.size > 0
+      const hasExiting  = (chapter.links && chapter.links.size > 0) || (chapter.flags && chapter.flags.length > 0)
+      return (!hasEntering || !hasExiting)
+    }
     const group = chapter.group
     return group && group == selectedGroup
   })
 
   $: {
-    if(![...($bookIndex.groups), 'allgroupidtag'].includes(selectedGroup)){
+    if(![...($bookIndex.groups), 'allgroupidtag', 'allgrouperrorsidtag'].includes(selectedGroup)){
       selectedGroup = 'allgroupidtag'
     }
   }
@@ -51,6 +57,16 @@
   const setBookKey = (key) => {
     book.update(() => ({key}))
     $showSidemenu = false
+  }
+
+  const chapterErrors = (key, chapter) => {
+    const linksHere = $bookIndex.linksToChapter.get(key)
+    const hasEntering = linksHere && linksHere.size > 0
+    const hasExiting  = (chapter.links && chapter.links.size > 0) || (chapter.flags && chapter.flags.length > 0)
+
+    return (hasEntering ? '' : '<i class="icon-help"></i>') +
+        ((hasEntering && hasExiting) ? '' : '<i class="icon-right"></i>') +
+        (hasExiting ? '' : '<i class="icon-help"></i>')    
   }
 
   // Regex per matchare i link in markdown
@@ -69,6 +85,7 @@
     <span class="select-dropdown">
       <select bind:value={selectedGroup}>
         <option value="allgroupidtag">{$_('sidemenu.allgroup')}</option>
+        <option value="allgrouperrorsidtag">{$_('sidemenu.allgrouperrors')}</option>
         {#each [...($bookIndex.groups)] as group}
           <option value={group}>{group}</option>
         {/each}
@@ -77,7 +94,7 @@
   </h1>
   <ActionButtons />
   <ul class="chapters">
-    {#each [...($bookIndex.chapters)] as [key, chapter]}
+    {#each filterChapters as [key, chapter]}
     <li
       class:selected={key === $currentChapterKey}
       on:click={() => goToChapter(key)}>
@@ -86,6 +103,7 @@
       {#each chapter.flags || [] as flag}
         <img src={`./static/img/flags/${flag}.png`} alt={flag}/>
       {/each}
+      <span class="errors">{@html chapterErrors(key, chapter)} </span>
     </li>
     {/each}
   </ul>
@@ -141,6 +159,21 @@
     color: #111;
   }
 
+  .errors {
+    float:right;
+    background-color: #cb0000;
+    color: #fff;
+    border-radius: 2px;
+    padding: 0 5px;
+  }
+
+  :global(.chapters .errors i) {
+    margin: 0 -1px;
+  }
+
+  :global(.chapters .errors i.icon-help) {
+    margin: 0 -5px;
+  }
 
 
   div.mask {
@@ -165,7 +198,11 @@
     box-sizing: border-box;
     padding: 0.5rem 1rem;
     margin: 0;
+    clear:both;
+    overflow: auto;
   }
+
+  
 
   li:nth-child(even) {
     background-color: rgb(245, 245, 245);

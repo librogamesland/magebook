@@ -23,9 +23,9 @@ Magebook will help you write your *gamebook* with a series of specific features.
 Magebook is a [web app](https://librogamesland.github.io/magebook/editor/) and you need to use the web app version to use online features like collaborative editing.
 
 Yet, you may download Magebook to work easily with local files (choose your operative system):
-- [Windows](https://librogamesland.github.com/dist/magebook-windows.exe)
-- [Linux](https://librogamesland.github.com/dist/magebook-linux)
-- [MacOs](https://librogamesland.github.com/dist/magebook-macos)
+- [Windows](https://librogamesland.github.io/magebook/dist/magebook-windows.exe)
+- [Linux](https://librogamesland.github.io/magebook/dist/magebook-linux)
+- [MacOs](https://librogamesland.github.io/magebook/dist/magebook-macos)
 
 *WARNING*: Magebook requires either Google Chrome or Microsoft Edge installed on your system in order to work.
 

@@ -21,7 +21,7 @@ hint   = "*Key e Gruppo dovrebbero contenere solo caratteri alfanumerici (a-z, A
 new    = "Crea un nuovo Libro"
 title  = "Titolo"
 author = "Autore"
-hint   = "<b>Attenzione:</b> il libro attuale verrà sovrascritto se non salvato."
+hint   = "Puoi recuperare il libro precedente da <b>File -> Sessioni recenti</b>"
 
 [dialogs.newfirebook]
 new    = "Crea o accedi a un Libro Collaborativo"
@@ -37,7 +37,7 @@ savecopy   = "Salva una copia"
 
 [dialogs.lock]
 title      = "Attenzione"
-text       = "Un'altra tab ha modificato i dati di questa sessione. Se sovrascrivi, quei cambiamenti verranno persi. Se vuoi mantenere entrambe le versioni, puoi creare una nuova sessione e recuperare quella vecchia con <br><b>File -> Recupera sessione</b>."
+text       = "Un'altra tab ha modificato i dati di questa sessione. Se sovrascrivi, quei cambiamenti verranno persi. Se vuoi mantenere entrambe le versioni, puoi creare una nuova sessione e recuperare quella vecchia con <br><b>File -> Sessioni recenti</b>."
 new        = "Apri nuova sessione"
 overwrite  = "Sovrascrivi"
 
@@ -53,7 +53,7 @@ newFire    = "Nuovo collaborativo"
 share      = "Condividi"
 open       = "Apri..."
 save       = "Salva"
-recover    = "Recupera sessione"
+recover    = "Sessioni recenti"
 
 [navbar.book]
 title   = "Libro"
@@ -79,6 +79,7 @@ about     = "Info"
 toggle    = "Apri menu laterale"
 chapters  = "Paragrafi"
 allgroup  = "Tutti i paragrafi"
+allgrouperrors  = "Senza entrata/uscita"
 linkshere = "Link al par."
 
 [sidemenu.actions]
