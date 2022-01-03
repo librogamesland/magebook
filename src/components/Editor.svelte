@@ -1,6 +1,6 @@
 <script>
   import { _ } from 'svelte-i18n'
-	import { onMount, tick } from 'svelte'
+	import { onMount } from 'svelte'
   import { session } from '../javascript/database.js'
   import { cursorPosition, getEditor, editorComponentID, currentChapterFullTitle } from '../javascript/editor.js'
   import { ctrlShortcuts } from '../javascript/shortcuts.js'
@@ -61,7 +61,7 @@
 
 <main class="editor">
   <div class="toolbar">
-    <h1 on:click={ () => $showSidemenu = !$showSidemenu}>
+    <h1 on:click={ () => $showSidemenu = !$showSidemenu} title={$currentChapterFullTitle}>
       {$currentChapterFullTitle}
     </h1>
     
@@ -187,13 +187,15 @@
     display: flex;
     flex-direction: row;
     align-items: center;
-    min-height: calc(1.67rem + 18px);
+    min-height: calc(1.9rem + 18px);
   }
 
   h1 {
     flex-grow: 1;
     text-overflow: ellipsis;
-    font-size: 18px;
+    font-size: 20px;
+    overflow: hidden;
+    white-space: nowrap;
     padding: 0.4rem 0 0.3rem;
     margin-block: 0;
     margin-inline: 0;
@@ -216,6 +218,7 @@
     padding: 7px 22px 6px;
     cursor: pointer;
     user-select: none;
+    white-space: nowrap;
   }  
 
   .textarea {

@@ -1,9 +1,9 @@
-<script>
+<script lang="ts">
   import { _ } from 'svelte-i18n'
   import manifest from '../../../package.json'
 
-  export let params
-  export let callback
+  export let params : null
+  export let callback : (value: any) => void
 
   !params;
 </script>

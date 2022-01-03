@@ -139,7 +139,7 @@
 
   h1 {
     font-weight: 700;
-    font-size: 1.3rem;
+    font-size: 1.2rem;
     box-sizing: border-box;
     padding-top: 1.8rem;
     padding-bottom: 0.6rem;

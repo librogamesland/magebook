@@ -60,7 +60,7 @@ const download = async(formatKey, book) => {
 
   const encodedBook = (formatKey === 'md') 
     ? book
-    : await Promise.resolve(format.encode(decodedMd))
+    : await Promise.resolve(format.encode(book))
 
   if(!encodedBook) return
 

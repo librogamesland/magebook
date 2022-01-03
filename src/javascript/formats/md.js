@@ -1,5 +1,3 @@
-import {Book} from '../book.js'
-
 const mimetype = 'text/markdown'
 
 const decode = (file) => {
@@ -72,35 +70,7 @@ const decode = (file) => {
 }
 
 
-const encode = (book) => {
-  if(!book["__is_book"]) book = new Book(book)
-  const {key : currentKey, chapters, properties} = book.get()
-  let s = `# ${properties.title}\n`
-  Object.entries(properties).forEach(([key, value]) => {
-    if(key !== 'title')  s+=`${key}: ${value.trim()}\n`
-  })
-  s+='\n\n\n'
-
-  book.sortedKeys(chapters).forEach( key => {
-    const chapter = chapters[key]
-    s+= chapter.title ? `### ${chapter.title} {#${key}}\n` : `### ${key}\n`
-    if(chapter.flags && chapter.flags.length){
-      const flags = {
-        'death': '![][flag-death]',
-        'final': '![][flag-final]',
-        'fixed': '![][flag-fixed]',
-      }
-      s+= chapter.flags.map( key => flags[key]).join(' ') + '\n'
-    }
-    if(chapter.group){
-      s+=`[group]:<> ("${chapter.group}")\n`
-    }
-    s+= chapter.text.replace(/\n+$/, "") + '\n\n\n'
-  })
-
-  return s
-}
 
 
 
-export default {mimetype, decode, encode}
+export default {mimetype, decode }

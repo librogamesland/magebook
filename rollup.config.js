@@ -7,6 +7,9 @@ import babel from '@rollup/plugin-babel';
 import css from 'rollup-plugin-css-only';
 import json from '@rollup/plugin-json';
 import { terser } from 'rollup-plugin-terser';
+import autoPreprocess from 'svelte-preprocess';
+import typescript from '@rollup/plugin-typescript';
+
 
 
 const production = !process.env.ROLLUP_WATCH;
@@ -41,7 +44,11 @@ export default [{
     watch: { clearScreen: true },
     plugins: [
       toml(),
-      svelte({ compilerOptions: {	dev: !production	}}),
+      svelte({ 
+        compilerOptions: {	dev: !production	},
+        preprocess: autoPreprocess()
+      }),
+      typescript({ sourceMap: !production }),
       css({ output: 'bundle.css' }),
       json(),
       resolve({

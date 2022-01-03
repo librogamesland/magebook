@@ -1,12 +1,9 @@
 import {template} from './fodt-template.js'
-import {isNumber} from '../utils.js'
-import {encodeToHTML, raw, mangle} from '../encoder.js'
-import {Book} from '../book.js'
-
+import {encodeToHTML, mangle} from '../encoder.js'
+import {extractIndexedBook } from '../book-utils'
 
 
 const mimetype = 'application/vnd.oasis.opendocument.text'
-
 
 
 const renderer = (chapters) => ({
@@ -16,34 +13,40 @@ const renderer = (chapters) => ({
   em:        text => `<text:span text:style-name="italic">${text}</text:span>`,
   codespan:  () => '',
   code:      () => '',
-  link: (key, i, text) => `<text:a xlink:type="simple" xlink:href="#mage${key.replace('#', '')}" text:style-name="Internet_20_link" text:visited-style-name="Visited_20_Internet_20_Link">${
-    text.trim() || chapters[key.replace('#', '')].title.trim() || key.replace('#', '')
-  }</text:a>`,
+  link: (fullKey, i, text) => {
+    const key = fullKey.replace('#', '')
+    console.log(key)
+    return `<text:a xlink:type="simple" xlink:href="#mage${key}" text:style-name="Internet_20_link" text:visited-style-name="Visited_20_Internet_20_Link">${
+      text.trim() || (chapters.has(key) ? (chapters.get(key).title.trim() || key) : key)
+    }</text:a>`
+  },
 })
 
 const bookmark = (key, text) =>
 `<text:span text:style-name="bold"><text:bookmark-start text:name="mage${key}"/>${text}<text:bookmark-end text:name="mage${key}"/></text:span>`
 
 
-const encodeChapter = (key, chapters) => {
+
+
+const encode = (bookText) => {
+  const indexedBook = extractIndexedBook(bookText)
+
+  // Some config
+  const shouldBreakLine = false
+
   let result = ''
-  const isNumeric = false //isNumber(key)
+  for(const [key, {title, text}] of indexedBook.chapters){ 
+    // Add chapter heading
+    result+= `<text:p text:style-name="Heading_3" text:outline-level="3">${bookmark(key, title.trim() || key)}</text:p>`
+    
+    // Add chapter text (or blank line if chapter is empty)
+    result+= encodeToHTML(text, renderer(indexedBook.chapters)).trim() || `<text:p text:style-name="justify"> </text:p>`
 
-  if(!isNumeric) result+= `<text:p text:style-name="Heading_3" text:outline-level="3">${bookmark(key, chapters[key].title.trim() || key)}</text:p>`
-  result += encodeToHTML(chapters[key].text, renderer(chapters))
-  result = result.trim() || `<text:p text:style-name="justify"> </text:p>`
-  if(isNumeric) result = result.replace('>', '>' + bookmark(key, (chapters[key].title.trim() || key) + '. '))
+    // Add blank line after chapter
+    result +=  `<text:p text:style-name="${shouldBreakLine ? 'break' : 'Standard'}"/>`
+  }
 
-  result +=  `<text:p text:style-name="${isNumeric ? 'break' : 'Standard'}"/>`
-  return result
-}
-
-
-const encode = (book) => {
-  if(!book["__is_book"]) book = new Book(book)
-  const {chapters} = book.get()
-  const result = template(book.sortedKeys().reduce( (acc, key) => acc + encodeChapter(key, chapters), ''))
-  return result.split('\n').map( line  => line.trim()).join('')
+  return template(result).split('\n').map( line  => line.trim()).join('')
 }
 
 export default { encode, mimetype }

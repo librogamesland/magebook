@@ -1,6 +1,8 @@
-import {isNumber} from '../utils.js'
+import {isNatNumber} from '../utils.js'
 import {encodeToHTML, raw, mangle} from '../encoder.js'
-import {Book} from '../book.js'
+import {extractIndexedBook } from '../book-utils'
+
+const isNumber = isNatNumber
 
 const mimetype = 'application/xml'
 
@@ -132,10 +134,12 @@ const encodeEntity = (key, entity) =>
 
 // Codifica il libro
 const encode = book => {
-  if(!book["__is_book"]) book = new Book(book)
-  const {key : currentKey, chapters, properties} = book.get()
+
+  const indexedBook = extractIndexedBook(book)
+
+  const { chapters, properties} = indexedBook
   return `<?xml version="1.0" encoding="UTF-8"?><entities>${
-      encodeProperties(properties, currentKey) +
+      encodeProperties(properties) +
       encodeMap(properties) +
       book.sortedKeys().reduce((acc, key) => acc + encodeEntity(key, chapters[key]), '')
     }</entities>`

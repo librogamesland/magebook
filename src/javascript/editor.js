@@ -67,7 +67,7 @@ const setupAce = () => {
   editor.setOptions({
     showPrintMargin: false,
     wrap: true,
-    fontSize: 16,
+    fontSize: 18,
     showGutter: window.innerWidth > 430,
     scrollPastEnd: 0.7,
   })

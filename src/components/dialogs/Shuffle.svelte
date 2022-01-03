@@ -1,9 +1,8 @@
 <script>
   import { _ } from "svelte-i18n";
   import { tick } from "svelte";
-  import { Book } from '../../javascript/book.js'
-  import md from '../../javascript/formats/md.js'
   import { newBook, bookIndex } from '../../javascript/new-book.js'
+  import { shuffleBook } from '../../javascript/book-utils'
   import { session } from '../../javascript/database.js'
   import { download } from '../../javascript/file.js'
   import { isFirebase } from '../../javascript/database.js'
@@ -38,9 +37,9 @@
     const selectedFlags = Object.keys(flags).filter((key) => flags[key]);
     const filter = groupFilter.split(',').map( s => s.trim()).filter(s => s)
 
-    const book = new Book(md.decode($newBook))
+    newBook.flush()
 
-    const shuffled = md.encode(book.shuffle(selectedFlags, filter, true))
+    const shuffled = shuffleBook($newBook, {selectedFlags, filter})
 
     if($isFirebase || $isApp){
       getEditor().setValue(shuffled, -1)

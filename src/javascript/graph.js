@@ -1,5 +1,5 @@
 import md   from './formats/md.js'
-import {Book}   from './book.js'
+import {indexBook}   from './book-utils'
 
 
 const hpccWasm = window["@hpcc-js/wasm"];
@@ -8,20 +8,53 @@ const hpccWasm = window["@hpcc-js/wasm"];
 const sanitizeLabel = (text) => text.replace(/\//g, "\\").replace(/\"/g, '\"')
 
 const generateGraph = (book) => {
-  book = new Book(md.decode(book))
-  const data = book.get()
+
+  const indexedBook = indexBook(book)
+  console.log(indexedBook)
+
   let s = `digraph{
     graph [fontname="arial", fontsize=10]; 
-    node [fontname="arial", fontsize=12, style="rounded,filled", shape=box];
-    edge [fontname="arial", fontsize=12];
-`
-  book.sortedKeys(data.chapters).forEach(key => {
-    s += `${key} [label="${sanitizeLabel(book.fullTitle(key))}"]\n`
-    book.linksTo(key).forEach(otherKey => {
-      s += `${otherKey} -> ${key}\n`
-    })
-  });
-  return s + '}'
+    node  [fontname="arial", fontsize=12, style="rounded,filled", shape=box];
+    edge  [fontname="arial", fontsize=12];
+  `
+  
+  const groups = Object.fromEntries([...indexedBook.groups].map(group => [group, []]))
+
+
+  for(let [key, {title, group, links}] of indexedBook.chapters){
+    s += `
+      ${key} [label="${sanitizeLabel(title ? `${key} - ${title}` : key)}"]`
+
+    for(const link of links){
+      s += `
+        ${key} -> ${link}`
+    }
+    if(group) groups[group].push(key)
+  }
+
+
+
+  let clusterNumber = 0
+  for(let group of indexedBook.groups){
+    s+= `
+    
+    subgraph cluster${clusterNumber++}{
+      graph [fontname="arial", fontsize=10]; 
+      node  [fontname="arial", fontsize=12, style="rounded,filled", shape=box];
+      edge  [fontname="arial", fontsize=12];
+      style=filled
+      fillcolor="#EEEEEE"
+      color=black
+      label = "${sanitizeLabel(group)}"
+      labelfontsize=14
+      labelfontname=arial
+
+      ${groups[group].join('; ')}
+    }`
+  }
+  s +='\n}'
+  console.log(s)
+  return s
 }
 
 
