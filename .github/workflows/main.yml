@@ -30,6 +30,16 @@ jobs:
         env:
           NPM_AUTH_TOKEN: ${{ secrets.NPM_AUTH_TOKEN }}
 
+
+      - name: Get package version
+        id: version
+        run: echo "::set-output name=version::$(npm run --silent version)"
+
+      - name: Tag snapshot
+        uses: tvdias/github-tagger@v0.0.1
+        with:
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
+          tag: ${{ steps.date.outputs.version }}
         
       - name: Prepare for github pages
         run: |

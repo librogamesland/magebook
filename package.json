@@ -1,6 +1,6 @@
 {
   "name": "magebook",
-  "version": "0.2.4",
+  "version": "0.2.5",
   "author": "Luca Fabbian",
   "email": "luca.fabbian.1999@gmail.com",
   "description": "Interactive fiction editor",
@@ -21,6 +21,7 @@
   ],
   "main": "index.js",
   "scripts": {
+    "version": "echo $npm_package_version",
     "build-web": "rollup -c",
     "build-app": "bash ./src/golang/build-app.sh",
     "build": "npm run build-web && npm run build-app",
