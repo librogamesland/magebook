@@ -61,6 +61,8 @@
     <div class="content">
       <p on:click={() => dialog(Img, () => graphToImg(newBook.flush()))}>{$_('navbar.book.graph')}</p>
       <p on:click={() => dialog(Shuffle)}>{$_('navbar.book.shuffle')}</p>
+      <p on:click={() => dialog(Shuffle)}>{$_('navbar.book.compact')}</p>
+      <p on:click={() => dialog(Shuffle)}>{$_('navbar.book.sort')}</p>
     </div>
   </div>
 

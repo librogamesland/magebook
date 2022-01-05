@@ -41,7 +41,8 @@ export const loadAppMode = async() => {
   if(data.book == ''){
      data.book = get(_)('books.local')
   }else if (path.endsWith('.xlgc')){
-    data.book = md.encode(xlgc.decode(data.book))
+    await       window.writeFile(path.substring(0, path.length - 5) + `-backup-${Math.floor(new Date()/1000)}.xlgc`,data.book)
+    data.book = xlgc.decode(data.book)
   }
 
 

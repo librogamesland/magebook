@@ -46,9 +46,11 @@ const getRightOrderKey = (key) => {
 
 
 const addChapter = (key, text) => {
-  const index = getRightOrderKey(key)
-
   newBook.flush()
+
+  const index = getRightOrderKey(key)
+  console.log("index", index)
+
 
   getEditor().session.replace(new ace.Range(index, Infinity, index, Infinity), '\n' + text);
 

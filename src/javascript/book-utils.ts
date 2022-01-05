@@ -166,9 +166,10 @@ export const firstAvaiableKey = (bookText)  => {
 }
 
 
-export const remapBook = (indexedBook, chapterMap) => {
+export const remapBook = (indexedBook, chapterMap : Map<string, string>) => {
   // Create an object mapping old chapters' keys to new keys
-  const inverseMap = new Map(Array.from(chapterMap, a => (console.log(a), a.reverse())))
+  const inverseMap = new Map<string, string>()
+  for(const [key, val] of chapterMap) inverseMap.set(val, key) 
 
   // Array of new keys
   const mapKeys = [...chapterMap.keys()]

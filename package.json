@@ -1,6 +1,6 @@
 {
   "name": "magebook",
-  "version": "0.2.1",
+  "version": "0.2.3",
   "author": "Luca Fabbian",
   "email": "luca.fabbian.1999@gmail.com",
   "description": "Interactive fiction editor",
@@ -68,6 +68,7 @@
     "@hpcc-js/wasm": "^1.12.6",
     "firebase": "^9.5.0",
     "jsdom": "^16.5.1",
-    "query-string": "^7.0.1"
+    "query-string": "^7.0.1",
+    "tslib": "^2.3.1"
   }
 }

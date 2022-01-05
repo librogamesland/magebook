@@ -1,10 +1,12 @@
 import { writable, derived, get } from 'svelte/store';
 import { debounced } from './debounced-store.js'
 import { newBook, bookIndex, isLoaded} from './new-book.js'
+import { preventClickPropagation } from './utils';
 import { _ } from 'svelte-i18n'
 
 
 export const editorComponentID = 'main-editor'
+
 
 
 let editor = null
@@ -15,19 +17,6 @@ export const showSidemenu = writable(false)
 export const isSynced = debounced(500, null)
 export const initError = writable("")
 
-
-function absorbEvent_(event) {
-  var e = event || window.event;
-  e.stopPropagation && e.stopPropagation();
-  e.cancelBubble = true;
-}
-
-function preventClickPropagation(node) {
-    node.ontouchstart = absorbEvent_;
-    node.ontouchmove = absorbEvent_;
-    node.ontouchend = absorbEvent_;
-    node.ontouchcancel = absorbEvent_;
-}
 
 
 const cursorPosition = debounced(10, {row: 0, column: 0})

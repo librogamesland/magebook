@@ -5,17 +5,35 @@ import {extractIndexedBook } from '../book-utils'
 
 const mimetype = 'application/vnd.oasis.opendocument.text'
 
+const whitemap = {
+  '<b>': `<text:span text:style-name="bold">`, 
+  '</b>': `</text:span>`,  
+  '<i>': `<text:span text:style-name="italic">`, 
+  '</i>': `</text:span>`,
+  '<u>': `<text:span text:style-name="underline">`, 
+  '</u>': `</text:span>`,
+}
+
+
+const sanitize = (text) => {
+  const opened = (text.match(/\<text\:span/g) || []).length;
+  const closed = (text.match(/\<\/text\:span\>/g) || []).length;
+  if(opened < closed) return '<text:span>'.repeat(closed - opened) + text 
+  if(opened > closed) return text + '</text:span>'.repeat(opened - closed)
+  return text
+}
+
 
 const renderer = (chapters) => ({
-  html:      text => mangle(text),
-  paragraph: text => `<text:p text:style-name="Standard">${text}</text:p>`,
+  html:      text => whitemap[text.trim().toLowerCase()] ? whitemap[text.trim().toLowerCase()] : mangle(text),
+  paragraph: text => `<text:p text:style-name="Standard">${sanitize(text)}</text:p>`,
   strong:    text => `<text:span text:style-name="bold">${text}</text:span>`,
   em:        text => `<text:span text:style-name="italic">${text}</text:span>`,
   codespan:  () => '',
   code:      () => '',
   link: (fullKey, i, text) => {
     const key = fullKey.replace('#', '')
-    console.log(key)
+
     return `<text:a xlink:type="simple" xlink:href="#mage${key}" text:style-name="Internet_20_link" text:visited-style-name="Visited_20_Internet_20_Link">${
       text.trim() || (chapters.has(key) ? (chapters.get(key).title.trim() || key) : key)
     }</text:a>`

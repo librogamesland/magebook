@@ -59,6 +59,8 @@ recover    = "Recent sessions"
 title   = "Book"
 graph   = "View graph"
 shuffle = "Shuffle"
+compact = "Compact chapters"
+sort    = "Sort chapters"
 
 [navbar.export]
 title = "Export"
@@ -116,7 +118,7 @@ This is a link going to [](#2). Links are done with [Text](#chapter), where text
 
 
 ### Chapter with a long title {#2}
-This is the second chapter. Chapters may include *italic* or **bold** text.
+This is the second chapter. Chapters may include *italic* or **bold** text. <b>Bold</b>, <i>italic</i>, and <u>underline</u> are fine as well.
 """
 fire = """
 # %1

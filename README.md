@@ -3,7 +3,7 @@ A web editor for gamebook writing. Try NEW VERSION here: [https://librogamesland
 
 
 
-<img src="https://librogamesland.github.io/magebook/screenshots/1.jpg" alt="magebook screenshot" style="max-width:100%;">
+<img src="https://librogamesland.github.io/magebook/docs/screenshots/1.jpg" alt="magebook screenshot" style="max-width:100%;">
 
 Old version here: [https://librogamesland.github.io/magebook/alpha](https://librogamesland.github.io/magebook/alpha)
 

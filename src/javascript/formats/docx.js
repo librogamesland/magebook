@@ -9,8 +9,11 @@ const textNodesUnder = (el) => {
   return a;
 }
 
+
+const whitelist = ['<b>', '</b>', '<i>', '</i>', '<u>', '</u>']
+
 const renderer = (chapters) => ({
-  html:      text => mangle(text),
+  html:      text => whitelist.includes(text.trim().toLowerCase()) ? text.trim().toLowerCase() : mangle(text),
   paragraph: text => `<p>${text}</p>`,
   strong:    text => `<b>${text}</b>`,
   em:        text => `<i>${text}</i>`,
@@ -18,7 +21,6 @@ const renderer = (chapters) => ({
   code: (code, lang) => '',
   link: (fullKey, i, text) => {
     const key = fullKey.replace('#', '')
-    console.log(key)
     return `<mage-link to="${key}">${
       text.trim() || (chapters.has(key) ? (chapters.get(key).title.trim() || key) : key)
     }</mage-link>`

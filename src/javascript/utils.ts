@@ -1,9 +1,16 @@
+/***
+ * Collection of utility functions used by Magebook but not strictly related to it.
+ */
 import {writable} from 'svelte/store'
 
-// Random string generator
-export const randomString = (length : number) => {
+
+
+
+
+/** Generate random string of given lenght.
+Default alphabet includes digits, upper and lower case chars. */
+export const randomString = (length : number, characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789') => {
   let   result           = '';
-  const characters       = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
   const charactersLength = characters.length;
   for ( let i = 0; i < length; i++ ) {
      result += characters.charAt(Math.floor(Math.random() * charactersLength));
@@ -12,7 +19,10 @@ export const randomString = (length : number) => {
 }
 
 
-// https://javascript.info/task/shuffle
+
+
+
+/** Shuffle array in-place. Taken from https://javascript.info/task/shuffle */
 export const shuffleArray = <T>(array : T[])=> {
   for (let i = array.length - 1; i > 0; i--) {
     let j = Math.floor(Math.random() * (i + 1)); // random index from 0 to i
@@ -23,8 +33,13 @@ export const shuffleArray = <T>(array : T[])=> {
 }
 
 
+
+
+
 /** Check if n is natural number */
 export const isNatNumber = (n : number) => (n > 0 || String(n) === "0") && Math.floor(n) === +n
+
+
 
 
 
@@ -44,14 +59,11 @@ export const debounced = <T>(millis : number, defaultValue: T = null)  => {
 	return {
 		subscribe,
     flush,
-
     get: flush,
-
     set: (newValue: T) => {
       value = newValue
       flush()
     },
-
     lazySet: (newValue: T) => {
       value = newValue
       clearTimeout(timer);
@@ -60,4 +72,23 @@ export const debounced = <T>(millis : number, defaultValue: T = null)  => {
       }, millis);
     },
 	};
+}
+
+
+
+
+
+/** Completely absorb and prevent click propagation */
+export const preventClickPropagation = (node : HTMLElement) => {
+  // Helper function 
+  const absorbEvent_ = (event : Event) => {
+    var e = event || window.event;
+    e.stopPropagation && e.stopPropagation();
+    e.cancelBubble = true;
+  }
+
+  node.ontouchstart = absorbEvent_;
+  node.ontouchmove = absorbEvent_;
+  node.ontouchend = absorbEvent_;
+  node.ontouchcancel = absorbEvent_;
 }

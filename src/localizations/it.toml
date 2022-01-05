@@ -59,6 +59,9 @@ recover    = "Sessioni recenti"
 title   = "Libro"
 graph   = "Visualizza grafico"
 shuffle = "Rimescola"
+compact = "Compatta paragrafi"
+sort    = "Riordina paragrafi"
+
 
 [navbar.export]
 title = "Esporta"
@@ -116,7 +119,7 @@ Questo è un link verso il paragrafo [](#2). I link sono nel formato [Testo](#pa
 
 
 ### Paragrafo con titolo {#2}
-Questo è il secondo paragrafo. I paragrafi possono contenere anche testo in *corsivo* o **grassetto**.
+Questo è il secondo paragrafo. I paragrafi possono contenere anche testo in *corsivo* o **grassetto**.  Puoi anche usare <b>grassetto</b>, <i>corsivo</i>, o <u>sottolineato</u>.
 """
 fire = """
 # %1

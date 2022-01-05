@@ -34,7 +34,7 @@ const open = (elem) => {
     const decodedMd = formats[extension].decode(book)
     const encodedBook = (extension === 'md') 
       ? book
-      : await Promise.resolve(formats['md'].encode(decodedMd))
+      : await Promise.resolve(decodedMd)
 
 
     

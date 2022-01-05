@@ -7,6 +7,16 @@ const isNumber = isNatNumber
 const mimetype = 'application/xml'
 
 
+const sortedKeys = (chapters) => Object.keys(chapters).sort( (a, b) => {
+  const aIsNumber = isNumber(a)
+  const bIsNumber = isNumber(b)
+
+  if(!aIsNumber && bIsNumber) return -1
+  if(aIsNumber && !bIsNumber) return +1
+  if(!aIsNumber && !bIsNumber) return a.localeCompare(b)
+  if(aIsNumber && bIsNumber) return  parseInt(a, 10) - parseInt(b, 10)
+})
+
 
 const decode = xlgc => {
   const properties = {}, chapters = {}
@@ -72,23 +82,50 @@ const decode = xlgc => {
     })
     // Inserisce nel jlgc l'oggetto section appena creato
     chapter.text =  raw(chapter.text.replace(/\<\/\p\>/g,'\n').replace(/\<\p\>/g,'')
-      .replace(/\<b\>(\s*)<i\>(\s*)/g,'$1$2***').replace(/(\s*)\<\/i\>(\s*)\<\/b\>/g,'**$1$2')
-      .replace(/\<i\>(\s*)<b\>(\s*)/g,'$1$2***').replace(/(\s*)\<\/b\>(\s*)\<\/i\>/g,'**$1$2')
-      .replace(/\<b\>(\s*)/g,'$1**').replace(/(\s*)\<\/b\>/g,'**$1')
-      .replace(/\<i\>(\s*)/g,'$1*').replace(/(\s*)\<\/i\>/g,'*$1')
+      .replace(/\<i\>/g, '&lt;i&gt;').replace(/\<\/i\>/g, '&lt;/i&gt;')
+      .replace(/\<b\>/g, '&lt;b&gt;').replace(/\<\/b\>/g, '&lt;/b&gt;')
+      .replace(/\<u\>/g, '&lt;b&gt;').replace(/\<\/u\>/g, '&lt;/b&gt;')
       .replace(/{link (\w+):([^\}\{]+)}/g, (...all) =>`[${all[2].trim() == '@T' ? '': all[2]}](#${all[1]})`  )
       .replace(/[\n\s]+$/, ""))
     chapters[id] = chapter
   })
 
-  return { properties, chapters, key }
+
+    let s = `# ${properties.title}\n`
+    Object.entries(properties).forEach(([key, value]) => {
+      if(key !== 'title')  s+=`${key}: ${value.trim()}\n`
+    })
+    s+='\n\n\n'
+  
+    sortedKeys(chapters).forEach( key => {
+      const chapter = chapters[key]
+      s+= chapter.title ? `### ${chapter.title} {#${key}}\n` : `### ${key}\n`
+      if(chapter.flags && chapter.flags.length){
+        const flags = {
+          'death': '![][flag-death]',
+          'final': '![][flag-final]',
+          'fixed': '![][flag-fixed]',
+        }
+        s+= chapter.flags.map( key => flags[key]).join(' ') + '\n'
+      }
+      if(chapter.group){
+        s+=`[group]:<> ("${chapter.group}")\n`
+      }
+      s+= chapter.text.replace(/\n+$/, "") + '\n\n\n'
+    })
+  
+  return s
+    
 }
 
 
 
+
+const whitelist = ['<b>', '</b>', '<i>', '</i>', '<u>', '</u>']
+
 /* ENCODING */
 const renderer = {
-  html:      text => mangle(text),
+  html:      text => whitelist.includes(text.trim().toLowerCase()) ? text.trim().toLowerCase() : mangle(text),
   paragraph: text => `<p>${text}</p>`,
   strong:    text => `<b>${text}</b>`,
   em:        text => `<i>${text}</i>`,
@@ -138,11 +175,15 @@ const encode = book => {
   const indexedBook = extractIndexedBook(book)
 
   const { chapters, properties} = indexedBook
-  return `<?xml version="1.0" encoding="UTF-8"?><entities>${
+  let r =`<?xml version="1.0" encoding="UTF-8"?><entities>${
       encodeProperties(properties) +
-      encodeMap(properties) +
-      book.sortedKeys().reduce((acc, key) => acc + encodeEntity(key, chapters[key]), '')
-    }</entities>`
+      encodeMap(properties)}`
+
+  for( const [key, chapter] of chapters){
+    r += encodeEntity(key, chapter)
+  }
+
+  return r + `</entities>`
 }
 
 

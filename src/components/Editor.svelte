@@ -2,11 +2,11 @@
   import { _ } from 'svelte-i18n'
 	import { onMount } from 'svelte'
   import { session } from '../javascript/database.js'
-  import { cursorPosition, getEditor, editorComponentID, currentChapterFullTitle } from '../javascript/editor.js'
+  import { cursorPosition, getEditor, editorComponentID, currentChapterFullTitle, currentChapterKey, bookIndex } from '../javascript/editor.js'
   import { ctrlShortcuts } from '../javascript/shortcuts.js'
 
   import { showSidemenu, isSynced } from '../javascript/editor.js'
-  import { firstAvaiableKey, addChapter} from '../javascript/actions.js'
+  import { firstAvaiableKey, addChapter, getRightOrderKey} from '../javascript/actions.js'
   import { isApp, loadAppMode } from '../javascript/appMode.js'
 
 
@@ -37,17 +37,35 @@
   
 
   const addQuickLink = () => {
-    const { row, column} = $cursorPosition
+    let { row, column} = $cursorPosition
+
+    const {contentStart, end } = $bookIndex.chapters.get($currentChapterKey)
     
     const key = firstAvaiableKey()
     const link = `[](#${firstAvaiableKey()})`
 
+
+    console.log("contstar", contentStart, row)
+
+    if(contentStart != row ){
+      getEditor().session.replace(new ace.Range(row, column, row, column), link);
+      column += link.length
+    }else{
+      // Special case: if is on same line of heading, create a new line skip
+      getEditor().session.replace(new ace.Range(row, column, row, column), '\n' + link);
+      row += 1
+      column = link.length
+    }
+
+    getEditor().clearSelection()
+    getEditor().moveCursorTo(row, column);
+
+    const order = getRightOrderKey(key)
+
     addChapter(key, `\n\n### ${key}`)
 
-    getEditor().session.replace(new ace.Range(row, column, row, column), link);
-    getEditor().clearSelection()
-    getEditor().moveCursorTo(row, column + link.length);
-
+    console.log("order", order, contentStart)
+    if(order >= contentStart) getEditor().moveCursorTo(row, column);
     getEditor().focus()
   }
 
