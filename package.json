@@ -27,7 +27,8 @@
     "release": "npm run clean; npm run build;  ./build-app.sh",
     "dev": "rollup -c -w",
     "api-build": "rollup -c 'rollup-api.config.js'",
-    "api-dev": "rollup -c 'rollup-api.config.js' -w"
+    "api-dev": "rollup -c 'rollup-api.config.js' -w",
+    "test": "echo Test not set && exit 1"
   },
   "devDependencies": {
     "@babel/core": "^7.16.7",

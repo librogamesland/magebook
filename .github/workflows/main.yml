@@ -1,4 +1,4 @@
-name: Build and Deploy
+name: "Build, Test and Deploy"
 on: 
   push:
     branches:
@@ -13,8 +13,10 @@ jobs:
       - name: Install and Build
         run: |
           npm ci
-          exit 1
           npm run build
+
+      - name: Test
+        run: npm run test
 
       - name: Publish to npm registry
         run: |
@@ -24,7 +26,7 @@ jobs:
           NPM_AUTH_TOKEN: ${{ secrets.NPM_AUTH_TOKEN }}
 
         
-      - name: Prepare for github pages and release
+      - name: Prepare for github pages
         run: |
           rm -rf src .gitignore node_modules package.json package-lock.json \
             rollup.config.js tsconfig.json
