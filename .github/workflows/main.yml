@@ -10,14 +10,10 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v2.3.1
 
-      - name: Check if package version increased
-        uses: technote-space/package-version-check-action@v1
-        with:
-          COMMIT_DISABLED: 1
-
       - name: Install and Build
         run: |
           npm ci
+          exit 1
           npm run build
 
       - name: Publish to npm registry
