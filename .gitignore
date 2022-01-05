@@ -10,7 +10,7 @@ alpha2/
 dist/
 
 # Rollup js files
-editor/
+editor/build
 
 # Odt lock
 .~lock*
