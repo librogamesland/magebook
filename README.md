@@ -11,6 +11,8 @@ Old version here: [https://librogamesland.github.io/magebook/alpha](https://libr
 ## Developer api
 Magebook provides a javascript ([Node.js](https://nodejs.org/)) api to work with Magebook md format. You can use it to convert book formats, analyze books, or bundle your book inside a web app with [Rollup](https://rollupjs.org/).
 
+Currently the api is under a major rework - do not expect it to work until version 1.1
+
 ---
 Looking for an app template working out of the box? --> [https://github.com/librogamesland/magebook-template](https://github.com/librogamesland/magebook-template)
 

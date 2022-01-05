@@ -6,10 +6,12 @@ ok      = "Ok"
 cancel  = "Cancel"
 
 [dialogs.chapter]
-add    = "Add chapter"
-edit   = "Edit chapter"
-delete = "Chapter “%1” will be deleted"
-exists = "Chapter already exists"
+add     = "Add chapter"
+edit    = "Edit chapter"
+delete  = "Chapter “%1” will be deleted"
+exists  = "Chapter already exists"
+sort    = "Chapters will be sorted. This will change the book structure permanently."
+compact = "Chapters will be renamed so no number will be missing in the middle. This will change the book structure permanently."
 
 name   = "Key*"
 title  = "Title"
@@ -59,8 +61,8 @@ recover    = "Recent sessions"
 title   = "Book"
 graph   = "View graph"
 shuffle = "Shuffle"
-compact = "Compact chapters"
 sort    = "Sort chapters"
+compact = "Compact chapters"
 
 [navbar.export]
 title = "Export"

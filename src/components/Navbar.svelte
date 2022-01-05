@@ -4,9 +4,9 @@
   import { graphToImg } from '../javascript/graph.js'
   import { open, download } from '../javascript/file.js'
   import { newBook, isLoaded } from '../javascript/new-book.js'
+  import { sortBook, compactBook} from '../javascript/book-utils'
 
-  import { showSidemenu } from '../javascript/editor.js'
-  import { isFirebase }   from '../javascript/database.js'
+  import { getEditor, showSidemenu } from '../javascript/editor.js'
 
   import { isApp, appReload }   from '../javascript/appMode.js'
 
@@ -15,6 +15,7 @@
   // Dialogs
   import { dialog }     from './Dialogs.svelte'
   import About          from './dialogs/About.svelte'
+  import Confirm        from './dialogs/Confirm.svelte'
   import Img            from './dialogs/Img.svelte'
   import Shuffle        from './dialogs/Shuffle.svelte'
   import NewBook        from './dialogs/NewBook.svelte'
@@ -61,9 +62,13 @@
     <div class="content">
       <p on:click={() => dialog(Img, () => graphToImg(newBook.flush()))}>{$_('navbar.book.graph')}</p>
       <p on:click={() => dialog(Shuffle)}>{$_('navbar.book.shuffle')}</p>
-      <p on:click={() => dialog(Shuffle)}>{$_('navbar.book.compact')}</p>
-      <p on:click={() => dialog(Shuffle)}>{$_('navbar.book.sort')}</p>
-    </div>
+      <p on:click={async() => {
+        if(await(dialog(Confirm, $_('dialogs.confirm'), $_('dialogs.chapter.sort'), true)))  getEditor().setValue(sortBook($newBook), -1) 
+      }}>{$_('navbar.book.sort')}</p>
+      <p on:click={async() => {
+        if(await(dialog(Confirm, $_('dialogs.confirm'), $_('dialogs.chapter.compact'), true)))  getEditor().setValue(compactBook($newBook), -1) 
+      }}>{$_('navbar.book.compact')}</p>
+      </div>
   </div>
 
   <div>

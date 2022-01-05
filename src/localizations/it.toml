@@ -10,6 +10,9 @@ add    = "Aggiungi paragrafo"
 edit   = "Modifica paragrafo"
 delete = "Il paragrafo “%1” verrà eliminato"
 exist  = "Questo paragrafo esiste già"
+sort    = "I paragrafi saranno spostati così da rispettare l'ordine di numero."
+compact = "I paragrafi verranno rinominati in modo da avere numeri consecutivi, senza buchi in mezzo."
+
 
 name   = "Key*"
 title  = "Titolo"
@@ -59,9 +62,8 @@ recover    = "Sessioni recenti"
 title   = "Libro"
 graph   = "Visualizza grafico"
 shuffle = "Rimescola"
-compact = "Compatta paragrafi"
 sort    = "Riordina paragrafi"
-
+compact = "Compatta paragrafi"
 
 [navbar.export]
 title = "Esporta"
