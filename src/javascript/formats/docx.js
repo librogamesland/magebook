@@ -31,28 +31,6 @@ const renderer = (chapters) => ({
 
 const encode = (bookText) => {
   const indexedBook = extractIndexedBook(bookText)
-  const doc = new docx.Document({
-    styles: {
-    paragraphStyles: [
-        {
-            id: "Normal",
-            name: "Normal",
-            next: "Normal",
-            quickFormat: false,
-            run: {
-                size: 24,
-                font: "Times New Roman",
-            },
-            paragraph: {
-                spacing: {
-                    line: 276,
-                },
-            },
-        },
-      ],
-    }
-  });
-
   const children = []
   
   const name = indexedBook.properties.title || 'magebook'
@@ -62,12 +40,16 @@ const encode = (bookText) => {
     const breakAfter =  false //!isNumber(key)
   
     // Create Bookmark
-    const bookMark = new docx.Bookmark(`mage${key}`, '')
-    bookMark.text  = new docx.TextRun({
-        text: inlineStyle ? `${title}. ` : title,
-        bold: true,
-        color: '#000000',
-      })
+    const bookMark = new docx.Bookmark({
+      id: `mage${key}`,
+      children: [
+        new docx.TextRun({
+          text: inlineStyle ? `${title}. ` : title,
+          bold: true,
+          color: '#000000',
+        })
+      ]
+    })
   
     const l = document.createElement("div")
     l.innerHTML = encodeToHTML(text, renderer(indexedBook.chapters)) || '<p></p>'
@@ -99,8 +81,15 @@ const encode = (bookText) => {
           if(tag === 'MAGE-LINK'){
             const href= domElement.getAttribute('to')
             children.push(
-              new docx.Hyperlink(node.nodeValue, `mage${href}`,`mage${href}`)
-            )
+              new docx.InternalHyperlink({
+                children: [
+                    new docx.TextRun({
+                        text: node.nodeValue,
+                        style: "Hyperlink",
+                    }),
+                ],
+                anchor: `mage${href}`,
+              }))
             return
           }
   
@@ -140,19 +129,44 @@ const encode = (bookText) => {
   }
 
 
-  doc.addSection({
+  const doc = new docx.Document({
+    styles: {
+    paragraphStyles: [
+        {
+            id: "Normal",
+            name: "Normal",
+            next: "Normal",
+            quickFormat: false,
+            run: {
+                size: 24,
+                font: "Times New Roman",
+            },
+            paragraph: {
+                spacing: {
+                    line: "276",
+                },
+            },
+        },
+      ],
+    },
+    sections: [{
       headers: { default: null, },
-      size: {
-        width: 8419,
-        height: 11906,
-      },
-      margins: {
-          top: 1417,
-          right: 1134,
-          bottom: 1134,
-          left: 1134,
+      properties: {
+        page: {
+          size: {
+            width: "14.80cm",
+            height: "21.00cm",
+          },
+          margin: {
+              top: "2.5cm",
+              right: "2cm",
+              bottom: "2cm",
+              left: "2cm",
+          },
+        },
       },
       children,
+    }],
   });
 
   docx.Packer.toBlob(doc).then(blob => {

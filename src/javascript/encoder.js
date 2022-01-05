@@ -1,4 +1,4 @@
-import marked from 'marked'
+import {marked} from 'marked'
 
 if(typeof DOMParser === 'undefined'){
   const JSDOM = global.JSDOM || require("jsdom").JSDOM;
@@ -47,5 +47,6 @@ const encodeToHTML = (text, renderer = defaultHTMLRenderer) => {
   })
   return marked(text.replace(/\n/g, '\n\n'))
 }
+
 
 export {marked, encodeToHTML}

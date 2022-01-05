@@ -28,7 +28,7 @@ const babelPreset = {
     ]
   ],
   "plugins": [
-      ["@babel/transform-runtime"]
+      ["@babel/transform-runtime", { corejs: 3 }]
   ],
 }
 
@@ -57,8 +57,8 @@ export default [{
       }),
       commonjs(),
       production && babel(babelPreset),
-      production && terser(),       // Minify only on production
-      !production && serve({         // Open browser on watch
+      production && terser(),        // Minify only on production
+      !production && serve({         // Open browser on `npm run dev`
         open: true,
         contentBase: '../',
         openPage: '/magebook/editor/index.html',

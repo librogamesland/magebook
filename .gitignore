@@ -1,5 +1,16 @@
-# Rollup results
-dist/build
+
+# VSCode files
+.vscode
+
+# Alpha builds
+alpha/
+alpha2/ 
+
+# App results
+dist/
+
+# Rollup js files
+editor/
 
 # Odt lock
 .~lock*
