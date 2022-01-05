@@ -12,6 +12,9 @@ dist/
 # Rollup js files
 editor/build
 
+# Golang intermediate files
+src/golang/editor
+
 # Odt lock
 .~lock*
 
