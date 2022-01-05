@@ -5,6 +5,7 @@ editor/
 screenshots/
 src/
 wrappers/
+docs/
 
 rollup.config.js
 rollup-api.config.js

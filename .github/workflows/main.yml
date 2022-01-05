@@ -7,18 +7,35 @@ jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout 🛎️
+      - name: Checkout
         uses: actions/checkout@v2.3.1
+
+      - name: Check if package version increased
+        uses: technote-space/package-version-check-action@v1
+        with:
+          COMMIT_DISABLED: 1
 
       - name: Install and Build
         run: |
           npm ci
           npm run build
-          rm -rf src .gitignore
+
+      - name: Publish to npm registry
+        run: |
+          npm config set //registry.npmjs.org/:_authToken=$NPM_AUTH_TOKEN
+          npm publish
+        with:
+          NPM_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+        
+      - name: Prepare for github pages and release
+        run: |
+          rm -rf src .gitignore node_modules package.json package-lock.json \
+            rollup.config.js tsconfig.json
           touch .nojekyll
 
 
-      - name: Deploy 🚀
+      - name: Deploy to github pages
         uses: JamesIves/github-pages-deploy-action@4.1.9
         with:
           branch: gh-pages # The branch the action should deploy to.
