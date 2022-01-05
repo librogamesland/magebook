@@ -21,8 +21,9 @@
   ],
   "main": "index.js",
   "scripts": {
-    "build": "rollup -c",
+    "build-web": "rollup -c",
     "build-app": "bash ./src/golang/build-app.sh",
+    "build": "npm run build-web && npm run build-app",
     "clean": "rm -rf ./editor/build; rm -rf ./dist;",
     "release": "npm run clean; npm run build;  ./build-app.sh",
     "dev": "rollup -c -w",
