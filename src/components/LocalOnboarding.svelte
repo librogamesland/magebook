@@ -1,4 +1,4 @@
-<script>
+<script lang="ts">
 import { appPath, recentFiles } from '../javascript/appMode.js'
 import { _ } from "svelte-i18n";
 import manifest from '../../package.json'

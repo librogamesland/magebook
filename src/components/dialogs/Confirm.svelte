@@ -1,4 +1,4 @@
-<script>
+<script lang="ts">
   import {_} from 'svelte-i18n'
   import { newBook } from '../../javascript/new-book.js'
   import { download } from '../../javascript/file.js'

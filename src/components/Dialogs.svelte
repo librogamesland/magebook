@@ -1,4 +1,4 @@
-<script context="module">
+<script context="module" lang="ts">
   import { writable } from 'svelte/store'
 
   /* Dialogs params & state
@@ -21,7 +21,7 @@
   export { dialog, dialogStore, lockStore }
 </script>
 
-<script>
+<script lang="ts">
   import { _ } from 'svelte-i18n'
   import { tick } from 'svelte'
 

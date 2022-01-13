@@ -1,4 +1,4 @@
-<script>
+<script lang="ts">
   import { _ } from 'svelte-i18n'
   import { sanitizeKey, bookIndex, newBook} from '../javascript/new-book.js'
   import { currentChapterKey, getEditor, showSidemenu } from '../javascript/editor.js'
@@ -55,7 +55,7 @@
     if (!key) return
     const chapter =  $bookIndex.chapters.get(cKey)
     const content = getEditor().session.doc.getTextRange(new ace.Range(chapter.contentStart + 1, 0, chapter.contentEnd + 1, 0))
-      .split('\n').filter( line => !(line.includes('[group]:<>') || line.includes('![flag-'))).join('\n').trim()
+      .split('\n').filter( line => !(line.includes('[group]:<>') || line.includes('![flag-') || line.includes('![][flag-'))).join('\n').trim()
     getEditor().session.replace(new ace.Range(chapter.start, 0, chapter.contentEnd + 1, 0), "");
     newBook.flush()
     addChapter(key, generateChapterText({

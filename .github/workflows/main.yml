@@ -43,7 +43,7 @@ jobs:
         
       - name: Prepare for github pages
         run: |
-          rm -rf src .gitignore node_modules package.json package-lock.json \
+          rm -rf src .gitignore node_modules package-lock.json \
             rollup.config.js tsconfig.json
           touch .nojekyll
 

@@ -1,4 +1,4 @@
-<script>
+<script lang="ts">
   import { _ } from 'svelte-i18n'
   import { tick } from 'svelte';
   import { bookIndex } from '../javascript/new-book.js'

@@ -1,4 +1,4 @@
-<script>
+<script lang="ts">
   import { _ } from 'svelte-i18n'
   import { ctrlShortcuts } from '../javascript/shortcuts.js'
   import { graphToImg } from '../javascript/graph.js'
@@ -26,7 +26,6 @@
 
 
   ctrlShortcuts({
-    'N': () => newClick(),
     'S': () => download('md', newBook.flush()),
     'O': () => document.getElementById('open').click()
   })

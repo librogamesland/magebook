@@ -1,4 +1,4 @@
-<script>
+<script lang="ts">
   import { _ } from 'svelte-i18n'
   import { onDestroy } from 'svelte';
   import { tick } from 'svelte'
