@@ -119,11 +119,18 @@
     flex-grow: 1;
     text-align: center;
     box-sizing: border-box;
-    padding: 0.7rem 11px;
+    padding: 0.7rem 0px;
     content: ' ';
     font-size: 1.3rem;
   }
   .buttons > div:hover {
     background-color: #ddd;
   }
+
+  :global(.mage-theme-dark .buttons){
+    background-color: #121423 !important;
+  }
+  :global(.mage-theme-dark aside .buttons > div:hover ){
+    background-color: #444 !important;
+  } 
 </style>

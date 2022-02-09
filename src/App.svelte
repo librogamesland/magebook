@@ -14,6 +14,15 @@
   import { handleShortcuts } from './javascript/shortcuts.js'
   import { isApp, appPath } from './javascript/appMode.js'
   import { initError }from './javascript/editor.js'
+  import { theme } from './javascript/settings' 
+
+  $: {
+    const b = window.document.body
+    b.className.split(' ').forEach(c => {
+      if(c.startsWith('mage-theme-')) b.classList.remove(c)
+    })
+    b.classList.add('mage-theme-' + $theme)
+  }
 
   $: { if(!(/bot|google|baidu|bing|msn|duckduckbot|teoma|slurp|yandex/i.test(navigator.userAgent))){
     if($bookIndex && $bookIndex.properties.title){

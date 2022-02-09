@@ -41,7 +41,7 @@ const encode = (bookText) => {
   
     // Create Bookmark
     const bookMark = new docx.Bookmark({
-      id: `mage${key}`,
+      id: `${key}`,
       children: [
         new docx.TextRun({
           text: inlineStyle ? `${title}. ` : title,
@@ -88,7 +88,7 @@ const encode = (bookText) => {
                         style: "Hyperlink",
                     }),
                 ],
-                anchor: `mage${href}`,
+                anchor: `${href}`,
               }))
             return
           }

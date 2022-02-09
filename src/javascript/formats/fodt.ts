@@ -34,14 +34,14 @@ const renderer = (chapters) => ({
   link: (fullKey, i, text) => {
     const key = fullKey.replace('#', '')
 
-    return `<text:a xlink:type="simple" xlink:href="#mage${key}" text:style-name="Internet_20_link" text:visited-style-name="Visited_20_Internet_20_Link">${
+    return `<text:a xlink:type="simple" xlink:href="#${key}" text:style-name="Internet_20_link" text:visited-style-name="Visited_20_Internet_20_Link">${
       text.trim() || (chapters.has(key) ? (chapters.get(key).title.trim() || key) : key)
     }</text:a>`
   },
 })
 
 const bookmark = (key, text) =>
-`<text:span text:style-name="bold"><text:bookmark-start text:name="mage${key}"/>${text}<text:bookmark-end text:name="mage${key}"/></text:span>`
+`<text:span text:style-name="bold"><text:bookmark-start text:name="${key}"/>${text}<text:bookmark-end text:name="${key}"/></text:span>`
 
 
 

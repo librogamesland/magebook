@@ -20,6 +20,9 @@
   })
   
   onDestroy(unsubscribe)
+
+  // IN THE PAST I CHANGED SVG WIDTH TO FIT WITH:
+  // {@html src.replace(/width=\"([^"]*)\"/, 'width="100%"').replace(/height=\"([^"]*)\"/, '')}
 </script>
 
 {#if loaded}
@@ -29,9 +32,8 @@
   callback(false)
 }}>
   
-  <div on:click|stopPropagation={() => console.log("clickOnImg")}>
-  {@html src.replace(/width=\"([^"]*)\"/, 'width="100%"').replace(/height=\"([^"]*)\"/, '')}
- <!-- -->
+  <div on:click|stopPropagation={() => console.log("clickOnImg")} style="max-width:90vw; max-height: 80vh; overflow: auto;">
+  {@html src}
   </div>
   <button class="ok" on:click={ () => {
     const blob = new window.Blob([src], { type: "image/svg+xml" });

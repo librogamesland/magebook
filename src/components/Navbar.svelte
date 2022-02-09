@@ -5,6 +5,7 @@
   import { open, download } from '../javascript/file.js'
   import { newBook, isLoaded } from '../javascript/new-book.js'
   import { sortBook, compactBook} from '../javascript/book-utils'
+  import { theme } from '../javascript/settings'
 
   import { getEditor, showSidemenu } from '../javascript/editor.js'
 
@@ -30,7 +31,12 @@
     'O': () => document.getElementById('open').click()
   })
 
- 
+
+  let fullscreen = window.document.fullscreenElement ? true : false
+
+  document.onfullscreenchange = () => {
+    fullscreen = window.document.fullscreenElement ? true : false
+  }
 </script>
 
 
@@ -96,7 +102,32 @@
   </div>
 
   {#if $isLoaded}
-  <div class="sidemenu-button">
+
+
+  <div style="margin: auto"></div>
+
+  <span class={"nav-buttons " + ($showSidemenu ? "display" : "hidden")}>
+    <div>
+      <span aria-label={$_('sidemenu.toggle')} class={"dropbtn " + (fullscreen ? "icon-resize-small" : "icon-resize-full")}
+      on:click={() => {
+          if(window.document.fullscreenElement){
+            window.document.exitFullscreen()
+          }else{
+            window.document.body.requestFullscreen()
+          }
+        }} />
+    </div>
+
+
+    <div>
+      <span aria-label={$_('sidemenu.toggle')} class={"dropbtn " + ($theme == 'light' ? "icon-moon" : "icon-sun")}
+        on:click={() => ($theme = ($theme == 'light' ? "dark" : "light"))} />
+    </div>
+
+</span>
+
+
+  <div class="nav-button sidemenu">
     <span aria-label={$_('sidemenu.toggle')} class="dropbtn icon-menu"
       on:click={() => ($showSidemenu = !$showSidemenu)} />
   </div>
@@ -157,16 +188,47 @@
     }
   }*/
 
+  .nav-buttons {
+    display: flex;
+  }
 
-  .dropbtn { display: none;}
+  .sidemenu { display: none;}
   @media only screen and (max-width: 680px) {
-    .dropbtn { display: block;}
+    .sidemenu { display: block;}
+    .nav-buttons.hidden{ display: none; }
+    .nav-buttons {
+      position: fixed;
+      top: 1.8rem;
+      left: 10px;
+      flex-direction: column;
+      z-index: 10000;
+    }
+
+    .nav-buttons > div {
+      border-radius: 4px;
+      background-color: #242424;
+      border: solid 1px #eee;
+      margin-bottom: 10px;
+    }
   }
 
   .content > * {
     background-color: #f9f9f9;
     color: black;
     text-decoration: none;
+  }
+
+  :global(.mage-theme-dark nav .content){
+    background-color: #3e3e3e !important;
+  }
+
+  :global(.mage-theme-dark nav .content > *){
+    background-color: #242424 !important;
+    color: #fff !important;
+  } 
+  
+  :global(.mage-theme-dark nav .content > *:hover){
+    background-color: #454545 !important;
   }
 
   div:hover h1, div:hover .dropbtn{
@@ -181,10 +243,6 @@
     display: block;
   }
 
-
-  .sidemenu-button {
-    margin-left: auto;
-  }
 
   input[type='file'] {
     width: 0.1px;

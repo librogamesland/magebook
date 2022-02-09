@@ -1,15 +1,17 @@
 <script lang="ts">
   import { _ } from 'svelte-i18n'
   import { onDestroy } from 'svelte'
+  //import { bookIndex } from '../../'
   export let params
   export let callback
 
   // Entity input bindings
-  let dialogTitle, key, value, title, flags, group
+  let dialogTitle, key, value, title, flags, group, originalKey
   const filterFlags = () => Object.keys(flags).filter(key => flags[key])
 
   const unsubscribe = params.subscribe( p => {
     ;([dialogTitle, key, value] = p)
+    originalKey = key
     ;({ title = '', group = '' } = value)
     const flagProps = value.flags || []
     flags = {
@@ -109,5 +111,19 @@
 
   .flags > div.selected {
     background-color: #8a8a8a;
+  }
+
+  :global(.mage-theme-dark .dialog .flags > div ){
+    background-color: #161616;
+  }
+
+  @media (hover: hover) {
+    :global(.mage-theme-dark .dialog .flags > div:hover ){
+      background-color: #565656;
+    }
+  }
+
+  :global(.mage-theme-dark .dialog .flags > div.selected ){
+    background-color: #2b356b;
   }
 </style>

@@ -165,6 +165,7 @@
     color: #fff;
     border-radius: 2px;
     padding: 0 5px;
+    white-space: nowrap;
   }
 
   :global(.chapters .errors i) {
@@ -263,10 +264,49 @@
     }
   }
 
+  @media only screen and (max-width: 360px) {
+    aside{
+      width: calc(90vw - 40px);
+    }
+  }
+
   @media (any-pointer: coarse) {
     li {
       padding: 1.1rem 0.6rem;
     }
   }
+
+
+  :global(.mage-theme-dark aside){
+    background-color: #272727 !important;
+    color: #bbb !important;
+  }
+
+  :global(.mage-theme-dark aside h1){
+    background-color: #272727 !important;
+    color: #bbb !important;
+  }
  
+  :global(.mage-theme-dark aside ul){
+    background-color: #161616 !important;
+  }
+
+  :global(.mage-theme-dark aside ul li:nth-child(even) ){
+    background-color: #000 !important;
+  } 
+
+  :global(.mage-theme-dark aside ul li b){
+    color: #fff !important;
+  } 
+
+  :global(.mage-theme-dark aside ul li:hover ){
+    background-color: #444 !important;
+  } 
+
+  :global(.mage-theme-dark aside ul li.selected ){
+    background-color: #2b356b !important;
+  } 
+
+
+
 </style>

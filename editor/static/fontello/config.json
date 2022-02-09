@@ -101,6 +101,36 @@
       "css": "help",
       "code": 61736,
       "src": "fontawesome"
+    },
+    {
+      "uid": "5840fe162df3bcc8e390c58ef4e2acf9",
+      "css": "sun",
+      "code": 59402,
+      "src": "typicons"
+    },
+    {
+      "uid": "c2152732d525871cf35345955854f711",
+      "css": "moon",
+      "code": 59403,
+      "src": "iconic"
+    },
+    {
+      "uid": "4815ddddea76d90e367a9694a93b7e24",
+      "css": "resize-full",
+      "code": 59404,
+      "src": "iconic"
+    },
+    {
+      "uid": "b05c5a209b56e7ea6632a31e4bd0b41d",
+      "css": "resize-small",
+      "code": 59405,
+      "src": "iconic"
+    },
+    {
+      "uid": "e99461abfef3923546da8d745372c995",
+      "css": "cog",
+      "code": 59406,
+      "src": "fontawesome"
     }
   ]
 }

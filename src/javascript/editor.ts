@@ -3,6 +3,7 @@ import { debounced } from './debounced-store.js'
 import { newBook, bookIndex, isLoaded} from './new-book.js'
 import { preventClickPropagation } from './utils';
 import { _ } from 'svelte-i18n'
+import { theme } from './settings';
 
 
 export const editorComponentID = 'main-editor'
@@ -46,10 +47,15 @@ const currentChapterFullTitle = derived(
   }
 )
 
+const themes = {
+  light: "ace/theme/chrome",
+  dark: "ace/theme/vibrant_ink",
+}
+
 const setupAce = () => {
   editor = ace.edit(editorComponentID);
   window.editor = editor
-  editor.setTheme("ace/theme/chrome");
+  theme.subscribe( $theme => editor.setTheme(themes[$theme] || themes.light))
   editor.session.setMode("ace/mode/markdown");
   editor.session.setUseWorker(false);
   

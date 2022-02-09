@@ -111,7 +111,6 @@
       box-sizing: border-box;
       min-height: 150px;
       max-width: calc(100vw - 30px);
-      background-color: #fff;
       opacity: 1;
       margin-bottom: calc(10px + 4vh);
       max-height: calc(100vh - 30px);
@@ -153,6 +152,31 @@
 
   .lock {
     max-width: 450px;
+  }
 
+  :global(.mage-theme-dark .dialog){
+    background-color: #2a2a2a;
+    border: 1px #636363 solid;
+    color: #ddd;
+  }
+
+
+  :global(.mage-theme-dark input){
+    background-color: #1d1d1d;
+    border: 2px #161616 solid;
+    color: #ddd;
+  }
+
+  :global(.mage-theme-dark .dialog a){
+    color: rgb(116, 134, 255);
+  }
+
+  :global(.mage-theme-dark button, .mage-theme-dark input[type=submit]){
+    border: 1px #666 solid !important;
+  }
+
+  :global(.mage-theme-dark button.cancel, .mage-theme-dark input[type=submit].cancel){
+    color: #ddd;
+    background-color: #000;
   }
 </style>

@@ -6,6 +6,16 @@ const hpccWasm = window["@hpcc-js/wasm"];
 
 
 const sanitizeLabel = (text) => text.replace(/\//g, "\\").replace(/\"/g, '\"')
+const sanitizeLink = (text) => text.replace(/[\]\[\#\)\(]/g, "")
+
+
+const nodeStyle  = (key, flags, indexBook) => {
+  if(flags.includes('final')) return ', color="#ffa200"'
+  if(flags.includes('death')) return ', color="#000000", fontcolor="#FFFFFF"'
+  if(flags.includes('fixed')) return ', color="#b02900", fontcolor="#FFFFFF"'
+
+  return ''
+}
 
 const generateGraph = (book) => {
 
@@ -21,13 +31,14 @@ const generateGraph = (book) => {
   const groups = Object.fromEntries([...indexedBook.groups].map(group => [group, []]))
 
 
-  for(let [key, {title, group, links}] of indexedBook.chapters){
+  for(let [key, {title, group, links, flags}] of indexedBook.chapters){
     s += `
-      ${key} [label="${sanitizeLabel(title ? `${key} - ${title}` : key)}"]`
+      ${key} [label="${sanitizeLabel(title ? `${key} - ${title}` : key)}"${nodeStyle(key, flags, indexedBook)}]`
 
     for(const link of links){
-      s += `
-        ${key} -> ${link}`
+      if(indexedBook.chapters.has(link)) s += `
+        ${key} -> ${sanitizeLink(link)}`
+
     }
     if(group) groups[group].push(key)
   }

@@ -45,8 +45,6 @@
     const link = `[](#${firstAvaiableKey()})`
 
 
-    console.log("contstar", contentStart, row)
-
     if(contentStart != row ){
       getEditor().session.replace(new ace.Range(row, column, row, column), link);
       column += link.length
@@ -64,7 +62,6 @@
 
     addChapter(key, `\n\n### ${key}`)
 
-    console.log("order", order, contentStart)
     if(order >= contentStart) getEditor().moveCursorTo(row, column);
     getEditor().focus()
   }
@@ -391,6 +388,41 @@
     transform: rotate(359deg);
   }
 }
+
+:global(.mage-theme-dark .editor){
+  color: #fff !important;
+  background-color: #424242 !important;
+}
+
+:global(.mage-theme-dark .toolbar, .mage-theme-dark .margin){
+  color: #ddd !important;
+  background-color: #0f0f0f !important;
+}
+
+
+:global(.mage-theme-dark .toolbar > div){
+    color: rgb(115, 138, 255) !important;
+    border-left: #292929 solid 1px !important;
+}  
+
+:global(.mage-theme-dark .ace_content){
+    color: #ccc !important;
+}  
+
+:global(.mage-theme-dark .ace_heading){
+    color: #fff !important;
+}  
+
+:global(.mage-theme-dark .ace_content .ace_string){
+    color: rgb(193, 152, 255) !important;
+} 
+
+:global(.mage-theme-dark select){
+    color: #fff !important;
+    background-color: #424242 !important;
+
+}  
+
 </style>
 
 
