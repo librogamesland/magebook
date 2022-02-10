@@ -152,4 +152,12 @@
     padding: 0px;
   }
 
+  @media only screen and (max-width: 600px) {
+    .dialog {
+      width: 100%;
+    }
+    p.hide {
+      display: none;
+    }
+  }
 </style>
