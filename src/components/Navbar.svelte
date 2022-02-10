@@ -107,8 +107,8 @@
   <div style="margin: auto"></div>
 
   <span class={"nav-buttons " + ($showSidemenu ? "display" : "hidden")}>
-    <div>
-      <span aria-label={$_('sidemenu.toggle')} class={"dropbtn " + (fullscreen ? "icon-resize-small" : "icon-resize-full")}
+    <div title={$_('navbar.buttons.fullscreen')}>
+      <span aria-label={$_('navbar.buttons.fullscreen')} class={"dropbtn " + (fullscreen ? "icon-resize-small" : "icon-resize-full")}
       on:click={() => {
           if(window.document.fullscreenElement){
             window.document.exitFullscreen()
@@ -119,15 +119,15 @@
     </div>
 
 
-    <div>
-      <span aria-label={$_('sidemenu.toggle')} class={"dropbtn " + ($theme == 'light' ? "icon-moon" : "icon-sun")}
+    <div title={$_('navbar.buttons.darktheme')}>
+      <span aria-label={$_('navbar.buttons.darktheme')} class={"dropbtn " + ($theme == 'light' ? "icon-moon" : "icon-sun")}
         on:click={() => ($theme = ($theme == 'light' ? "dark" : "light"))} />
     </div>
 
 </span>
 
 
-  <div class="nav-button sidemenu">
+  <div title={$_('sidemenu.toggle')} class="nav-button sidemenu">
     <span aria-label={$_('sidemenu.toggle')} class="dropbtn icon-menu"
       on:click={() => ($showSidemenu = !$showSidemenu)} />
   </div>

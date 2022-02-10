@@ -14,10 +14,14 @@ sort    = "I paragrafi saranno spostati così da rispettare l'ordine di numero."
 compact = "I paragrafi verranno rinominati in modo da avere numeri consecutivi, senza buchi in mezzo."
 
 
-name   = "Key*"
+name   = "Key"
 title  = "Titolo"
-group  = "Gruppo*"
-hint   = "*Key e Gruppo dovrebbero contenere solo caratteri alfanumerici (a-z, A-Z, 0-9)"
+group  = "Gruppo"
+
+[dialogs.chapter.warnings]
+duplicate    = "Esiste un'altro paragrafo con la stessa key!"
+invalidkey   = "Key dovrebbe contenere solo caratteri alfanumerici (a-z, A-Z, 0-9)"
+invalidgroup = "Gruppo dovrebbe contenere solo caratteri alfanumerici (a-z, A-Z, 0-9)"
 
 
 [dialogs.newbook]
@@ -79,6 +83,11 @@ guide     = "Guida"
 guidefile = "https://librogamesland.github.io/magebook" 
 forum     = "Forum Lgl"
 about     = "Info"
+
+[navbar.buttons]
+fullscreen = "Schermo intero" 
+darktheme  = "Cambia tema scuro/chiaro"
+
 
 [sidemenu]
 toggle    = "Apri menu laterale"

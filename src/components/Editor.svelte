@@ -421,7 +421,37 @@
     color: #fff !important;
     background-color: #424242 !important;
 
-}  
+}
+
+:global(.mage-theme-dark .ace_search){
+  background-color: #444 !important;
+  color: #ddd !important;
+}
+
+:global(.mage-theme-dark .ace_search .ace_button){
+  background-color: #444;
+  color: #ddd !important;
+}
+
+:global(.mage-theme-dark .ace_search .ace_searchbtn){
+  background-color: #282828;
+  border-color:#000 !important;
+  color: #ddd;
+}
+
+:global(.mage-theme-dark .ace_search input){
+  border: solid 1px black;
+  border-right: none;
+}
+
+@media (any-pointer: fine) {
+
+  :global(.mage-theme-dark .ace_search .ace_searchbtn:hover,
+  .mage-theme-dark .ace_search .ace_button:hover){
+    background-color: #555 !important;
+  }
+}
+
 
 </style>
 

@@ -1,7 +1,9 @@
 <script lang="ts">
   import { _ } from 'svelte-i18n'
   import { onDestroy } from 'svelte'
-  //import { bookIndex } from '../../'
+  import { bookIndex } from '../../javascript/new-book'
+  import { sanitizeKey } from '../../javascript/book-utils'
+  import About from './About.svelte';
   export let params
   export let callback
 
@@ -22,12 +24,15 @@
   })
 
   onDestroy(unsubscribe)
+  $: keyDuplicate = (key !== originalKey) && $bookIndex.chapters.has(key)
+  $: keyIsValid = key === sanitizeKey(key)
+  $: groupIsValid = group === sanitizeKey(group)
 </script>
 <div class="dialog">
   <h3>{dialogTitle}</h3>
   <div class="input">
     <span>{$_('dialogs.chapter.name')}</span>
-    <input bind:value={key} type="text" />
+    <input class:error={keyDuplicate || !keyIsValid} bind:value={key} type="text" />
   </div>
   <div class="input">
     <span>{$_('dialogs.chapter.title')}</span>
@@ -35,7 +40,7 @@
   </div>
   <div class="input">
     <span>{$_('dialogs.chapter.group')}</span>
-    <input bind:value={group} type="text" />
+    <input class:error={!groupIsValid} bind:value={group} type="text" />
   </div>
   <div class="flags">
     {#each ['final', 'fixed', 'death'] as flag}
@@ -46,8 +51,12 @@
       </div>
     {/each}
   </div>
-  <p style="font-size: 85%">{$_('dialogs.chapter.hint')}</p>
+  <p style="font-size: 85%" class:hide={!keyDuplicate}><i class="icon-warning"></i>{$_('dialogs.chapter.warnings.duplicate')}</p>
+  <p style="font-size: 85%" class:hide={keyIsValid}><i class="icon-warning"></i>{$_('dialogs.chapter.warnings.invalidkey')}</p>
+  <p style="font-size: 85%" class:hide={groupIsValid}><i class="icon-warning"></i>{$_('dialogs.chapter.warnings.invalidgroup')}</p>
+
   <button
+    disabled={keyDuplicate || !keyIsValid || !groupIsValid}
     class="ok"
     on:click={() => callback({
         key,
@@ -126,4 +135,21 @@
   :global(.mage-theme-dark .dialog .flags > div.selected ){
     background-color: #2b356b;
   }
+
+  .input input.error{
+    background-color: #9e0000 !important;
+    color: #fff !important;
+  }
+
+  .icon-warning {
+    padding-right: 5px;
+  }
+
+  p.hide {
+    opacity: 0.01;
+    height: 0px;
+    margin: 0px;
+    padding: 0px;
+  }
+
 </style>

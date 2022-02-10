@@ -13,10 +13,14 @@ exists  = "Chapter already exists"
 sort    = "Chapters will be sorted. This will change the book structure permanently."
 compact = "Chapters will be renamed so no number will be missing in the middle. This will change the book structure permanently."
 
-name   = "Key*"
+name   = "Key"
 title  = "Title"
-group  = "Group*"
-hint   = "*Key and Group should contain only alphanumeric characters (a-z,A-Z,0-9)"
+group  = "Group"
+
+[dialogs.chapter.warnings]
+duplicate    = "Another key with same name exists"
+invalidkey   = "Key should contain only alphanumeric characters (a-z,A-Z,0-9)"
+invalidgroup = "Group should contain only alphanumeric characters (a-z,A-Z,0-9)"
 
 
 [dialogs.newbook]
@@ -78,6 +82,11 @@ guide     = "Guide"
 guidefile = "https://librogamesland.github.io/magebook" 
 forum     = "Lgl forum"
 about     = "About"
+
+[navbar.buttons]
+fullscreen = "Fullscreen" 
+darktheme  = "Toggle dark/light theme"
+
 
 [sidemenu]
 toggle    = "Toggle sidemenu"

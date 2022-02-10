@@ -34,7 +34,6 @@ const getRightOrderKey = (key) => {
 
   const n =  Math.floor(key)
   for(let i = n; i >= 0; i--){
-    console.log(i)
     if($bookIndex.chapters.has(String(i))) return $bookIndex.chapters.get(String(i)).contentEnd
   }
 

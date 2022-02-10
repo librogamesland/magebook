@@ -39,7 +39,9 @@
     newBook.flush()
     goToChapter(key)
   }
+
   const edit = async () => {
+    
     const cKey = $currentChapterKey
     if(cKey == '') return
     const result = await dialog(
@@ -53,6 +55,15 @@
     key = sanitizeKey(key)
     value.group = sanitizeKey(value.group || '')
     if (!key) return
+
+    if(key !== cKey){
+      const text = $newBook.replace(/\[([^\[]*)\](\(\s*#(\w+)\s*\))/g, (...all) => `[${all[1]}](#${
+        all[3] === cKey ? key  : all[3]
+      })`)
+
+      getEditor().session.setValue(text)
+
+    }
     const chapter =  $bookIndex.chapters.get(cKey)
     const content = getEditor().session.doc.getTextRange(new ace.Range(chapter.contentStart + 1, 0, chapter.contentEnd + 1, 0))
       .split('\n').filter( line => !(line.includes('[group]:<>') || line.includes('![flag-') || line.includes('![][flag-'))).join('\n').trim()

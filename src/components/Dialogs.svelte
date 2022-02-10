@@ -179,4 +179,10 @@
     color: #ddd;
     background-color: #000;
   }
+
+  :global(button.ok[disabled]){
+    background-color: #444 !important;
+    cursor: not-allowed;
+  }
 </style>
+
