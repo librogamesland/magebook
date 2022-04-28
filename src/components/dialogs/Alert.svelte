@@ -11,6 +11,6 @@
 
 <div class="dialog">
   <h3>{title}</h3>
-  <p>{text}</p>
+  <p>{@html text}</p>
   <button class="ok" on:click={() => callback(true)}>{$_('dialogs.ok')}</button>
 </div>

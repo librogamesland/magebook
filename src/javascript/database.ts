@@ -6,7 +6,7 @@ import { _ } from 'svelte-i18n'
 
 import { randomString } from './utils.js'
 import {lockStore} from '../components/Dialogs.svelte'
-import {newBook, bookIndex } from './new-book.js'
+import {book, bookIndex } from './new-book.js'
 import {cursorPosition, initEditorLocal, initEditorFirebase} from './editor.js'
 
 
@@ -131,9 +131,9 @@ const session = new (function(){
     initEditorLocal(info.data)
 
     data = derived(
-      [newBook, cursorPosition, bookIndex],
-      ([$newBook, $cursorPosition, $bookIndex]) => ({
-        book: $newBook,
+      [book, cursorPosition, bookIndex],
+      ([$book, $cursorPosition, $bookIndex]) => ({
+        book: $book,
         cursor: $cursorPosition,
         title: $bookIndex.properties.title
       })
@@ -166,11 +166,11 @@ const session = new (function(){
     })
     
     window.onbeforeunload = (e) => {
-      newBook.flush()
+      book.flush()
       delete e['returnValue'];
 
     }
-    setInterval( () => newBook.flush(), 10000)
+    setInterval( () => book.flush(), 10000)
 
     cleanOldSessions()
   }

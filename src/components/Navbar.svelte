@@ -3,7 +3,7 @@
   import { ctrlShortcuts } from '../javascript/shortcuts.js'
   import { graphToImg } from '../javascript/graph.js'
   import { open, download } from '../javascript/file.js'
-  import { newBook, isLoaded } from '../javascript/new-book.js'
+  import { book, isLoaded } from '../javascript/new-book.js'
   import { sortBook, compactBook} from '../javascript/book-utils'
   import { theme } from '../javascript/settings'
 
@@ -27,7 +27,7 @@
 
 
   ctrlShortcuts({
-    'S': () => download('md', newBook.flush()),
+    'S': () => download('md', book.flush()),
     'O': () => document.getElementById('open').click()
   })
 
@@ -46,7 +46,7 @@
     <div class="content">
       {#if $isApp}
         <p on:click={appReload}>{$_('app.chooseother')}</p>
-        <p on:click={() => download('md', newBook.flush())}>{$_('dialogs.shuffle.savecopy')}</p>
+        <p on:click={() => download('md', book.flush())}>{$_('dialogs.shuffle.savecopy')}</p>
       {:else}
         <p on:click={() => dialog(NewBook)}>{$_('navbar.file.new')}</p>
         <hr>
@@ -56,7 +56,7 @@
           accept=".xlgc,.md"
           on:change={e => open(e.target )} />
         <label for="open">{$_("navbar.file.open")} </label>
-        <p on:click={() => download('md', newBook.flush())}>{$_('navbar.file.save')}</p>
+        <p on:click={() => download('md', book.flush())}>{$_('navbar.file.save')}</p>
         <p on:click={() => dialog(Recover)}>{$_('navbar.file.recover')}</p>
       {/if}
     </div>
@@ -65,13 +65,13 @@
   <div>
     <h1>{$_('navbar.book.title')}</h1>
     <div class="content">
-      <p on:click={() => dialog(Img, () => graphToImg(newBook.flush()))}>{$_('navbar.book.graph')}</p>
+      <p on:click={() => dialog(Img, () => graphToImg(book.flush()))}>{$_('navbar.book.graph')}</p>
       <p on:click={() => dialog(Shuffle)}>{$_('navbar.book.shuffle')}</p>
       <p on:click={async() => {
-        if(await(dialog(Confirm, $_('dialogs.confirm'), $_('dialogs.chapter.sort'), true)))  getEditor().setValue(sortBook($newBook), -1) 
+        if(await(dialog(Confirm, $_('dialogs.confirm'), $_('dialogs.chapter.sort'), true)))  getEditor().setValue(sortBook($book), -1) 
       }}>{$_('navbar.book.sort')}</p>
       <p on:click={async() => {
-        if(await(dialog(Confirm, $_('dialogs.confirm'), $_('dialogs.chapter.compact'), true)))  getEditor().setValue(compactBook($newBook), -1) 
+        if(await(dialog(Confirm, $_('dialogs.confirm'), $_('dialogs.chapter.compact'), true)))  getEditor().setValue(compactBook($book), -1) 
       }}>{$_('navbar.book.compact')}</p>
       </div>
   </div>
@@ -79,10 +79,14 @@
   <div>
     <h1>{$_('navbar.export.title')}</h1>
     <div class="content">
-      <p on:click={() => download('docx', newBook.flush())}>{$_('navbar.export.docx')}</p>
-      <p on:click={() => download('fodt', newBook.flush())}>{$_('navbar.export.fodt')}</p>
-      <p on:click={() => download('xlgc', newBook.flush())}>{$_('navbar.export.xlgc')}</p>
-      <!-- <p>{$_('navbar.export.vuejs')}</p> -->
+      <p on:click={() => download('docx', book.flush())}>{$_('navbar.export.docx')}</p>
+      <p on:click={() => download('fodt', book.flush())}>{$_('navbar.export.fodt')}</p>
+      <p on:click={() => download('html', book.flush())}>{$_('navbar.export.html')}</p>
+      <p on:click={() => download('xlgc', book.flush())}>{$_('navbar.export.xlgc')}</p>
+      <hr>
+      <a href={$_('navbar.export.otherslink')} target="_blank" rel="noopener">{$_('navbar.export.others')}</a>
+      <hr>
+      <a href={$_('navbar.export.settingslink')} target="_blank" rel="noopener">{$_('navbar.export.settings')}</a>
     </div>
   </div>
   {/if}
@@ -139,6 +143,9 @@
 
   hr {
     padding: 0 !important;
+    border: 0;
+    height: 1px;
+    background-color: #ccc !important;
   }
 
   nav {
@@ -225,6 +232,10 @@
   :global(.mage-theme-dark nav .content > *){
     background-color: #242424 !important;
     color: #fff !important;
+  } 
+
+  :global(.mage-theme-dark nav .content > hr){
+    background-color: #666 !important;
   } 
   
   :global(.mage-theme-dark nav .content > *:hover){

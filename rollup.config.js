@@ -34,6 +34,14 @@ const babelPreset = {
 
 
 export default [{
+    input: 'src/mode-markdown.js',
+    output: {
+      file: 'editor/static/ace/mode-markdown.js',
+    },
+    plugins: [
+      production && terser(),        // Minify only on production
+    ]
+  }, {
     input: 'src/main.js',
     output: {
       sourcemap: !production,

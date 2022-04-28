@@ -5,6 +5,9 @@
   import {_} from 'svelte-i18n'
 
   import Dialogs from './components/Dialogs.svelte'
+  import { dialog } from './components/Dialogs.svelte'
+  import Alert from './components/dialogs/Alert.svelte'
+
   import Navbar  from './components/Navbar.svelte'
   import Editor  from './components/Editor.svelte'
   import Sidebar from './components/Sidebar.svelte'
@@ -15,7 +18,11 @@
   import { isApp, appPath } from './javascript/appMode.js'
   import { initError }from './javascript/editor.js'
   import { theme } from './javascript/settings' 
+  import manifest from '../package.json'
 
+
+
+  // Change theme from dark to light and vice versa
   $: {
     const b = window.document.body
     b.className.split(' ').forEach(c => {
@@ -24,14 +31,47 @@
     b.classList.add('mage-theme-' + $theme)
   }
 
+  $: style = `<style>
+  :root {
+    color-scheme: ${$theme == 'dark' ? 'dark' : 'light'};
+  }
+  </style>`
+
+
+  // Change page title if the page is visited by a real user 
+  // keep "Magebook" title for web engines
   $: { if(!(/bot|google|baidu|bing|msn|duckduckbot|teoma|slurp|yandex/i.test(navigator.userAgent))){
     if($bookIndex && $bookIndex.properties.title){
       document.title = $bookIndex.properties.title + " - Magebook"
     }
   } }
 
+  // Version popup
+  const key = 'mage-version'
+  if(!localStorage[key]){
+    localStorage[key] =  localStorage['mage-settings'] ? '1.0.0' : manifest.version
+  } 
+  const version = localStorage[key]
+  try {
+    const [savedMajor, minor, ] = version.split('.')
+    const [currentMajor, currentMinor, ] = manifest.version.split('.')
+
+    if(savedMajor !== currentMajor || minor != currentMinor){
+      console.log("is different!")
+      dialog(
+          Alert,
+          $_('dialogs.version.title') + manifest.version, 
+          $_('dialogs.version.' + currentMajor + '.' + currentMinor) + '<br><br>' + $_('dialogs.version.text')
+        ).then( () => localStorage[key] = manifest.version)
+    }
+
+  }catch(e){}
+
 </script>
 
+<svelte:head>
+  {@html style}
+</svelte:head>
 
 <svelte:window on:keydown={handleShortcuts}/>
 

@@ -10,11 +10,6 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v2.3.1
 
-      - name: Setup go
-        uses: actions/setup-go@v2
-        with:
-          go-version: '1.17.3'
-
       - name: Install and Build
         run: |
           npm ci

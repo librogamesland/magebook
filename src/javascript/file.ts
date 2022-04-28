@@ -2,7 +2,9 @@ import md   from './formats/md.js'
 import xlgc from './formats/xlgc.js'
 import fodt from './formats/fodt.js'
 import docx from './formats/docx.js'
+import html from './formats/html.js'
 
+import {disableShortLinks} from './encoder.js'
 import {session} from './database.js'
 
 
@@ -12,6 +14,7 @@ const formats = {
   'xlgc': xlgc,
   'fodt': fodt,
   'docx': docx,
+  'html': html,
 }
 
 
@@ -58,6 +61,7 @@ const download = async(formatKey, book) => {
   const format = formats[formatKey]
   const decodedMd = md.decode(book)
 
+  disableShortLinks(decodedMd.properties.disableShortLinks && decodedMd.properties.disableShortLinks.trim() == "true")
   const encodedBook = (formatKey === 'md') 
     ? book
     : await Promise.resolve(format.encode(book))

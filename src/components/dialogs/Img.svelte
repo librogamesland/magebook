@@ -2,6 +2,7 @@
   import { _ } from 'svelte-i18n'
   import { onDestroy } from 'svelte';
   import { tick } from 'svelte'
+import { bookIndex } from '../../javascript/new-book';
   export let params
   export let callback
 
@@ -35,15 +36,31 @@
   <div on:click|stopPropagation={() => console.log("clickOnImg")} style="max-width:90vw; max-height: 80vh; overflow: auto;">
   {@html src}
   </div>
-  <button class="ok" on:click={ () => {
-    const blob = new window.Blob([src], { type: "image/svg+xml" });
-    // create an URI pointing to that blob
-    const url = URL.createObjectURL(blob);
-    const win = window.open(url);
-    // so the Garbage Collector can collect the blob
-    win.onload = () => URL.revokeObjectURL(url);
+  <div>
+    <button class="ok" on:click={ () => {
+      const blob = new window.Blob([src], { type: "image/svg+xml" });
+      // create an URI pointing to that blob
+      const url = URL.createObjectURL(blob);
+      const win = window.open(url);
+      // so the Garbage Collector can collect the blob
+      win.onload = () => URL.revokeObjectURL(url);
 
-    }}>{$_('dialogs.graph.open')}</button>
+      }}>{$_('dialogs.graph.open')}</button>
+      <button class="error" on:click={ () => {
+          const element = document.createElement('a')
+          element.setAttribute(
+            'href',
+            `data:image/svg+xml;base64,${window.btoa(src)}`
+          )
+
+          element.setAttribute('download', ($bookIndex.properties.title || 'graph') + '.svg')
+          element.style.display = 'none'
+          document.body.appendChild(element)
+          element.click()
+          document.body.removeChild(element)
+      
+      }}>{$_('dialogs.graph.download')}</button>
+    </div> 
 </div>
 {:else if waiting}
 <div class="dialog" style="text-align: center">

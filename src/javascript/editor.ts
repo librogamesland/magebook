@@ -1,6 +1,6 @@
 import { writable, derived, get } from 'svelte/store';
 import { debounced } from './debounced-store.js'
-import { newBook, bookIndex, isLoaded} from './new-book.js'
+import { book, bookIndex, isLoaded, $bookIndex} from './new-book.js'
 import { preventClickPropagation } from './utils';
 import { _ } from 'svelte-i18n'
 import { theme } from './settings';
@@ -17,6 +17,8 @@ let firepad = null
 export const showSidemenu = writable(false)
 export const isSynced = debounced(500, null)
 export const initError = writable("")
+
+  
 
 
 
@@ -54,7 +56,17 @@ const themes = {
 
 const setupAce = () => {
   editor = ace.edit(editorComponentID);
+  editor.setOption("mergeUndoDeltas", "always");
+
+
+
   window.editor = editor
+
+  window.$bookIndex = $bookIndex
+  bookIndex.subscribe(  () => {
+    window.$bookIndex = $bookIndex
+    editor.session.bgTokenizer.start(0)
+  })
   theme.subscribe( $theme => editor.setTheme(themes[$theme] || themes.light))
   editor.session.setMode("ace/mode/markdown");
   editor.session.setUseWorker(false);
@@ -89,7 +101,7 @@ const setupAce = () => {
   
   editor.renderer.updateFontSize()
   editor.session.on('change', function() {
-    newBook.lazySet(editor.getValue())
+    book.lazySet(editor.getValue())
   });
 
 }

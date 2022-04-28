@@ -1,6 +1,7 @@
 <script lang="ts">
   import { _ } from 'svelte-i18n'
-  import { sanitizeKey, bookIndex, newBook} from '../javascript/new-book.js'
+  import { sanitizeKey } from '../javascript/book-utils'
+  import { bookIndex, book} from '../javascript/new-book.js'
   import { currentChapterKey, getEditor, showSidemenu } from '../javascript/editor.js'
   import { firstAvaiableKey, addChapter, generateChapterText } from '../javascript/actions.js'
   import { historyCanGoBack, goBack, goToChapter} from '../javascript/navigator.js'
@@ -10,7 +11,7 @@
   import Chapter    from './dialogs/Chapter.svelte'
   import Confirm    from './dialogs/Confirm.svelte'
 
-
+ 
   const add = async () => {
     const result = await dialog(
       Chapter,
@@ -36,7 +37,7 @@
       flags: value.flags || [],
     }))
     $showSidemenu = false
-    newBook.flush()
+    book.flush()
     goToChapter(key)
   }
 
@@ -56,19 +57,28 @@
     value.group = sanitizeKey(value.group || '')
     if (!key) return
 
+    getEditor().startOperation({command : "editchapter" })
     if(key !== cKey){
-      const text = $newBook.replace(/\[([^\[]*)\](\(\s*#(\w+)\s*\))/g, (...all) => `[${all[1]}](#${
+      let text = $book.replace(/\[([^\[]*)\](\(\s*#(\w+)\s*\))/g, (...all) => `[${all[1]}](#${
         all[3] === cKey ? key  : all[3]
       })`)
 
+      if(!$bookIndex.properties['disableShortLinks'] || $bookIndex.properties['disableShortLinks'] !== 'true'){
+        text = text.replace(/\[([^\[]*)\](?!\()/g, (...all) => `[${all[1] === cKey ? key  : all[1]}]`)
+      }
+
       getEditor().session.setValue(text)
+      getEditor().session.mergeUndoDeltas = true; 
+
 
     }
     const chapter =  $bookIndex.chapters.get(cKey)
     const content = getEditor().session.doc.getTextRange(new ace.Range(chapter.contentStart + 1, 0, chapter.contentEnd + 1, 0))
       .split('\n').filter( line => !(line.includes('[group]:<>') || line.includes('![flag-') || line.includes('![][flag-'))).join('\n').trim()
     getEditor().session.replace(new ace.Range(chapter.start, 0, chapter.contentEnd + 1, 0), "");
-    newBook.flush()
+    book.flush()
+    getEditor().session.mergeUndoDeltas = true; 
+
     addChapter(key, generateChapterText({
       spacelines: 2,
       key,
@@ -77,8 +87,10 @@
       flags: value.flags || [],
       content
     }))
-    newBook.flush()
+    book.flush()
     goToChapter(key)
+    getEditor().endOperation({command : "editchapter" })
+
     $showSidemenu = false
   }
 

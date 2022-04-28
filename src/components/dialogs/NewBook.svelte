@@ -6,7 +6,7 @@
 
   !params;
 
-  const newBook = () => session.open({
+  const loadEmptyBook = () => session.open({
       data: {
         book: $_('books.local'),
         cursor: {row: 0, column: 0},
@@ -19,7 +19,7 @@
   <p style="margin: 1rem 0">{@html $_('dialogs.newbook.hint')}</p>
   <button
     class="ok"
-    on:click={() => newBook()}>
+    on:click={() => loadEmptyBook()}>
     {$_('dialogs.ok')}
   </button>
   <button class="cancel" on:click={() => callback(false)}>{$_('dialogs.cancel')}</button>

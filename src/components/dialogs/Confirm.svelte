@@ -1,6 +1,6 @@
 <script lang="ts">
   import {_} from 'svelte-i18n'
-  import { newBook } from '../../javascript/new-book.js'
+  import { book } from '../../javascript/new-book.js'
   import { download } from '../../javascript/file.js'
 
 
@@ -16,7 +16,7 @@
   <p>{text}</p>
   <button class="ok" on:click={() => callback(true)}>{$_('dialogs.ok')}</button>
   {#if saveCopy}
-  <button class="cancel" on:click={() => download('md', newBook.flush())}>{$_('dialogs.shuffle.savecopy')}</button>
+  <button class="cancel" on:click={() => download('md', book.flush())}>{$_('dialogs.shuffle.savecopy')}</button>
 
   {/if}
   <button class="cancel" on:click={() => callback(false)}>{$_('dialogs.cancel')}</button>

@@ -1,11 +1,11 @@
 # Magebook
 
-Magebook is a *gamebook* editor. *Gamebooks* are book where text is splitted in numbered chapters. Chapters end with link to other chapters. Readers should not read from the first to the latter chapter, but jump following the links based on their choices.
+Magebook is a *gamebook* editor. *Gamebooks* are books where text is splitted in numbered chapters. Each chapter ends with links to other chapters. Readers should not read from the first to the latter chapter, but jump through the links as they wish.  
+Here is an example with three chapters:
 
-Esempio:
 ```markdown
 # Book title
-author: Author's Name
+author: Name Surname
 
 ### 1
 Where do you want to go? [Right 2](#2) or [left 3](#3)?
@@ -16,59 +16,96 @@ You have turned right.
 ### 3
 You have turned left.
 ```
-Magebook will help you write your *gamebook* with a series of specific features.
+Magebook will help you write your *gamebook* with a set of specific features. Magebook files may be converted into Word/OpenOffice files, but also be used to generate [ebooks](#export-as-ebook-epub-azw3) or [Android/Ios apps](#generate-an-app-from-your-book). Moreover, with the [collaborative mode](#collaborative-projects), you may edit book with other users at the same time.
 
 
 # Download
-Magebook is a [web app](https://librogamesland.github.io/magebook/editor/) and you need to use the web app version to use online features like collaborative editing.
+Magebook is a [web app](https://librogamesland.github.io/magebook/editor/) - you don't have to download it, just open <https://librogamesland.github.io/magebook/editor>:
 
-Yet, you may download Magebook to work easily with local files (choose your operative system):
-- [Windows](https://librogamesland.github.io/magebook/dist/magebook-windows.exe)
-- [Linux](https://librogamesland.github.io/magebook/dist/magebook-linux)
-- [MacOs](https://librogamesland.github.io/magebook/dist/magebook-macos)
-
-*WARNING*: Magebook requires either Google Chrome or Microsoft Edge installed on your system in order to work.
-
-# Common features
-
-Magebook book are written in Markdown format. Magebook may also read and write LibroGameCreator3 files.
-
-Every book starts with a title and some properties, and include a set of chapters:
-
-```markdown
-# Titolo del libro
-author: INSERT YOUR NAME HERE
-... other properties ...
-
-### 1
-This is the first chapter. Chapters' titles usually are number. You may use words too, like:
+<a class="button" target="_blank" href="https://librogamesland.github.io/magebook/editor">Apri Magebook</a>
 
 
-### Rules
-Create a link between chapters with [Link text](#chapter). When there's no link text, Magebook will insert it automatically. For example: [](#Rules) is the same as [Rules](#Rules). You may also use longer chapter titles. For example:
+Magebook works with Chrome, Firefox, Safari and Edge, other than Android and Ios smartphones.  
+Offline mode is supported too - you do not need an internet connection again after opening the web page for the first time.
 
-### Chapter with a really long title {#3}
-Now writing [](#3) is the same as  [Chapter with a really long title](#3).
+# Features
 
-You may use stars to write *italic text* and double starts to write **bold text**.
-```
+![](../screenshots/4.png)
 
-Top navbar includes functions to save, load and create new files, or export books in Word or LibreOffice/OpenOffice formats. The "Book" options in the top navbar includes functions to generate book graph and shuffle chapters.
+The top navbar `[1]` allows to load save and create new files, or to export the book into a Word/LibreOffice/OpenOffice/HTML file. The "Book" menu lets you see the book's graph and to shuffle chapters.
 
-Under the top navbar, you may see the current chapter title and:
+Below the navbar, you should see the current chapter name/number and five buttons `[2]`, useful to:
 - find words
 - undo/redo edits
-- insert and empty link or a link the the first avaible chapter.
+- insert an empty link (Ctrl+L) or a link to the first avaible chapter (Ctrl+K).
 
-The side menu includes functions to create, edit, delete and navigate easily between chapters. You may also see which chapters links to the current one.
+The sidemenu `[3]` allows to add/edit/delete chapters and move between them. Below `[4]` you may check the list of chapters linking to the current one.
 
-# Progetti collaborativi
+# Book format
 
-You may use Magebook to work on collaborative projects. Those projects che possono essere modificati da più dispositivi contemporaneamente, con le modifiche sincronizzate in tempo reale. Grazie a questa funzionalità è possibile collegare a Magebook il proprio account Google attraverso Google Firebase, che è gratuito fino a 1GB di memoria (circa 500 librogame completi).
+Magebook's books are written in Markdown format. 
+- new chapters starts with three hashes and a number `### number`. It's recommended to use numbers to label chapters, but you may use words too, like `### Rules`
+- chapters may also have a title different from the number `### Chapter with a really long title {#number}`
+- to inserta a link to a chapter, type `[number]` or, `[Text of the link](#number)`. Working links will be highlighted in blue, while orphan links are highlighted in red.
 
-## Abilita e collega il tuo account Google
 
-La procedura è un po' complicata e richiede qualche minuto, ma una volta completata la prima volta, non sarà più necessario ripeterla per i libri successivi.
+- you may also add `**bold**`, `*italic*`, `<b>bold</b>`, `<i>italic</i>`, `<u>underline</u>` text
+- add comments (will not be inserted in exported files) with <code>&#96;comment&#96;</code>, for example <code>&#96;TODO: I need to revision this chapter&#96;</code>
+- each chapter belongs to a group when it's labelled with `[group]:<> ("Group name")`. The right sidemenu allows to filter chapters by group. Moreover, you may choose to shuffle just a group instead of the entire book.
+- `![][flag-death]`, `![][flag-final]`, `![][flag-fixed]` allows to add a flag to a chapter, so that they will be highlighted in the right sidemenu. 
+
+
+Books may also have some metadata at the beginning of the document:
+- a title, inserted with `# Title`
+- a list of [properties](#properties), declared as `property: value`. For example, if you want to disable the short link format (i.e. `[number]`), you have to add `disableShortLinks: true`
+
+
+Here is a complete example:
+```markdown
+# Book title
+author: Name Surname
+disableShortLinks: false
+
+
+### 1
+This is the first chapter.
+
+
+### Regole
+Per creare un link si usa il formato [Testo del link](#paragrafo). Se il testo è assente, Magebook lo inserirà in automatico. Ad esempio [](#Regole) equivale a [Regole](#Regole). Si possono generare anche nomi più brevi per i paragrafi, ad esempio:
+
+### Paragrafo con titolo molto lungo {#3}
+In questo caso, scrivere [](#3) equivale a [Paragrafo con titolo molto lungo](#3).
+
+Usando gli asterischi si può inserire anche *testo in corsivo* e doppi asterischi per **testo in grassetto**.
+```
+
+
+# Properties
+
+**Common:** 
+- `disableShortLinks: true` disable the `[number]` link format, use just `(Text)[#number]`
+
+**Word/OpenOffice/LibreOffice export:**  
+
+***WORK IN PROGRESS - WILL BE AVAIABLE SOON***
+- `exportPage: `
+- `exportTextFont: `
+
+
+**Manipolazione nomi di link e paragrafi:**  
+
+
+***WORK IN PROGRESS - WILL BE AVAIABLE SOON***
+
+
+# Collaborative projects
+
+You may use Magebook to work on collaborative projects. Those projects may be edited by multiple users, with real time synced changes. To a questa funzionalità è possibile collegare a Magebook il proprio account Google attraverso Google Firebase, che è gratuito fino a 1GB di memoria (circa 500 librogame completi).
+
+## Link your Google account to Magebook
+
+The procedure may take some minutes, but once done, it won't be required again for later books.
 
 Go to <https://console.firebase.google.com/>, login with Google and create a new project. Choose the name you want (its the same). You do not need to enable Google Analytics.
 
@@ -76,13 +113,13 @@ Go to <https://console.firebase.google.com/>, login with Google and create a new
 ![](img/2.png)
 
 
-Una volta creato il progetto, cerca nel menu laterale a sinistra "Realtime Database" e quindi premi il tasto "Create Database". Scegli la zona più vicina a te e "Avvia in modalità di blocco".
+Once created a project, looks for "Realtime Database" in the left sidemenu. Click on "Create Database". Choose a city in the nearby and "Start in block mode".
 
 ![](img/3.png)
 ![](img/4.png)
 
 
-Nella schermata che si apre, seleziona regole. Rimuovi le regole presenti e sostituiscile con:
+In the next page, click on "Rules". Replace the rules with:
 ```javascript
 {
   "rules": {
@@ -94,55 +131,70 @@ Nella schermata che si apre, seleziona regole. Rimuovi le regole presenti e sost
 }
 ```
 
-Ci siamo quasi. Dal menu laterale a sinistra, clicca su "Panoramica del progetto".
+Almost done. Now, from the left sidemenu, click on  "Project overview".
 
 ![](img/5.png)
 
 
-Sotto a "Inizia aggiungendo Firebase alla tua app" c'è un pulsante con il simbolo `</>` (web). Cliccalo. Scegli il nickname che preferisci (non è importante) e clicca su "Registra app".
+Below the "Start by adding Firebase to your app" there is a `</>` button (web). Click it. Choose the nickname you wish (it's irrelevant) and click on "Register app".
 
 ![](img/6.png)
 ![](img/7.png)
 
 
 
-A questo punto, dovresti vedere una serie di codici di autorizzazione, fra cui `apiKey` e `databaseURL`. Questi sono i valori che vanno copiaincollati all'interno di Magebook. Nell'esempio della figura qui sotto i due valori sono rispettivamente `KazbNyCUNqM661l1eVQ7mqOPAIadWq1YJ7MH3Y` e `https://esempio-libreria1-default-rtdb.europe-west1.firebasedatabase.app`
+At this point, you should see a set of auth codes, including `apiKey` and `databaseURL`. Those values should be copied and pasted Magebook. Nell'esempio della figura qui sotto i due valori sono rispettivamente `KazbNyCUNqM661l1eVQ7mqOPAIadWq1YJ7MH3Y` e `https://esempio-libreria1-default-rtdb.europe-west1.firebasedatabase.app`
 
 ![](img/8.png)
 
-Apri Magebook, dalla barra di navigazione in alto seleziona `File -> Nuovo Collaborativo`. Inserisci `apiKey` e `databaseURL` e scegli un nome per il libro. Il nome deve essere univoco: è molto importante perché identificherà il tuo libro, fungendo quindi anche da password.
+Open Magebook, in the top navbar choose `File -> New Collaborative`. Insert the `apiKey` and `databaseURL` retrieved before and choose a name for your book. The name must be unique: it will identify your book forever.
 
-Una volta terminato, verrai portato a una pagina di Magebook con il nuovo libro. Salva l'URL della pagina fra i segnalibri (così da poterlo ritrovare in seguito) e condividilo con chi vuoi.
+Once done, it is strongly advise to save the page URL as a bookmark, to find it in the future and share to other users.
 
-Fatto!
-
-
-# Export to Word/LibreOffice
-
-You may customize Magebook export Word/LibreOffice files, adding options, like so.
-
-**(Still work in progress!)**
-
-Ad esempio, è possibile:
-```markdown
-# Titolo Libro
-author: Nome e Cognome
-export-heading-style: inline
-
-### 1
-... testo paragrafo ...
-```
+Done!
 
 
-# Trasforma il tuo libro in un'app
+# Other formats
 
-**(Still work in progress!)**
+Oltre ai formati presenti nel menù `Esporta`, esistono numerosi altri strumenti  
 
-Magebook book may be used a starting point for [hybrid apps](#https://ionic.io/), that may be distributed as web apps or Android apps and Ios apps.
+
+### Esporta in PDF
+Il metodo più veloce è esportare il file come Word/LibreOffice. A questo punto è possibile aprire il file con Word o LibreOffice e usare la funzione `Salva con nome`, selezionando il formato PDF.
+
+### Esporta come ebook (.epub, .azw3)
+I file HTML esportati da Magebook possono essere convertiti così come sono usando il programma [Calibre](https://calibre-ebook.com/download), scaricabile gratuitamente da <https://calibre-ebook.com/download>.
+
+Da Magebook, seleziona `Esporta -> Sito web (.html)`, quindi apri Calibre. Da Calibre seleziona `Aggiungi libro` e poi `Converti libro`. Sarà possibile scegliere il formato dal menù a tendina in alto a destra. I lettori Kindle sono compatibile con i formati `.azw3` e `.mobi`, mentre per gli altri lettori è necessario scegliere `.epub`.
+
+ATTENZIONE! Calibre riconosce in automatico il sommario esportato da Magebook, ma in alcune versioni si limita ai primi 50 paragrafi. Per cambiare questa opzione, durante l'esportazione seleziona *"Tabella dei contenuti"*.
+
+
+### Generate an app from your book
+
+***WORK IN PROGRESS - FUNZIONE PREVISTA PER IL FUTURO***
+
+Books written with Magebook may be used to generate [hybrid apps](https://ionic.io/), which may be distributed as web apps or Android/Ios apps.
+
+# Versioni
+#### 1.0
+First release.
+
+#### 1.1
+Added short link format `[number]` and property `disableShortLinks: true`.
+
+Links to broken chapters are highlighted in the right menu.
+
+GUI restyle.
+
+Export as website.
+
+Fixes.
+
 
 
 
 # Licenza e autori
-Magebook è un software gratuito e open-source (licenza MIT) sviluppato da **Luca Fabbian** <luca.fabbian.1999@gmail.com>, con il supporto della community di [Librogame's Land](http://librogame.net).
+Magebook it's a free and open-source (MIT licensed) software, developed by **Luca Fabbian** <luca.fabbian.1999@gmail.com>, with the support of the [Librogame's Land](http://librogame.net) community.
 
-Il progetto nasce come versione browser di [LibroGameCreator 3](http://www.matteoporopat.com/librogame/libro-game-creator-3/).
+The project started as a web version of [LibroGameCreator 3](http://www.matteoporopat.com/librogame/libro-game-creator-3/).

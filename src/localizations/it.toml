@@ -13,7 +13,6 @@ exist  = "Questo paragrafo esiste già"
 sort    = "I paragrafi saranno spostati così da rispettare l'ordine di numero."
 compact = "I paragrafi verranno rinominati in modo da avere numeri consecutivi, senza buchi in mezzo."
 
-
 name   = "Key"
 title  = "Titolo"
 group  = "Gruppo"
@@ -51,16 +50,18 @@ overwrite  = "Sovrascrivi"
 [dialogs.graph]
 loading    = "Caricamento grafo..."
 open       = "Apri un una nuova pagina"
+download   = "Download (immagine .svg)"
 
 
 [navbar.file]
-title      = "File"
-new        = "Nuovo"
-newFire    = "Nuovo collaborativo"
-share      = "Condividi"
-open       = "Apri..."
-save       = "Salva"
-recover    = "Sessioni recenti"
+title       = "File"
+new         = "Nuovo"
+newFire     = "Nuovo collaborativo"
+share       = "Condividi"
+open        = "Apri..."
+save        = "Salva"
+recover     = "Sessioni recenti"
+recoverFire = "Sessioni collaborative"
 
 [navbar.book]
 title   = "Libro"
@@ -73,9 +74,15 @@ compact = "Compatta paragrafi"
 title = "Esporta"
 docx  = "Word (.docx)"
 fodt  = "Libreoffice (.fodt)"
+html  = "Sito web (.html)"
 xlgc  = "LibroGameCreator 3"
 json  = "Json"
 vuejs = "Vue.js"
+
+others       = "Altri (ebook, app Android, ...)"
+otherslink   = "https://librogamesland.github.io/magebook/index.html#/?id=altri-formati"
+settings     = "Opzioni esportazione"
+settingslink = "https://librogamesland.github.io/magebook/index.html#/?id=opzioni"
 
 [navbar.help]
 title     = "Aiuto"
@@ -94,6 +101,7 @@ toggle    = "Apri menu laterale"
 chapters  = "Paragrafi"
 allgroup  = "Tutti i paragrafi"
 allgrouperrors  = "Senza entrata/uscita"
+allgrouporphanlinks  = "Con link errati"
 linkshere = "Link al par."
 
 [sidemenu.actions]
@@ -114,8 +122,7 @@ link  = "Aggiungi link (ctrl+L)"
 [about]
 contact = "Contattami"
 text = """
-Magebook è un editor di librogame sviluppato da <b>Luca Fabbian</b> con il supporto della community di Lgl,
-ispirato a LibroGameCreator3 di <b>Matteo Poropat</b>."""
+Magebook è un editor di librogame sviluppato da <b>Luca Fabbian</b> con il supporto della community di Lgl."""
 
 
 [books]
@@ -126,11 +133,11 @@ author: Nome e Cognome
 
 ### 1
 Esempio di paragrafo. Puoi modificarlo sfruttando i tasti a destra.
-Questo è un link verso il paragrafo [](#2). I link sono nel formato [Testo](#paragrafo), dove Testo è opzionale.
+Questo è un link verso il paragrafo [2]. I link possono essere anche nel formato esteso [Testo](#paragrafo), dove Testo è opzionale.
 
 
 ### Paragrafo con titolo {#2}
-Questo è il secondo paragrafo. I paragrafi possono contenere anche testo in *corsivo* o **grassetto**.  Puoi anche usare <b>grassetto</b>, <i>corsivo</i>, o <u>sottolineato</u>.
+Questo è il secondo paragrafo. I paragrafi possono contenere anche testo in *corsivo* o **grassetto**.  Puoi anche usare <b>grassetto</b>, <i>corsivo</i>, o <u>sottolineato</u>. Aggiungi commenti con ` `, ad esempio `NOTA: devo rivedere questo paragrafo`.
 """
 fire = """
 # %1
@@ -145,3 +152,9 @@ Questo è un libro collaborativo memorizzato sul tuo account Google e che può e
 openlocal    = "Crea o apri file"
 openfire     = "Crea o accedi a un libro collaborativo"
 chooseother  = "Apri un altro"
+
+[dialogs.version]
+title = "Nuova versione - "
+text  = 'Scopri di più nella <a ref="_blank" href="https://librogamesland.github.io/magebook/#/?id=versioni">guida</a>.'
+"1.0" = "Versione iniziale." 
+"1.1" = "Aggiunto formato link corto [numero] e opzione 'disableShortLinks: true'.<br>I link a paragrafi inesistenti vengono segnalati nel menu laterale.<br>Restyle dell'interfaccia.<br>Aggiunta esportazione sito web.<br>Correzioni varie." 

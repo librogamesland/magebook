@@ -25,9 +25,10 @@
   const addLink = () => {
     const { row, column} = $cursorPosition
     
-    getEditor().session.replace(new ace.Range(row, column, row, column), '[](#)');
+    const short = $bookIndex.properties['disableShortLinks'] == 'true' 
+    getEditor().session.replace(new ace.Range(row, column, row, column), short ? '[](#)' : '[]');
     getEditor().clearSelection()
-    getEditor().moveCursorTo(row, column + 4);
+    getEditor().moveCursorTo(row, column + (short ? 4: 1));
 
     getEditor().focus()
 
@@ -42,7 +43,9 @@
     const {contentStart, end } = $bookIndex.chapters.get($currentChapterKey)
     
     const key = firstAvaiableKey()
-    const link = `[](#${firstAvaiableKey()})`
+    const link = $bookIndex.properties['disableShortLinks'] == 'true' 
+      ? `[](#${firstAvaiableKey()})`
+      : `[${firstAvaiableKey()}]`
 
 
     if(contentStart != row ){
@@ -59,6 +62,7 @@
     getEditor().moveCursorTo(row, column);
 
     const order = getRightOrderKey(key)
+    getEditor().session.mergeUndoDeltas = true; 
 
     addChapter(key, `\n\n### ${key}`)
 
@@ -287,10 +291,42 @@
     outline: none !important;
   }
 
-  :global(.ace_underline){
+  :global(.ace_constant){
+    color: #006d1b;
+  }
+  :global(.ace_link){
     pointer-events: auto !important;
     cursor: pointer;
+    color: rgb(17, 0, 172);
   }
+
+  :global(.ace_link:hover){
+    text-decoration: underline;
+  }
+
+  :global(.ace_brokenlink){
+    pointer-events: auto !important;
+    cursor: not-allowed;
+
+    color: rgb(189 0 0);
+    background-color: #faa;
+  }
+
+
+  :global(.ace_string){
+    color: #444 !important;
+  }
+
+  :global(.ace_strong){
+    font-weight: 700 !important;
+    color: #444 !important;
+  }
+
+  :global(.ace_emphasis){
+    font-style: italic;
+    color:  #444 !important;
+  }
+
   :global(.cm-scroller){
     padding-bottom: 25px;
   }
@@ -401,8 +437,8 @@
 
 
 :global(.mage-theme-dark .toolbar > div){
-    color: rgb(115, 138, 255) !important;
-    border-left: #292929 solid 1px !important;
+  color: rgb(213 107 255) !important;
+  border-left: #292929 solid 1px !important;
 }  
 
 :global(.mage-theme-dark .ace_content){
@@ -413,9 +449,28 @@
     color: #fff !important;
 }  
 
-:global(.mage-theme-dark .ace_content .ace_string){
-    color: rgb(193, 152, 255) !important;
-} 
+:global(.mage-theme-dark .ace_link){
+  color: #5166ff !important;
+}
+
+:global(.mage-theme-dark .ace_brokenlink){
+  color: rgb(254 10 10) !important;
+  background-color: rgb(53 0 0) !important;
+  
+}
+
+
+:global(.mage-theme-dark .ace_string){
+  color: #999 !important;
+}
+
+:global(.mage-theme-dark .ace_strong){
+  color: #999 !important;
+}
+
+:global(.mage-theme-dark .ace_emphasis){
+  color:  #999 !important;
+}
 
 :global(.mage-theme-dark select){
     color: #fff !important;
@@ -442,6 +497,10 @@
 :global(.mage-theme-dark .ace_search input){
   border: solid 1px black;
   border-right: none;
+}
+
+:global(.mage-theme-dark .ace_selection ){
+  background: rgb(0, 59, 71) !important;
 }
 
 @media (any-pointer: fine) {

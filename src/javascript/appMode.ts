@@ -1,5 +1,5 @@
 import { writable, derived, get } from "svelte/store"
-import { newBook, bookIndex } from "./new-book.js"
+import { book, bookIndex } from "./new-book.js"
 import { parsedHash } from "./database.js"
 import { initEditorLocal, cursorPosition } from './editor.js'
 import { _ } from 'svelte-i18n'
@@ -54,11 +54,11 @@ export const loadAppMode = async() => {
 
   initEditorLocal(data)
 
-  newBook.subscribe( $newBook => {
+  book.subscribe( $book => {
     if(get(appPath).endsWith('.xlgc')){
-      window.writeFile(get(appPath), xlgc.encode(md.decode($newBook)))
+      window.writeFile(get(appPath), xlgc.encode(md.decode($book)))
     }else{
-      window.writeFile(get(appPath), $newBook)
+      window.writeFile(get(appPath), $book)
     }
   })
 

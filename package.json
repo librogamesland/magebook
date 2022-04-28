@@ -1,6 +1,6 @@
 {
   "name": "magebook",
-  "version": "1.0.2",
+  "version": "1.1.0",
   "author": "Luca Fabbian",
   "email": "luca.fabbian.1999@gmail.com",
   "description": "Interactive fiction editor",
@@ -22,14 +22,10 @@
   "main": "index.js",
   "scripts": {
     "version": "echo $npm_package_version",
-    "build-web": "rollup -c",
-    "build-app": "bash ./src/golang/build-app.sh",
-    "build": "npm run build-web && npm run build-app",
-    "clean": "rm -rf ./editor/build; rm -rf ./dist;",
-    "release": "npm run clean; npm run build;  ./build-app.sh",
+    "build": "rollup -c",
+    "clean": "rm -rf ./editor/build; rm -rf ./editor/static/ace/mode-markdown.js; rm -rf ./dist;",
+    "release": "npm run clean; npm run build;",
     "dev": "rollup -c -w",
-    "api-build": "rollup -c 'rollup-api.config.js'",
-    "api-dev": "rollup -c 'rollup-api.config.js' -w",
     "test": "exit 0 && jest && test -f dist/magebook-linux && test -f dist/magebook-windows.exe && test -f dist/magebook-macos"
   },
   "jest": {

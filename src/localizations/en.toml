@@ -50,16 +50,18 @@ overwrite  = "Overwrite"
 [dialogs.graph]
 loading    = "Loading graph..."
 open       = "Open in new tab"
+download   = "Download (as .svg)"
 
 
 [navbar.file]
-title      = "File"
-new        = "New"
-newFire    = "New collaborative"
-share      = "Share"
-open       = "Open..."
-save       = "Save"
-recover    = "Recent sessions"
+title       = "File"
+new         = "New"
+newFire     = "New collaborative"
+share       = "Share"
+open        = "Open..."
+save        = "Save"
+recover     = "Latest sessions"
+recoverFire = "Collaborative sessions"
 
 [navbar.book]
 title   = "Book"
@@ -71,10 +73,16 @@ compact = "Compact chapters"
 [navbar.export]
 title = "Export"
 docx  = "Word (.docx)"
+html  = "Website (.html)"
 fodt  = "Libreoffice (.fodt)"
 xlgc  = "LibroGameCreator 3"
 json  = "Json"
 vuejs = "Vue.js"
+
+others       = "Others (ebook, Android app, ...)"
+otherslink   = "https://librogamesland.github.io/magebook/index.html#/?id=other-formats"
+settings     = "Export settings"
+settingslink = "https://librogamesland.github.io/magebook/index.html#/?id=settings"
 
 [navbar.help]
 title     = "Help"
@@ -93,6 +101,7 @@ toggle    = "Toggle sidemenu"
 chapters  = "Chapters"
 allgroup  = "All chapters"
 allgrouperrors  = "Without links from/to"
+allgrouporphanlinks  = "With orphan links"
 linkshere = "Links to"
 
 [sidemenu.actions]
@@ -113,8 +122,7 @@ link      = "Add link (ctrl+L)"
 [about]
 contact = "Contact me"
 text = """
-Magebook is a gamebook web editor developed by <b>Luca Fabbian</b> with support of Lgl community,
-inspired by LibroGameCreator3 by <b>Matteo Poropat</b>."""
+Magebook is a gamebook web editor developed by <b>Luca Fabbian</b> with support of Lgl community."""
 
 
 [books]
@@ -125,11 +133,11 @@ author: Name and Surname
 
 ### 1
 Chapter example. You may edit this chapter thanks to the buttons on the right sidemenu.
-This is a link going to [](#2). Links are done with [Text](#chapter), where text may be blank (it will be filled automagically).
+This is a link going to [2]. Links may also be  [Text](#chapter).
 
 
 ### Chapter with a long title {#2}
-This is the second chapter. Chapters may include *italic* or **bold** text. <b>Bold</b>, <i>italic</i>, and <u>underline</u> are fine as well.
+This is the second chapter. Chapters may include *italic* or **bold** text. <b>Bold</b>, <i>italic</i>, and <u>underline</u> are fine as well. You may add meta text with ` ` like `TODO: edit this chapter`.
 """
 fire = """
 # %1
@@ -144,3 +152,9 @@ Questo è un libro collaborativo memorizzato sul tuo account Google e che può e
 openlocal    = "Create or open local file"
 openfire     = "Create or access collaborative book"
 chooseother  = "Choose another book"
+
+[dialogs.version]
+title = "New version - "
+text  = 'Discover more on the <a ref="_blank" href="https://librogamesland.github.io/magebook/#/?id=releases">guide page</a>.'
+"1.0" = "Initial release." 
+"1.1" = "Added short links format [number] and 'disableShortLinks: true'.<br>Links to orphan chapters are highlighted in the sidemenu.<br>General restyle.<br>New Website export.<br>Bug fixes." 

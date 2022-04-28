@@ -49,7 +49,7 @@ export const indexBook = (bookText) => {
       }
       const semicolon = line.indexOf(':')
       if(semicolon !== -1){
-        result.properties[line.substr(0, semicolon)] = line.substr(semicolon + 1)
+        result.properties[line.substr(0, semicolon).trim()] = line.substr(semicolon + 1).trim()
       }
       return
     }
@@ -105,6 +105,19 @@ export const indexBook = (bookText) => {
       if(!result.linksToChapter.has(linkTarget)) result.linksToChapter.set(linkTarget, new Set())
       result.linksToChapter.get(linkTarget).add(key)
       match = myRegexp.exec(oLine);
+    }
+
+    if(result.properties && result.properties['disableShortLinks'] === 'true') return
+
+    let shortRegexp = new RegExp(`\\[([^\\[]*)\\](?!\\()`, "g");
+
+    match = shortRegexp.exec(oLine);
+    while (match != null) {
+      const linkTarget = match[1].trim()
+      chapter.links.add(linkTarget)
+      if(!result.linksToChapter.has(linkTarget)) result.linksToChapter.set(linkTarget, new Set())
+      result.linksToChapter.get(linkTarget).add(key)
+      match = shortRegexp.exec(oLine);
     }
 
   })

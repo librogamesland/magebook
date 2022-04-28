@@ -1,7 +1,7 @@
 <script lang="ts">
   import { _ } from "svelte-i18n";
   import { tick } from "svelte";
-  import { newBook, bookIndex } from '../../javascript/new-book.js'
+  import { book, bookIndex } from '../../javascript/new-book.js'
   import { shuffleBook } from '../../javascript/book-utils'
   import { session } from '../../javascript/database.js'
   import { download } from '../../javascript/file.js'
@@ -37,9 +37,9 @@
     const selectedFlags = Object.keys(flags).filter((key) => flags[key]);
     const filter = groupFilter.split(',').map( s => s.trim()).filter(s => s)
 
-    newBook.flush()
+    book.flush()
 
-    const shuffled = shuffleBook($newBook, {selectedFlags, filter})
+    const shuffled = shuffleBook($book, {selectedFlags, filter})
 
     if($isFirebase || $isApp){
       getEditor().setValue(shuffled, -1)
@@ -88,7 +88,7 @@
   >
     {$_("dialogs.ok")}
   </button>
-  <button class="cancel" on:click={() => download('md', newBook.flush())}>{$_('dialogs.shuffle.savecopy')}</button>
+  <button class="cancel" on:click={() => download('md', book.flush())}>{$_('dialogs.shuffle.savecopy')}</button>
 
   <button class="cancel" on:click={() => callback(false)}
     >{$_("dialogs.cancel")}</button

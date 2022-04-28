@@ -9,7 +9,7 @@
   // Entity input bindings
   let apiKey, databaseURL, book
 
-  const newBook = () => {
+  const loadNewBook = () => {
 
     const config = encodeURIComponent(btoa(JSON.stringify({
         apiKey: apiKey.replaceAll('",', '').replaceAll('"', '').replaceAll('apiKey:', '').trim(),
@@ -43,7 +43,7 @@
   <input type="submit"
     class="ok"
     value={$_('dialogs.ok')}
-    on:click={() => newBook()}>
+    on:click={() => loadNewBook()}>
   <button class="cancel" on:click={() => callback(false)}>{$_('dialogs.cancel')}</button>
   </form>
 </div>

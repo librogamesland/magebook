@@ -1,7 +1,7 @@
 <script lang="ts">
   import { _ } from 'svelte-i18n'
   import { tick } from 'svelte';
-  import { bookIndex } from '../javascript/new-book.js'
+  import { book, bookIndex } from '../javascript/new-book.js'
   import { currentChapterKey } from '../javascript/editor.js'
   import { goToChapter } from '../javascript/navigator.js'
   import scrollIntoView from 'smooth-scroll-into-view-if-needed';
@@ -44,12 +44,16 @@
       const hasExiting  = (chapter.links && chapter.links.size > 0) || (chapter.flags && chapter.flags.length > 0)
       return (!hasEntering || !hasExiting)
     }
+    if(selectedGroup == 'allgrouporphanlinksidtag'){
+      const hasBrokenLinks = chapter.links && [...chapter.links].some(link => !$bookIndex.chapters.has(link))
+      return hasBrokenLinks
+    }
     const group = chapter.group
     return group && group == selectedGroup
   })
 
   $: {
-    if(![...($bookIndex.groups), 'allgroupidtag', 'allgrouperrorsidtag'].includes(selectedGroup)){
+    if(![...($bookIndex.groups), 'allgroupidtag', 'allgrouperrorsidtag', 'allgrouporphanlinksidtag'].includes(selectedGroup)){
       selectedGroup = 'allgroupidtag'
     }
   }
@@ -64,9 +68,16 @@
     const hasEntering = linksHere && linksHere.size > 0
     const hasExiting  = (chapter.links && chapter.links.size > 0) || (chapter.flags && chapter.flags.length > 0)
 
+    const brokenLinks = chapter.links && [...chapter.links].some(link => !$bookIndex.chapters.has(link))
+
     return (hasEntering ? '' : '<i class="icon-help"></i>') +
         ((hasEntering && hasExiting) ? '' : '<i class="icon-right"></i>') +
         (hasExiting ? '' : '<i class="icon-help"></i>')    
+  }
+
+  const brokenLinks = (key, chapter) => {
+    const hasBrokenLinks = chapter.links && [...chapter.links].some(link => !$bookIndex.chapters.has(link))
+    return (hasBrokenLinks ? '<b>[</b><i class="icon-help"></i><b>]</b>' : '');
   }
 
   // Regex per matchare i link in markdown
@@ -86,6 +97,7 @@
       <select bind:value={selectedGroup}>
         <option value="allgroupidtag">{$_('sidemenu.allgroup')}</option>
         <option value="allgrouperrorsidtag">{$_('sidemenu.allgrouperrors')}</option>
+        <option value="allgrouporphanlinksidtag">{$_('sidemenu.allgrouporphanlinks')}</option>
         {#each [...($bookIndex.groups)] as group}
           <option value={group}>{group}</option>
         {/each}
@@ -104,6 +116,8 @@
         <img src={`./static/img/flags/${flag}.png`} alt={flag}/>
       {/each}
       <span class="errors">{@html chapterErrors(key, chapter)} </span>
+      <span class="errors">{@html brokenLinks(key, chapter)} </span>
+
     </li>
     {/each}
   </ul>
@@ -166,6 +180,10 @@
     border-radius: 2px;
     padding: 0 5px;
     white-space: nowrap;
+  }
+
+  .errors ~ .errors {
+    margin-right: 10px;
   }
 
   :global(.chapters .errors i) {
@@ -306,7 +324,7 @@
   :global(.mage-theme-dark aside ul li.selected ){
     background-color: #2b356b !important;
   } 
-
+  
 
 
 </style>
