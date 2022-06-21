@@ -351,14 +351,14 @@
 
   :global(#main-editor .cm-line){
     padding: 4px calc(20% - 45px);
-    padding-top: var(--mage-settings-linemargin, 4px);
-    padding-bottom: var(--mage-settings-linemargin, 4px);
+    padding-top: calc(var(--mage-settings-linemargin, 4px));
+    padding-bottom: calc(var(--mage-settings-linemargin, 4px));
 
-    padding-left: var(--mage-settings-editormargins, calc(20% - 45px));
-    padding-right: var(--mage-settings-editormargins, calc(20% - 45px));
+    padding-left: calc(var(--mage-settings-editormargins, calc(20% - 45px)));
+    padding-right: calc(var(--mage-settings-editormargins, calc(20% - 45px)));
 
     line-height: 140%;
-    line-height: var(--mage-settings-linespacing, 140%);
+    line-height: calc(var(--mage-settings-linespacing, 140%));
   }
 
 
@@ -476,6 +476,13 @@
 
 :global(.mage-theme-dark #main-editor .cm-searchMatch-selected){
   background-color: #ffff0054;
+}
+
+:global(.mage-theme-dark #main-editor .cm-content) {
+    caret-color: #ccc;
+}
+:global(.mage-theme-dark #main-editor .cm-focused .cm-cursor){
+    border-left-color: #ccc;
 }
 
 

@@ -8,7 +8,7 @@ const lastSettings = JSON.parse(localStorage.getItem(key) || '{}')
 export const theme = writable(lastSettings.theme || "light")
 export const font = writable(lastSettings.font || "Arial")
 export const fontSize = writable(lastSettings.fontSize || "14")
-export const editorMargins = writable(lastSettings.editorMargins || "calc(20% - 45px)")
+export const editorMargins = writable(lastSettings.editorMargins || "20% - 45px")
 export const titleHighlight = writable(lastSettings.titleHighlight || "2")
 
 export const lineSpacing = writable(lastSettings.lineSpacing || "140%")
