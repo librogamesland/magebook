@@ -39,7 +39,8 @@ jobs:
       - name: Prepare for github pages
         run: |
           rm -rf src .gitignore node_modules package-lock.json \
-            rollup.config.js tsconfig.json
+            vite.config.js tsconfig.json cypress cypress.config.ts \
+            tsconfig.node.json
           touch .nojekyll
 
 

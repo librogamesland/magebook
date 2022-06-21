@@ -1,14 +1,20 @@
 <script lang="ts">
   import { _ } from 'svelte-i18n'
 	import { onMount } from 'svelte'
+  import { EditorView } from 'codemirror';
+  import { undo, redo } from '@codemirror/commands'
+  import { openSearchPanel } from '@codemirror/search'
   import { session } from '../javascript/database.js'
-  import { cursorPosition, getEditor, editorComponentID, currentChapterFullTitle, currentChapterKey, bookIndex } from '../javascript/editor.js'
+  import { cursorPosition, getEditor, currentChapterFullTitle, currentChapterKey, bookIndex } from '../javascript/editor.js'
   import { ctrlShortcuts } from '../javascript/shortcuts.js'
 
-  import { showSidemenu, isSynced } from '../javascript/editor.js'
-  import { firstAvaiableKey, addChapter, getRightOrderKey} from '../javascript/actions.js'
-  import { isApp, loadAppMode } from '../javascript/appMode.js'
+  import { showSidemenu, isSynced } from '../javascript/editor'
+  import { editorComponentID } from '../javascript/codemirror';
+  import { firstAvaiableKey, addChapter, getRightOrderKey} from '../javascript/actions'
+  import { isApp, loadAppMode } from '../javascript/appMode'
 
+
+  import {font, fontSize, editorMargins, titleHighlight, lineMargin, lineSpacing} from '../javascript/settings'
 
   
   
@@ -23,12 +29,16 @@
 
 
   const addLink = () => {
-    const { row, column} = $cursorPosition
+    const {from, to} = $cursorPosition
     
     const short = $bookIndex.properties['disableShortLinks'] == 'true' 
-    getEditor().session.replace(new ace.Range(row, column, row, column), short ? '[](#)' : '[]');
-    getEditor().clearSelection()
-    getEditor().moveCursorTo(row, column + (short ? 4: 1));
+    getEditor().dispatch({ changes: { from: to, to, insert: short ? '[](#)' : '[]' }, })
+
+    getEditor().dispatch({
+      selection: {anchor: to +  (short ? 4: 1)},
+      effects: [
+      EditorView.scrollIntoView(to)
+    ]})
 
     getEditor().focus()
 
@@ -38,7 +48,7 @@
   
 
   const addQuickLink = () => {
-    let { row, column} = $cursorPosition
+    let { from, to} = $cursorPosition
 
     const {contentStart, end } = $bookIndex.chapters.get($currentChapterKey)
     
@@ -48,25 +58,28 @@
       : `[${firstAvaiableKey()}]`
 
 
-    if(contentStart != row ){
-      getEditor().session.replace(new ace.Range(row, column, row, column), link);
-      column += link.length
+
+    if(contentStart != (getEditor().state.doc.lineAt(to).number -1) ){
+      getEditor().dispatch({ changes: { from: to, to, insert: link }, })
+      to += link.length
     }else{
       // Special case: if is on same line of heading, create a new line skip
-      getEditor().session.replace(new ace.Range(row, column, row, column), '\n' + link);
-      row += 1
-      column = link.length
+      getEditor().dispatch({ changes: { from: to, to, insert: '\n' + link }, })
+      to += link.length + 1
+      
     }
-
-    getEditor().clearSelection()
-    getEditor().moveCursorTo(row, column);
-
-    const order = getRightOrderKey(key)
-    getEditor().session.mergeUndoDeltas = true; 
 
     addChapter(key, `\n\n### ${key}`)
 
-    if(order >= contentStart) getEditor().moveCursorTo(row, column);
+    if(getRightOrderKey(key) <= contentStart) to += `\n\n### ${key}`.length + 1
+    getEditor().dispatch({
+      selection: {anchor: to},
+      effects: [
+      EditorView.scrollIntoView(to)
+    ]})
+
+
+
     getEditor().focus()
   }
 
@@ -78,29 +91,36 @@
 
 </script>
 
-<main class="editor">
+<main class="editor" style={
+`--mage-settings-font: ${$font.trim()};
+ --mage-settings-fontsize: ${String($fontSize).trim()}pt;
+ --mage-settings-editormargins: ${$editorMargins.trim()};
+ --mage-settings-linemargin: ${String($lineMargin).trim()}px;
+ --mage-settings-linespacing: ${String($lineSpacing).trim()};
+ ${$titleHighlight == '1' ? '--mage-settings-titlehighlight: transparent;' : ''}`
+ }>
   <div class="toolbar">
-    <h1 on:click={ () => $showSidemenu = !$showSidemenu} title={$currentChapterFullTitle}>
+    <h1 class="only-desktop" on:click={ () => $showSidemenu = !$showSidemenu} title={$currentChapterFullTitle}>
       {$currentChapterFullTitle}
     </h1>
     
-    <div class="only-desktop" on:click={async() => {
-      getEditor().execCommand('find')
+    <div on:click={async() => {
+      openSearchPanel(getEditor())
     }} title={$_('editor.buttons.find')}><span class="icon-search"/></div>
 
-    <div class="only-desktop" on:click={async() => {
-      getEditor().execCommand('undo')
+    <div on:click={async() => {
+      undo(getEditor())
     }} title={$_('editor.buttons.undo')}><span class="icon-ccw"/></div>
 
-    <div class="only-desktop" on:click={async() => {
-      getEditor().execCommand('redo')
+    <div on:click={async() => {
+      redo(getEditor())
     }} title={$_('editor.buttons.redo')}><span class="icon-cw"/></div>
     
     <div on:click={addQuickLink} title={$_('editor.buttons.quicklink')}>
-      <span class="link">#<span class="icon-flash"/></span>
+      <span class="link">[<span class="icon-flash"/>]</span>
     </div>
 
-    <div on:click={addLink} title={$_('editor.buttons.link')}>#L</div>
+    <div on:click={addLink} title={$_('editor.buttons.link')}>[L]</div>
   </div>
   
   <div class="textarea" id={editorComponentID}>
@@ -119,54 +139,21 @@
 
 <style>
 
-  :global(.ace_mobile-menu){
-    transform: translateY(-4px);
-  }
-  :global(.ace_mobile-button){
-    line-height: 2;
-    padding-bottom: 8px;
-    padding-top: 8px;
+  :global(#main-editor){
+    background-color: #fff;
+    font-size: 14pt;
+    font-size: var(--mage-settings-fontsize, 14pt);
   }
 
-  :global(.ace_mobile-button[action=find]:after){
-    padding: 8px;
-    font-family: "fontello";
-    content: '\e800';
+  :global(#main-editor .cm-activeLine){
+    background-color: #ededed;
   }
 
-  :global(.ace_mobile-button[action=undo]:after){
-    padding: 8px;
-    font-family: "fontello";
-    content: '\e804';
+  :global(#main-editor .cm-content){
+    padding: 1.4rem 0 !important;
   }
 
-  :global(.ace_mobile-button[action=copy]:after){
-    padding: 8px;
-    font-family: "fontello";
-    content: '\f0c5';
-  }
 
-  :global(.ace_mobile-button[action=cut]:after){
-    padding: 8px;
-    font-family: "fontello";
-    content: '\e803';
-  }
-
-  :global(.ace_mobile-button[action=paste]:after){
-    padding: 8px;
-    font-family: "fontello";
-    content: '\f0ea';
-  }
-
-  :global(.ace_mobile-button[action=selectall]){
-    display: none;
-  }
-
-  :global(.ace_mobile-button[action=openCommandPallete]){
-    display: none;
-  }
-  
-  
 
   :global(.firepad){
     display: flex;
@@ -176,15 +163,33 @@
     flex-grow: 1;
   }
 
-
-  :global(.ace_heading){
-    /*#c60000*/color: #000 !important;
-    font-weight: 700;
+  :global(.mage-theme-dark #main-editor .cm-panels button){
+    border-radius: 4px;
+    padding: 4px 15px;
+    font-family: Arial, Helvetica, sans-serif;
   }
 
-  :global(.ace_gutter-cell){
-    color: #888;
+
+  :global(#main-editor .cm-mage-heading){
+    color: #000 !important;
+    font-weight: bolder;
+    background-color: #d4d4d4;
+    background-color: var(--mage-settings-titlehighlight, #d4d4d4);
+    font-size: 110%;
+    padding: 0px 4px;
   }
+
+  :global(#main-editor .cm-mage-booktitle){
+    color: #000 !important;
+    font-weight: 800;
+    font-size: 130%;
+  }
+
+  :global(#main-editor .tok-heading.tok-meta){
+    display: inline-block;
+    margin-top: 1.5rem;
+  }
+
 
 
   /* Markup del componente */
@@ -193,20 +198,21 @@
     display: grid;
     grid-template-columns: 100%;
     grid-template-rows: auto 1fr 16px;
-    grid-gap: 1px;
     grid-template-areas: 
       "toolbar"
       "textarea"
       "margin";
-    background-color: rgb(192, 192, 192);
   }
 
   .toolbar {
-    background-color: #fff;
+    background-color: #eee;
+    z-index: 100;
+    box-shadow: 0 4px 20px rgb(0 0 0 / 25%);
     display: flex;
     flex-direction: row;
     align-items: center;
     min-height: calc(1.9rem + 18px);
+    padding-left: 1.4rem;
   }
 
   h1 {
@@ -266,45 +272,50 @@
   }
 
 
-  @media only screen and (max-width: 680px) {
+  @media only screen and (max-width: 500px) {
     .only-desktop {
       display: none;
     }
 
+    .toolbar {
+      display: flex;
+      padding-left: 0 !important;
+    }
 
-    :global(.ace_search_field){
-      min-width: 0 !important;
+    .toolbar > * {
+      flex: 1 1 auto;
+      padding-left: 0 !important;
+      padding-right: 0 !important;
+      text-align: center;
+    }
+    
+    .toolbar > div:first-of-type {
+      border: 0 !important;
     }
   }
 
-  @media only screen and (max-width: 420px) {
-    :global(.ace_search){
-      width: 100% !important;
-      box-sizing: border-box;
-    }
-  }
 
 
-
-  :global(.editor *) {
-    /*font-family: Arial, sans-serif;*/
+  :global(#main-editor *) {
+    font-family: Arial, Helvetica, sans-serif;
+    font-family: var(--mage-settings-font, Arial, Helvetica, sans-serif);
     outline: none !important;
   }
 
   :global(.ace_constant){
     color: #006d1b;
   }
-  :global(.ace_link){
+  :global(#main-editor .cm-mage-workinglink, #main-editor .cm-mage-workinglink *){
     pointer-events: auto !important;
     cursor: pointer;
     color: rgb(17, 0, 172);
   }
 
-  :global(.ace_link:hover){
+  :global(#main-editor .cm-mage-workinglink:hover, #main-editor .cm-mage-brokenlink:hover){
     text-decoration: underline;
   }
 
-  :global(.ace_brokenlink){
+  :global(#main-editor .cm-mage-brokenlink, #main-editor .cm-mage-brokenlink *){
     pointer-events: auto !important;
     cursor: not-allowed;
 
@@ -313,17 +324,23 @@
   }
 
 
-  :global(.ace_string){
-    color: #444 !important;
+  :global(#main-editor .cm-mage-code *, #main-editor .cm-mage-code, #main-editor .cm-mage-group, #main-editor .cm-mage-flag){
+    color: #00a64a !important;
+    font-family: monospace !important;
   }
 
-  :global(.ace_strong){
+  :global(#main-editor .tok-strong, #main-editor .cm-mage-HTMLb){
     font-weight: 700 !important;
     color: #444 !important;
   }
 
-  :global(.ace_emphasis){
+  :global(#main-editor .tok-emphasis, #main-editor .cm-mage-HTMLi){
     font-style: italic;
+    color:  #444 !important;
+  }
+
+  :global( #main-editor .cm-mage-HTMLu){
+    text-decoration: underline;
     color:  #444 !important;
   }
 
@@ -331,12 +348,138 @@
     padding-bottom: 25px;
   }
 
-  .toolbar{
-    padding-left: calc(6vw - 8px);
+
+  :global(#main-editor .cm-line){
+    padding: 4px calc(20% - 45px);
+    padding-top: var(--mage-settings-linemargin, 4px);
+    padding-bottom: var(--mage-settings-linemargin, 4px);
+
+    padding-left: var(--mage-settings-editormargins, calc(20% - 45px));
+    padding-right: var(--mage-settings-editormargins, calc(20% - 45px));
+
+    line-height: 140%;
+    line-height: var(--mage-settings-linespacing, 140%);
   }
-  :global(.cm-line){
-    padding: 7px calc(6.5vw - 10px) !important;
+
+
+:global(.mage-theme-dark #main-editor){
+  color: #ccc !important;
+  background-color: #0f0f0f !important;
+}
+
+:global(.mage-theme-dark .toolbar){
+  box-shadow: 0 4px 20px rgb(0 0 0 / 75%) !important;
+}
+
+
+:global(.mage-theme-dark .toolbar, .mage-theme-dark .margin){
+  color: #ddd !important;
+  background-color: #1a1a1a !important;
+}
+
+
+:global(.mage-theme-dark .toolbar > div){
+  color: rgb(213 107 255) !important;
+  border-left: #292929 solid 1px !important;
+}  
+
+
+:global(.mage-theme-dark #main-editor .cm-mage-heading){
+  background-color: #333;
+  background-color: var(--mage-settings-titlehighlight, #333);
+
+}
+
+:global(.mage-theme-dark #main-editor .tok-heading){
+    color: #fff !important;
+}  
+
+
+
+:global(.mage-theme-dark #main-editor .cm-mage-workinglink, .mage-theme-dark #main-editor .cm-mage-workinglink *){
+
+  color: #5166ff !important;
+}
+
+:global(.mage-theme-dark #main-editor .cm-mage-brokenlink, .mage-theme-dark #main-editor .cm-mage-brokenlink *){
+  color: rgb(254 10 10) !important;
+  background-color: rgb(53 0 0) !important;
+  
+}
+
+:global(
+  .mage-theme-dark #main-editor .cm-mage-code,
+  .mage-theme-dark #main-editor .cm-mage-group,
+  .mage-theme-dark #main-editor .cm-mage-flag
+){
+    color: #00a64a !important;
   }
+
+:global(.mage-theme-dark #main-editor .tok-strong, .mage-theme-dark #main-editor .cm-mage-HTMLb){
+  color: #999 !important;
+}
+
+:global(.mage-theme-dark #main-editor .tok-emphasis, .mage-theme-dark #main-editor .cm-mage-HTMLi){
+  color:  #999 !important;
+}
+
+:global(.mage-theme-dark #main-editor .cm-mage-HTMLu){
+  color:  #999 !important;
+}
+
+
+:global(.mage-theme-dark select){
+    color: #fff !important;
+    background-color: #424242 !important;
+
+}
+
+:global(.mage-theme-dark #main-editor .cm-activeLine){
+    background-color: #222;
+  }
+
+
+
+:global(.mage-theme-dark #main-editor .cm-selectionBackground ){
+  background: rgb(0, 59, 71) !important;
+}
+
+
+:global(.mage-theme-dark #main-editor .cm-panels){
+  background-color: #1a1a1a !important;
+  color: #fff;
+}
+
+:global(.mage-theme-dark #main-editor .cm-panels-bottom, .mage-theme-dark #main-editor .cm-panel button){
+  background: #000;
+}
+
+:global(.mage-theme-dark #main-editor .cm-panels-bottom, .mage-theme-dark #main-editor .cm-panel button:hover){
+  background: #444;
+}
+
+:global(.mage-theme-dark #main-editor .cm-panels-bottom, .mage-theme-dark #main-editor .cm-panel button[name="close"]){
+  background: transparent;
+  border: 0 !important;
+}
+
+:global(.mage-theme-dark #main-editor .cm-panels-bottom, .mage-theme-dark #main-editor .cm-panel input){
+  background-color: #1d1d1d;
+  border: 2px #161616 solid;
+  color: #ddd;
+}
+
+:global(.mage-theme-dark #main-editor .cm-searchMatch){
+  background-color: #ffff001c;
+  border: 0.5px solid #ffff001c;
+}
+
+:global(.mage-theme-dark #main-editor .cm-searchMatch-selected){
+  background-color: #ffff0054;
+}
+
+
+
 
 
 /*
@@ -424,94 +567,6 @@
     transform: rotate(359deg);
   }
 }
-
-:global(.mage-theme-dark .editor){
-  color: #fff !important;
-  background-color: #424242 !important;
-}
-
-:global(.mage-theme-dark .toolbar, .mage-theme-dark .margin){
-  color: #ddd !important;
-  background-color: #0f0f0f !important;
-}
-
-
-:global(.mage-theme-dark .toolbar > div){
-  color: rgb(213 107 255) !important;
-  border-left: #292929 solid 1px !important;
-}  
-
-:global(.mage-theme-dark .ace_content){
-    color: #ccc !important;
-}  
-
-:global(.mage-theme-dark .ace_heading){
-    color: #fff !important;
-}  
-
-:global(.mage-theme-dark .ace_link){
-  color: #5166ff !important;
-}
-
-:global(.mage-theme-dark .ace_brokenlink){
-  color: rgb(254 10 10) !important;
-  background-color: rgb(53 0 0) !important;
-  
-}
-
-
-:global(.mage-theme-dark .ace_string){
-  color: #999 !important;
-}
-
-:global(.mage-theme-dark .ace_strong){
-  color: #999 !important;
-}
-
-:global(.mage-theme-dark .ace_emphasis){
-  color:  #999 !important;
-}
-
-:global(.mage-theme-dark select){
-    color: #fff !important;
-    background-color: #424242 !important;
-
-}
-
-:global(.mage-theme-dark .ace_search){
-  background-color: #444 !important;
-  color: #ddd !important;
-}
-
-:global(.mage-theme-dark .ace_search .ace_button){
-  background-color: #444;
-  color: #ddd !important;
-}
-
-:global(.mage-theme-dark .ace_search .ace_searchbtn){
-  background-color: #282828;
-  border-color:#000 !important;
-  color: #ddd;
-}
-
-:global(.mage-theme-dark .ace_search input){
-  border: solid 1px black;
-  border-right: none;
-}
-
-:global(.mage-theme-dark .ace_selection ){
-  background: rgb(0, 59, 71) !important;
-}
-
-@media (any-pointer: fine) {
-
-  :global(.mage-theme-dark .ace_search .ace_searchbtn:hover,
-  .mage-theme-dark .ace_search .ace_button:hover){
-    background-color: #555 !important;
-  }
-}
-
-
 </style>
 
 

@@ -10,7 +10,7 @@
 
 <div class="dialog">
   <h3>Magebook - v. {manifest.version}</h3>
-  <img src="./static/img/logo.png" alt="Magebook logo">
+  <img src="../../assets/img/logo.png" alt="Magebook logo">
   <br>
   <p>{@html $_('about.text')}</p>
   <p>{$_('about.contact')}: <a target="_blank" rel="noopener" href="mailto:luca.fabbian.1999@gmail.com?subject=Magebook%20-%20Segnalazione">luca.fabbian.1999@gmail.com</a></p>

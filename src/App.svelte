@@ -3,25 +3,19 @@
   Importa gli altri componenti e li dispone a schermo
   @Luca Fabbian - v1.0 */
   import {_} from 'svelte-i18n'
-
   import Dialogs from './components/Dialogs.svelte'
   import { dialog } from './components/Dialogs.svelte'
   import Alert from './components/dialogs/Alert.svelte'
-
   import Navbar  from './components/Navbar.svelte'
   import Editor  from './components/Editor.svelte'
   import Sidebar from './components/Sidebar.svelte'
   import LocalOnboarding from './components/LocalOnboarding.svelte'
-
-  import { bookIndex, isLoaded } from './javascript/new-book.js'
-  import { handleShortcuts } from './javascript/shortcuts.js'
-  import { isApp, appPath } from './javascript/appMode.js'
-  import { initError }from './javascript/editor.js'
+  import { bookIndex, isLoaded } from './javascript/new-book'
+  import { handleShortcuts } from './javascript/shortcuts'
+  import { isApp, appPath } from './javascript/appMode'
+  import { initError }from './javascript/editor'
   import { theme } from './javascript/settings' 
   import manifest from '../package.json'
-
-
-
   // Change theme from dark to light and vice versa
   $: {
     const b = window.document.body
@@ -30,14 +24,11 @@
     })
     b.classList.add('mage-theme-' + $theme)
   }
-
   $: style = `<style>
   :root {
     color-scheme: ${$theme == 'dark' ? 'dark' : 'light'};
   }
   </style>`
-
-
   // Change page title if the page is visited by a real user 
   // keep "Magebook" title for web engines
   $: { if(!(/bot|google|baidu|bing|msn|duckduckbot|teoma|slurp|yandex/i.test(navigator.userAgent))){
@@ -45,28 +36,25 @@
       document.title = $bookIndex.properties.title + " - Magebook"
     }
   } }
-
   // Version popup
   const key = 'mage-version'
   if(!localStorage[key]){
-    localStorage[key] =  localStorage['mage-settings'] ? '1.0.0' : manifest.version
+    localStorage[key] = manifest.version
   } 
   const version = localStorage[key]
   try {
     const [savedMajor, minor, ] = version.split('.')
     const [currentMajor, currentMinor, ] = manifest.version.split('.')
+    console.log('Checking migration from: ', version, ' to:', manifest.version)
 
     if(savedMajor !== currentMajor || minor != currentMinor){
-      console.log("is different!")
       dialog(
           Alert,
           $_('dialogs.version.title') + manifest.version, 
           $_('dialogs.version.' + currentMajor + '.' + currentMinor) + '<br><br>' + $_('dialogs.version.text')
         ).then( () => localStorage[key] = manifest.version)
     }
-
   }catch(e){}
-
 </script>
 
 <svelte:head>
@@ -106,7 +94,6 @@
     overflow-x: hidden !important;
   }
   
-
   :global(body){
     display: grid;
     width: 100vw;
@@ -125,7 +112,6 @@
       "editor"
     }
   }
-
   .loading-mask {
     grid-column-start: 1;
     grid-column-end: -1;
@@ -135,15 +121,12 @@
     opacity: 0.7;
     z-index: 100;
   }
-
   :global(main, aside, nav){
     min-width: 0; 
     min-height: 0; 
     overflow: auto;
     overscroll-behavior: contain;
   }
-
-
   /* Select replacement, adapted from
   https://codepen.io/rabakilgur/pen/zyggOe */
   :global(.select-dropdown,

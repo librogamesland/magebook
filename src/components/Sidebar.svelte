@@ -11,6 +11,12 @@
 
   import ActionButtons from './ActionButtons.svelte'
 
+  import death from '../assets/img/flags/death.png'
+  import fixed from '../assets/img/flags/fixed.png'
+  import final from '../assets/img/flags/final.png'
+
+  const flags = {death, final, fixed}
+
 
   $: { if($currentChapterKey != '') {
     (async () =>{
@@ -113,7 +119,7 @@
       {key}
       <b>{chapter.title || ''}</b>
       {#each chapter.flags || [] as flag}
-        <img src={`./static/img/flags/${flag}.png`} alt={flag}/>
+        <img src={flags[flag]} alt={flag}/>
       {/each}
       <span class="errors">{@html chapterErrors(key, chapter)} </span>
       <span class="errors">{@html brokenLinks(key, chapter)} </span>
@@ -130,7 +136,7 @@
       {key}
       <b>{$bookIndex.chapters.get(key).title || ''}</b>
       {#each $bookIndex.chapters.get(key).flags || [] as flag}
-        <img src={`./static/img/flags/${flag}.png`} alt={flag}/>
+        <img src={flags[flag]} alt={flag}/>
       {/each}
     </li>
     {/each}

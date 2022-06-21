@@ -6,12 +6,14 @@ import { _ } from 'svelte-i18n'
 
 import { randomString } from './utils.js'
 import {lockStore} from '../components/Dialogs.svelte'
-import {book, bookIndex } from './new-book.js'
+import {$bookIndex, book, bookIndex, isLoaded } from './new-book.js'
 import {cursorPosition, initEditorLocal, initEditorFirebase} from './editor.js'
 
 
 
 export const parsedHash = queryString.parse(location.hash);
+
+export const firebaseSessionsKey = 'mage-firebase-lastsessions'
 
 
 
@@ -72,7 +74,16 @@ const session = new (function(){
       }, false);
   
       initEditorFirebase(JSON.parse(atob(decodeURIComponent(parsedHash.fsession))))
-
+      isLoaded.subscribe( $isLoaded =>{
+        if($isLoaded){
+          const sessions = JSON.parse(localStorage[firebaseSessionsKey] || '{}')
+          sessions[parsedHash.fsession as string] = {
+            name: $bookIndex.properties.title,
+            time: new Date().getTime()
+          } 
+          localStorage[firebaseSessionsKey] = JSON.stringify(sessions)
+        }
+      })
       return
     }
 

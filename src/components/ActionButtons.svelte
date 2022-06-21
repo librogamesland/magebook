@@ -57,7 +57,6 @@
     value.group = sanitizeKey(value.group || '')
     if (!key) return
 
-    getEditor().startOperation({command : "editchapter" })
     if(key !== cKey){
       let text = $book.replace(/\[([^\[]*)\](\(\s*#(\w+)\s*\))/g, (...all) => `[${all[1]}](#${
         all[3] === cKey ? key  : all[3]
@@ -67,17 +66,31 @@
         text = text.replace(/\[([^\[]*)\](?!\()/g, (...all) => `[${all[1] === cKey ? key  : all[1]}]`)
       }
 
-      getEditor().session.setValue(text)
-      getEditor().session.mergeUndoDeltas = true; 
+      getEditor().dispatch({
+        changes: {from: 0, to: getEditor().state.doc.length, insert: text}
+      })
 
 
     }
+
+    // Get old content
     const chapter =  $bookIndex.chapters.get(cKey)
-    const content = getEditor().session.doc.getTextRange(new ace.Range(chapter.contentStart + 1, 0, chapter.contentEnd + 1, 0))
-      .split('\n').filter( line => !(line.includes('[group]:<>') || line.includes('![flag-') || line.includes('![][flag-'))).join('\n').trim()
-    getEditor().session.replace(new ace.Range(chapter.start, 0, chapter.contentEnd + 1, 0), "");
+
+    const content = getEditor().state.sliceDoc(
+        getEditor().state.doc.line(chapter.contentStart + 2).from,
+        getEditor().state.doc.line(chapter.contentEnd + 2 ).to
+      ).split('\n').filter( line => !(line.includes('[group]:<>') || line.includes('![flag-') || line.includes('![][flag-'))).join('\n').trim()
+    
+    // Delete chapter
+    const start = getEditor().state.doc.line(chapter.start ).to
+    const end = getEditor().state.doc.line(chapter.contentEnd + 1).to
+    getEditor().dispatch({
+      changes: { from: start, to: end, insert: '' },
+    })
+
+    
     book.flush()
-    getEditor().session.mergeUndoDeltas = true; 
+
 
     addChapter(key, generateChapterText({
       spacelines: 2,
@@ -89,7 +102,6 @@
     }))
     book.flush()
     goToChapter(key)
-    getEditor().endOperation({command : "editchapter" })
 
     $showSidemenu = false
   }
@@ -100,10 +112,17 @@
     if(key == '') return
     if (await dialog(Confirm, $_('dialogs.confirm'), $_(`dialogs.chapter.delete`).replace("%1", key))) {
       const chapter = $bookIndex.chapters.get(key)
-      console.log("maigd", chapter)
+      const start = getEditor().state.doc.line(chapter.start ).to
+      const end = getEditor().state.doc.line(chapter.contentEnd + 1).to
 
-      getEditor().session.replace(new ace.Range(chapter.start, 0, chapter.contentEnd + 1, 0), "");
+
+      getEditor().dispatch({
+        changes: { from: start, to: end, insert: '' },
+      })
+
       $showSidemenu = false
+
+      getEditor().focus()
     }
   }
 

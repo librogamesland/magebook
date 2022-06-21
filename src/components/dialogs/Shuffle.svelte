@@ -8,6 +8,14 @@
   import { isFirebase } from '../../javascript/database.js'
   import { isApp } from '../../javascript/appMode.js'
   import { getEditor } from '../../javascript/editor.js'
+
+  import death from '../../assets/img/flags/death.png'
+  import final from '../../assets/img/flags/final.png'
+  import fixed from '../../assets/img/flags/fixed.png'
+
+  let flagImgs = { death, final, fixed }
+
+
   export let params;
   export let callback;
 
@@ -78,7 +86,7 @@
         class:selected={flags[flag]}
         on:click={() => (flags[flag] = !flags[flag])}
       >
-        <img alt={flag} src={`./static/img/flags/${flag}.png`} />
+        <img alt={flag} src={flagImgs[flag]} />
       </div>
     {/each}
   </div>

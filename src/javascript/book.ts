@@ -1,12 +1,9 @@
-import { indexBook } from './book-utils'
 import {isNatNumber, shuffleArray} from './utils'
 
 
 interface Chapter {
   key : string,
   title : string,
-  text?: string,
-  fullText?: string,
   group?: string,
   start?: number,
   contentStart?: number,
@@ -18,7 +15,7 @@ interface Chapter {
   links?: string[],
 } 
 
-interface BookIndex {
+interface BookData {
   /** Book full text */
   text: string,
   lines: string[],
@@ -167,159 +164,3 @@ export const sortBook = (bookText) => {
   return remapBook(indexedBook,  new Map (toSort.map( key => [String(key), String(key)])))
 }
 
-
-
-export class Book implements BookIndex {
-
-  /** Create a new instance. 
-  If a string is passed, create a new book from that string.
-  If a Book is passed, return a shallow copy of that book. */
-  constructor(book : string | Book ){
-    if (!(typeof book === "string")) return book
-    this.set(book)
-  }
-
-  #index : BookIndex
-
-  /** Set the book. This will trigger book indexing */
-  set(text: string){
-
-    const bookIndex : BookIndex = {
-      text, 
-      lines: text.split('\n'),
-      title: '',
-      titlePage: '',
-      properties: {},
-      chapter: {},
-      chapters: [],
-      linksToChapter: {},
-      groups: {},
-    }
-
-    let key = ''
-    let chapter : Chapter
-  
-    let lastLineHadContent = false
-    let lastContentLinePlusOne = 1
-  
-    bookIndex.lines.forEach( (oLine, zeroIndexlineNumber) => { 
-      const i = zeroIndexlineNumber  // We keep zero indexed as reference
-      const line = oLine.trim()
-  
-      if(lastLineHadContent) lastContentLinePlusOne = i 
-      lastLineHadContent = (line !== '')
-    
-      // Parsing dell'header
-      if(key === '' && !line.startsWith('### ')) {
-        if(line.startsWith('# ')) {
-          bookIndex.title = line.replace(/\#/g, '').trim()
-          return
-        }
-        const semicolon = line.indexOf(':')
-        if(semicolon !== -1){
-          bookIndex.properties[line.substring(0, semicolon)] = line.substring(semicolon + 1)
-        }
-        return
-      }
-    
-      // Parsing del testo
-      if(line.startsWith('### ')){
-        if(key !== ''){
-          chapter.contentEnd = lastContentLinePlusOne - 1
-          chapter.end = i - 1
-          bookIndex.chapters.push(chapter)
-        }
-        // crea nuova entità
-        key = line.substring(4).trim()
-        let title = ''
-        const index = key.indexOf('{#')
-        if(index != -1){
-          title = key.substring(0, index - 1).trim()
-          key = key.substring(index + 2,  key.lastIndexOf('}')).trim()
-        }
-        chapter = {
-          key,
-          title,
-          group: '',
-          start: lastContentLinePlusOne,
-          contentStart: i,
-          contentEnd: i,
-          end: i,
-          flags: [],
-          links: [],
-        }
-        return
-      }
-    
-      if(line.includes('![flag-') || line.includes('![][flag-')){
-        ;['final', 'fixed', 'death'].forEach( (flag) => {
-          if(line.includes(`![flag-${flag}]`) || line.includes(`![][flag-${flag}]`)) chapter.flags.push(flag)
-        })
-        return
-      }
-      const groupIndex = line.indexOf('[group]:<> ("')
-      if(groupIndex != -1){
-        chapter.group = line.substring(groupIndex + 13, line.lastIndexOf('")'))
-        if(!bookIndex.groups[chapter.group]) bookIndex.groups[chapter.group] = []
-        bookIndex.groups[chapter.group].push(key)
-        return
-      }
-  
-  
-      let myRegexp = new RegExp(`\\[([^\\[]*)\\]\\(\\s*\\#([^\\)]+)\\s*\\)`, "g");
-  
-      let match = myRegexp.exec(oLine);
-      while (match != null) {
-        const linkTarget = match[2].trim()
-        chapter.links.add(linkTarget)
-        if(!result.linksToChapter.has(linkTarget)) result.linksToChapter.set(linkTarget, new Set())
-        result.linksToChapter.get(linkTarget).add(key)
-        match = myRegexp.exec(oLine);
-      }
-  
-    })
-  
-    if(key !== ''){
-      chapter.end = bookIndex.lines.length - 1
-      chapter.contentEnd = lastLineHadContent ? chapter.end : lastContentLinePlusOne - 1
-      bookIndex.chapters.set(key, chapter)
-    }
-
-    // Add titlePage text, the one before chapters
-    result.titlePage = lines.slice(0, result.chapters.size > 0 ? result.chapters.values().next().value.contentStart : lines.length - 1).join('\n')
-
-    // Add text of every chapter
-    for(const [key, {contentStart, contentEnd}] of result.chapters){
-      const text = lines.slice(contentStart + 1,contentEnd +1).filter( line => {
-        const trimmedLine = line.trim()
-        return !(trimmedLine.startsWith('###') || trimmedLine.includes('[group]:') || trimmedLine.includes('![][flag-') || trimmedLine.includes('![flag-'))
-      }).join('\n')
-
-      const fullText = lines.slice(contentStart,contentEnd +1).join('\n')
-
-      Object.assign(result.chapters.get(key), {text, fullText})
-    }
-
-
-    this.#index = bookIndex
-  }
-
-  // Getters
-
-  get text()          {return this.#index.text }
-  get lines()         {return this.#index.lines }
-
-  get title()         {return this.#index.title }
-  get titlePage()     {return this.#index.titlePage }
-  get properties()    {return this.#index.properties }
-
-  get chapter()       {return this.#index.chapter }
-  get chapters()      {return this.#index.chapters }
-  get linksToChapter(){return this.#index.linksToChapter }
-  get groups()        {return this.#index.groups }
-
-
-  // Allow checking 
-  get __is_book(){ return true; }
-
-}

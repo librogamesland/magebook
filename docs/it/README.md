@@ -25,7 +25,7 @@ Magebook è un programma web - non devi scaricarlo, ti basta andare sul sito <ht
 <a class="button" target="_blank" href="https://librogamesland.github.io/magebook/editor">Apri Magebook</a>
 
 
-Magebook è compatibile con Chrome, Firefox, Safari e Edge, e funziona anche su cellulari Android e Ios.  
+Magebook è compatibile con Chrome, Firefox, Safari (?) e Edge, e funziona anche su cellulari Android e Ios.  
 Il sito ha il pieno supporto per la modalità offline - una volta aperto per la prima volta, funzionerà anche in assenza di connessione.
 
 # Funzionalità base
@@ -89,15 +89,80 @@ Usando gli asterischi si può inserire anche *testo in corsivo* e doppi asterisc
 **Esportazione Word/OpenOffice/LibreOffice:**  
 Queste opzioni controllano l'aspetto del file ottenuto quando esporti il libro
 
-***WORK IN PROGRESS - FUNZIONE PREVISTA PER IL FUTURO***
-- `exportPage: `
-- `exportTextFont: `
+#### page
+**→ `page: larghezza altezza, margineSu margineDestro margineGiù margineSinistro`**
+
+Imposta le dimensioni e i margini (in centimetri) della pagina. Al posto di larghezza e altezza, puoi usare *A3*, *A4*, *A5*, *A6*, *B4*, *B5*, *B6* o *Letter*.
+
+- `page: A5, 2.5 2 2 2` *(default value)* formato standard de ["I Corti di Librogame's Land"](https://librogamesland.github.io/corti). Pagina A5 con un margine superiore di 2.5cm, e gli altri di 2cm.
+- `page: 20 20, 3 3 3 3` pagina quadrata 20cm x 20cm con 3cm di margine da ogni lato.
 
 
-**Manipolazione nomi di link e paragrafi:**  
-Magebook consente di intervenire sui nomi di link e paragrafi durante l'esportazione. Ad esempio, puoi aggiungere in automatico una freccia prima di ogni link, o rendere tutti i titoli in corsivo.
+#### textFont
+**→ `textFont: font, size, lineSpacing`**
 
-***WORK IN PROGRESS - FUNZIONE PREVISTA PER IL FUTURO***
+Imposta il font principale del testo. Size è in points (pt), l'unità di misura usuale del testo. L'interlinea può essere fissa o percentuale (aggiungi `%` alla fine).
+
+- `textFont: Times New Roman, 12, 115%` *(default value)* formato standard de ["I Corti di Librogame's Land"](https://librogamesland.github.io/corti). L'interlinea è proporzionale 1.15 (= percentuale 115%)
+- `textFont: EB Garamond, 13, 100%` formato standard de ["Corti in gioco"](https://www.lospaziobianco.it/lonework/corti-in-gioco-concorso-per-autori-di-librogame/). Interlinea singola.
+
+#### titleFont
+→ **`titleFont: font, size, lineSpacing`**
+
+Come sopra, ma per il font dei titoli/chiavi dei paragrafi.
+
+
+#### titleStyle
+→ **`titleStyle: style`**
+
+Cambia lo stile base dei titoli. I valori supportati sono:
+- `titleStyle: default` su una linea diversa, centrato
+- `titleStyle: inline` sulla stessa linea del testo, a destra
+
+
+### Sovrascrittura di link e titoli durante l'esportazione:
+
+Le opzioni seguenti permettono di modificare e sovrascrivere keys/title/... al volo durante l'esportazione.
+
+Puoi usare qualsiasi espressione javascript. In javascript, si usa `+` per unire stringe, le virgolette singole `'string'` per dichiarare stringhe così come sono e le parentesi `()` per forzare l'ordine delle operazioni. C'è anche un operatore speciale `condition ? valueIfTrue : valueIfFalse` che ti fa controllare una condizione e restituisce uno dei due valori a seconda che la condizione sia vera o no.
+
+
+#### renameTitle
+Intervieni sul titolo del paragrafo. Il valore di default aggiunge il grassetto al titolo (`<b></b>`).
+- **book**: il libro completo, già scansionato
+- **chapter**: il paragrafo
+- **title**: il titolo del paragrafo
+- **key**: la key ("numero") del paragrafo
+
+
+- `renameTitle: '<b>' + (title == '' ? key : title) + '</b>'` *(default value)* se il titolo è vuoto (`=''`), usa la key, altrimenti il titolo. In entrambi i casi, rendi il risultato in grassetto.
+- `renameTitle: key` usa solo la key, e niente altro
+- `renameTitle: key + '.'` aggiungi un punto alla fine
+
+#### renameLink
+Intervieni sui link. Ad esempio, per aggiungere parentesi quadre `[]` a ogni link.
+- **book**: il libro completo, già scansionato
+- **text**: il testo del link, se il link è nel formato `[text](#key)`
+- **chapter**: il paragrafo verso cui è il link (null se il paragrafo è inesistente).
+- **title**: il titolo paragrafo verso cui è il link (null se il paragrafo è inesistente).
+- **key**: link key ("numero")
+- **currentChapter**: il paragrafo attuale
+
+I LINK NON VENGONO SOTTOLINEATI DI DEFAULT! Aggiungi `'<u>' + ... + '</u>'` per sottolineare.
+
+
+- `renameLink: text == '' ? (chapter == null ? 'ERROR' : (title == '' ? key : title)) : text` *(default value)* 
+- `renameLink: '→ ' + key` aggiungi una freccia prima di ogni link
+- `renameLink: '&#91;' + key + '&#93;'` aggiungi parentesi quadre `[ ]` (usando i [codici HTML](https://unicode-table.com/en/html-entities/) per evitare che siano scambiati come link)
+
+#### renameAnchor
+Cambia l'identificativo usato internamente per identificare il paragrafo (viene chiamato Segnalibro in Word/Libreoffice). Puoi usare questa opzione per rinominare questi identificativi in modo da evitare conflitti con elementi esterni.
+- **book**: il libro completo, già scansionato
+- **key**: anchor key ("numero")
+
+
+- `renameAnchor: key` *(default value)* usa semplicemente la key.
+- `renameAnchor: 'mybook' + key` aggiungi `mybook` come prefisso di ogni key
 
 
 
@@ -192,6 +257,17 @@ Restyle dell'interfaccia.
 Aggiunta esportazione sito web.
 
 Correzioni varie.
+
+#### 1.2
+
+Ristrutturazione massiccia del codice interno.
+
+L'editor adesso è basato su Codemirror6 anziché Ace. Dovrebbe risultare più veloce, bello e più mobile friendly.
+
+Adesso "Sessioni recenti" tiene traccia anche dei progetti collaborativi.
+
+Nuove opzioni esportazione (page, textFont, renameLinks, ...)
+
 
 # Licenza e autori
 Magebook è un software gratuito e open-source (licenza MIT) sviluppato da **Luca Fabbian** <luca.fabbian.1999@gmail.com>, con il supporto della community di [Librogame's Land](http://librogame.net).

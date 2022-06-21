@@ -22,6 +22,7 @@
   import NewBook        from './dialogs/NewBook.svelte'
   import NewFirebook    from './dialogs/NewFirebook.svelte'
   import Recover        from './dialogs/Recover.svelte'
+  import Settings       from './dialogs/Settings.svelte'
 
 
 
@@ -122,10 +123,14 @@
         }} />
     </div>
 
-
     <div title={$_('navbar.buttons.darktheme')}>
       <span aria-label={$_('navbar.buttons.darktheme')} class={"dropbtn " + ($theme == 'light' ? "icon-moon" : "icon-sun")}
         on:click={() => ($theme = ($theme == 'light' ? "dark" : "light"))} />
+    </div>
+
+    <div title={$_('navbar.buttons.settings')}>
+      <span aria-label={$_('navbar.buttons.settings')} class={"dropbtn icon-cog"}
+        on:click={() => dialog(Settings)} />
     </div>
 
 </span>
@@ -242,7 +247,7 @@
     background-color: #454545 !important;
   }
 
-  div:hover h1, div:hover .dropbtn{
+  nav div:hover h1, div:hover .dropbtn{
     background-color: #345b73;
   }
 

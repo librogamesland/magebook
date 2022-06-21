@@ -40,10 +40,10 @@
   </div>
   <p class="getstarted" style="margin: 1rem 0">{@html $_('dialogs.newfirebook.getStarted')}</p>
 
-  <input type="submit"
+  <button
+    disabled={!book || !apiKey || !databaseURL}
     class="ok"
-    value={$_('dialogs.ok')}
-    on:click={() => loadNewBook()}>
+    on:click={() => loadNewBook()}>{$_('dialogs.ok')}</button>
   <button class="cancel" on:click={() => callback(false)}>{$_('dialogs.cancel')}</button>
   </form>
 </div>

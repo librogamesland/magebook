@@ -32,7 +32,7 @@ hint   = "You can recover the previous book with <b>File -> Recent sessions</b>"
 [dialogs.newfirebook]
 new    = "Create or load a New Book"
 book   = "Book name"
-getStarted = """Con questa funzione puoi collegare Magebook al tuo account Google, così da creare libri che si possono modificare in simultanea, proprio come i Documenti Google.<br>Prima di iniziare, dovrai collegare Magebook al tuo account <a href="../docs/it/index.html#/?id=progetti-collaborativi">seguendo questa guida</a>."""
+getStarted = """This feature lets you link Magebook with your Google account. After that, you will be able to work on shared documents, like the Google Docs' ones.<br>Get start by linking Magebook to your account. <a target="_blank" href="https://librogamesland.github.io/magebook/index.html#/?id=collaborative-projects">More on the user guide here</a>."""
 
 [dialogs.shuffle]
 title      = "Shuffle"
@@ -81,12 +81,12 @@ vuejs = "Vue.js"
 
 others       = "Others (ebook, Android app, ...)"
 otherslink   = "https://librogamesland.github.io/magebook/index.html#/?id=other-formats"
-settings     = "Export settings"
-settingslink = "https://librogamesland.github.io/magebook/index.html#/?id=settings"
+settings     = "Export properties"
+settingslink = "https://librogamesland.github.io/magebook/index.html#/?id=properties"
 
 [navbar.help]
 title     = "Help"
-guide     = "Guide"
+guide     = "User guide"
 guidefile = "https://librogamesland.github.io/magebook" 
 forum     = "Lgl forum"
 about     = "About"
@@ -133,7 +133,7 @@ author: Name and Surname
 
 ### 1
 Chapter example. You may edit this chapter thanks to the buttons on the right sidemenu.
-This is a link going to [2]. Links may also be  [Text](#chapter).
+This is a link going to [2]. Links may also look like [Text](#chapter).
 
 
 ### Chapter with a long title {#2}
@@ -155,6 +155,7 @@ chooseother  = "Choose another book"
 
 [dialogs.version]
 title = "New version - "
-text  = 'Discover more on the <a ref="_blank" href="https://librogamesland.github.io/magebook/#/?id=releases">guide page</a>.'
+text  = 'Discover more on the <a target="_blank" href="https://librogamesland.github.io/magebook/#/?id=changelog">user guide page</a>.'
 "1.0" = "Initial release." 
 "1.1" = "Added short links format [number] and 'disableShortLinks: true'.<br>Links to orphan chapters are highlighted in the sidemenu.<br>General restyle.<br>New Website export.<br>Bug fixes." 
+"1.2" = "Major internal rewrite.<br>The editor is now powered by Codemirror6 instead of Ace. It should be prettier and more mobile friendly.<br>New setting and export properties such as renameLink, page, textFont,...<br>Now 'Latest sessions' keeps a record of collaborative projects too."

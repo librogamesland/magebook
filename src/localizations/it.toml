@@ -158,3 +158,4 @@ title = "Nuova versione - "
 text  = 'Scopri di più nella <a ref="_blank" href="https://librogamesland.github.io/magebook/#/?id=versioni">guida</a>.'
 "1.0" = "Versione iniziale." 
 "1.1" = "Aggiunto formato link corto [numero] e opzione 'disableShortLinks: true'.<br>I link a paragrafi inesistenti vengono segnalati nel menu laterale.<br>Restyle dell'interfaccia.<br>Aggiunta esportazione sito web.<br>Correzioni varie." 
+"1.2" = "Ristrutturazione massiccia del codice interno.<br>L'editor adesso è basato su Codemirror6 anziché Ace. Dovrebbe risultare più veloce, bello e più mobile friendly.<br>Nuove impostazioni e Opzioni esportazione come renameLink, page, textFont, ...<br>Adesso 'Sessioni recenti' tiene traccia anche dei progetti collaborativi."

@@ -1,7 +1,8 @@
 import { get, writable } from 'svelte/store'
-import { getEditor, currentChapterKey, showSidemenu, editorComponentID } from './editor.js'
+import { getEditor, currentChapterKey, showSidemenu } from './editor.js'
 import { book, bookIndex, isLoaded } from './new-book.js'
 import { addChapter, generateChapterText } from './actions.js'
+import { EditorView} from  'codemirror'
 
 const chapterHistory = []
 const historyCanGoBack = writable(false) 
@@ -22,13 +23,29 @@ const goToChapter = (key, updateHistory = true) => {
     chapterHistory.push($currentChapterKey)
     historyCanGoBack.set(true)
   }
-  editor.gotoLine( $bookIndex.chapters.get(key).contentEnd, Infinity)
-  showSidemenu.set(false)
   
-  editor.focus()
-  editor.scrollToLine($bookIndex.chapters.get(key).contentStart -1, false, true, function () {});
+  showSidemenu.set(false)
 
-  editor.moveCursorTo( $bookIndex.chapters.get(key).contentEnd, Infinity)
+  
+
+  editor.dispatch({
+    selection: {anchor: editor.state.doc.line(
+      $bookIndex.chapters.get(key).contentEnd + 1
+    ).to},
+    effects: [
+      EditorView.scrollIntoView(
+        editor.state.doc.line(
+          $bookIndex.chapters.get(key).contentStart + 1
+        ).to,
+        { y: 'start', yMargin: 20, } 
+      )
+    ]
+  })
+
+
+
+
+  editor.focus()
 
 }
 
@@ -40,24 +57,5 @@ const goBack = () => {
   goToChapter(chapterHistory.pop(), false)
 }
 
-
-isLoaded.subscribe( value => {
-  if(!value) return
-
-  const onLinkClick = (e) => {
-    if(!e.target.classList.contains('ace_link')) return false
-    const key = e.target.innerHTML.trim()
-    
-    if(key.startsWith('#')){
-      goToChapter(key.substring(1))
-    }else if(key.startsWith('[') && key.endsWith(']')){
-      goToChapter(key.substring(1, key.length - 1).trim())
-    }else{
-      return false
-    }
-  }
-
-  document.getElementById(editorComponentID).onclick = onLinkClick
-})
 
 export {goToChapter, historyCanGoBack, goBack}

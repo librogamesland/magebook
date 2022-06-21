@@ -43,6 +43,19 @@
       white-space: pre-wrap;
     }
 
+    @media print {
+      .content {
+        left: 0;
+        width: 100%;
+      }
+
+      section.cover {
+        display: none !important;
+      }
+    }
+
+    
+
   </style>
 </head>
 <body>

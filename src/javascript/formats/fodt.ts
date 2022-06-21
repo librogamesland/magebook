@@ -1,5 +1,5 @@
 import {template} from './fodt-template.js'
-import {encodeToHTML, mangle} from '../encoder.js'
+import {marked, encodeToHTML, mangle, sanitizeProperties} from '../encoder.js'
 import {extractIndexedBook } from '../book-utils'
 
 
@@ -23,8 +23,15 @@ const sanitize = (text) => {
   return text
 }
 
+const inlineRenderer = () => ({
+  html:      text => whitemap[text.trim().toLowerCase()] ? whitemap[text.trim().toLowerCase()] : mangle(text),
+  paragraph: text => sanitize(text),
+  strong:    text => `<text:span text:style-name="bold">${text}</text:span>`,
+  em:        text => `<text:span text:style-name="italic">${text}</text:span>`,
+})
 
-const renderer = (chapters) => ({
+
+const renderer = (indexedBook, properties, currentChapter) => ({
   html:      text => whitemap[text.trim().toLowerCase()] ? whitemap[text.trim().toLowerCase()] : mangle(text),
   paragraph: text => `<text:p text:style-name="Standard">${sanitize(text)}</text:p>`,
   strong:    text => `<text:span text:style-name="bold">${text}</text:span>`,
@@ -32,39 +39,66 @@ const renderer = (chapters) => ({
   codespan:  () => '',
   code:      () => '',
   link: (fullKey, i, text) => {
-    const key = fullKey.replace('#', '')
+    const key = fullKey.replace('#', '').trim()
+    const renamedKey = properties.renameAnchor({
+      key,
+      book: indexedBook
+    })
+    const chapter = indexedBook.chapters.has(key) ? indexedBook.chapters.get(key) : null
+    return `<text:a xlink:type="simple" xlink:href="#${renamedKey}" text:style-name="Internet_20_link" text:visited-style-name="Visited_20_Internet_20_Link">${
+      encodeToHTML(properties.renameLink({
+        book: indexedBook,
+        text: text.trim(), 
+        chapter,
+        title: chapter ? chapter.title : null,
+        key,
+        currentChapter,
 
-    return `<text:a xlink:type="simple" xlink:href="#${key}" text:style-name="Internet_20_link" text:visited-style-name="Visited_20_Internet_20_Link">${
-      text.trim() || (chapters.has(key) ? (chapters.get(key).title.trim() || key) : key)
-    }</text:a>`
+    }), inlineRenderer())}</text:a>`
   },
 })
 
 const bookmark = (key, text) =>
-`<text:span text:style-name="bold"><text:bookmark-start text:name="${key}"/>${text}<text:bookmark-end text:name="${key}"/></text:span>`
+`<text:span text:style-name="bold"><text:bookmark-start text:name="${key}"/>${encodeToHTML(text, inlineRenderer())}<text:bookmark-end text:name="${key}"/></text:span>`
 
 
 
 
 const encode = (bookText) => {
   const indexedBook = extractIndexedBook(bookText)
-
-  // Some config
-  const shouldBreakLine = false
+  const properties = sanitizeProperties(indexedBook.properties)
 
   let result = ''
-  for(const [key, {title, text}] of indexedBook.chapters){ 
+  for(const [key, chapter] of indexedBook.chapters){ 
+
+    const {text} = chapter
     // Add chapter heading
-    result+= `<text:p text:style-name="Heading_3" text:outline-level="3">${bookmark(key, title.trim() || key)}</text:p>`
+    const renamedKey = properties.renameAnchor({
+      key: key,
+      book: indexedBook
+    })
+
+    const renamedTitle = properties.renameTitle({
+      book: indexedBook,
+      chapter,
+      key: key,
+      title: chapter.title ? chapter.title.trim() : '',
+
+    })
+
+
+    // Add chapter heading
+    result+= `<text:p text:style-name="Heading_3" text:outline-level="3">${bookmark(renamedKey, renamedTitle)}</text:p>`
     
     // Add chapter text (or blank line if chapter is empty)
-    result+= encodeToHTML(text, renderer(indexedBook.chapters)).trim() || `<text:p text:style-name="justify"> </text:p>`
+    result+= encodeToHTML(text, renderer(indexedBook, properties, chapter)).trim() || `<text:p text:style-name="justify"> </text:p>`
 
-    // Add blank line after chapter
-    result +=  `<text:p text:style-name="${shouldBreakLine ? 'break' : 'Standard'}"/>`
+    // Add blank line after 
+    const shouldBreak = false
+    result +=  `<text:p text:style-name="${shouldBreak ? 'break' : 'Standard'}"/>`
   }
 
-  return template(result).split('\n').map( line  => line.trim()).join('')
+  return template(result, properties).split('\n').map( line  => line.trim()).join('')
 }
 
 export default { encode, mimetype }

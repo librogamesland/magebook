@@ -47,11 +47,12 @@ const getRightOrderKey = (key) => {
 const addChapter = (key, text) => {
   book.flush()
 
-  const index = getRightOrderKey(key)
+  const index = getEditor().state.doc.line(getRightOrderKey(key) + 1).to
   console.log("index", index)
 
-
-  getEditor().session.replace(new ace.Range(index, Infinity, index, Infinity), '\n' + text);
+  getEditor().dispatch({
+    changes: { from: index, to: index, insert: '\n' + text },
+  })
 
   book.flush()
 }

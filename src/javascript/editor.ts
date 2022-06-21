@@ -1,12 +1,13 @@
 import { writable, derived, get } from 'svelte/store';
 import { debounced } from './debounced-store.js'
 import { book, bookIndex, isLoaded, $bookIndex} from './new-book.js'
-import { preventClickPropagation } from './utils';
 import { _ } from 'svelte-i18n'
-import { theme } from './settings';
+import { setupCodemirror, cursorPosition } from './codemirror.js';
 
 
-export const editorComponentID = 'main-editor'
+import firebase from 'firebase/compat/app'
+import 'firebase/compat/database'
+import Firepad from '@lucafabbian/firepad'
 
 
 
@@ -22,12 +23,13 @@ export const initError = writable("")
 
 
 
-const cursorPosition = debounced(10, {row: 0, column: 0})
 
 const currentChapterKey = derived(
   [cursorPosition, bookIndex],
   ([$cursorPosition, $bookIndex]) => {
-    let cursorRow = $cursorPosition.row
+    // Last valid position in the document
+    const lastPos = editor?.state.doc.toString().length
+    let cursorRow = editor?.state.doc.lineAt(Math.min($cursorPosition.from, Math.max(0, lastPos - 1))).number - 1
     let lastWorkingKey = ''
     for(const [key, chapter] of $bookIndex.chapters.entries()) {
       if(chapter.contentStart <= cursorRow){
@@ -49,72 +51,13 @@ const currentChapterFullTitle = derived(
   }
 )
 
-const themes = {
-  light: "ace/theme/chrome",
-  dark: "ace/theme/vibrant_ink",
-}
 
-const setupAce = () => {
-  editor = ace.edit(editorComponentID);
-  editor.setOption("mergeUndoDeltas", "always");
-
-
-
-  window.editor = editor
-
-  window.$bookIndex = $bookIndex
-  bookIndex.subscribe(  () => {
-    window.$bookIndex = $bookIndex
-    editor.session.bgTokenizer.start(0)
-  })
-  theme.subscribe( $theme => editor.setTheme(themes[$theme] || themes.light))
-  editor.session.setMode("ace/mode/markdown");
-  editor.session.setUseWorker(false);
-  
-  editor.setOptions({
-    showPrintMargin: false,
-    wrap: true,
-    fontSize: 18,
-    showGutter: window.innerWidth > 430,
-    scrollPastEnd: 0.7,
-  })
-  
-  editor.session.selection.on('changeCursor', () => cursorPosition.lazySet(editor.selection.getCursor()))
-  
-  editor.container.style.lineHeight = 1.4
- 
-  const findF = editor.commands.commands.find.exec
-
-  editor.commands.addCommand({
-    bindKey: {win: 'Ctrl-F', mac: 'Command-F'},
-    description: "Find",
-    exec: (...e) => {
-      findF(...e)
-      setTimeout(() => preventClickPropagation(document.querySelector('.ace_search')), 400)
-    },
-    name: "find",
-    readOnly: true
-  })
-
-  delete editor.keyBinding.$defaultHandler.commandKeyBinding['ctrl-k']
-  delete editor.keyBinding.$defaultHandler.commandKeyBinding['ctrl-l']
-  
-  editor.renderer.updateFontSize()
-  editor.session.on('change', function() {
-    book.lazySet(editor.getValue())
-  });
-
-}
 
 
 const initEditorLocal = (data) => {
-  setupAce()
-
-  editor.getSession().setValue(data.book);
-  editor.moveCursorTo(data.cursor.row,data.cursor.column);
-  editor.scrollToLine(data.cursor.row || 0, true, true, function () {});
-  editor.focus()
-
+  book.set(data.book)
+  cursorPosition.set({from: 0, to: 0})
+  editor = setupCodemirror(data.book)
 
   isLoaded.set(true)
 }
@@ -123,7 +66,9 @@ const initEditorLocal = (data) => {
 const initEditorFirebase = (config) => {
 
   try{
-    setupAce()
+    cursorPosition.set({from: 0, to: 0})
+
+    editor = setupCodemirror("")
 
 
     const app = firebase.initializeApp(config);
@@ -131,13 +76,14 @@ const initEditorFirebase = (config) => {
     // Get a reference to the database service
     const database = firebase.database(app);
 
-    window.db = database
+    window['db'] = database
 
 
 
     //// Create Firepad.
-    firepad = window.Firepad.fromACE(database.ref(config.book), editor, {
+    firepad = Firepad.fromCodeMirror6(database.ref(config.book), editor, {
       defaultText: get(_)('books.fire').replace('%1', config.book)
+
     });
 
     firepad.on('ready', function() {

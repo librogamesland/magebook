@@ -3,7 +3,13 @@
   import { onDestroy } from 'svelte'
   import { bookIndex } from '../../javascript/new-book'
   import { sanitizeKey } from '../../javascript/book-utils'
-  import About from './About.svelte';
+
+  import death from '../../assets/img/flags/death.png'
+  import final from '../../assets/img/flags/final.png'
+  import fixed from '../../assets/img/flags/fixed.png'
+
+  let flagImgs = { death, final, fixed }
+
   export let params
   export let callback
 
@@ -47,7 +53,7 @@
       <div
         class:selected={flags[flag]}
         on:click={() => (flags[flag] = !flags[flag])}>
-        <img alt={flag} src={`./static/img/flags/${flag}.png`} />
+        <img alt={flag} src={flagImgs[flag]} />
       </div>
     {/each}
   </div>

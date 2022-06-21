@@ -14,11 +14,8 @@ export const isApp    = writable(false)
 export const appPath     = writable('')
 export const recentFiles = writable(null)
 
-if (parsedHash.app){
+if (window.magebookLocalAppPassword){
   isApp.set(true)
-  window.loadRecents().then (result => recentFiles.set(JSON.parse(result)))
-
-  appPath.set(parsedHash.path || '')
 }
 
 

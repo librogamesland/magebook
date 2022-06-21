@@ -1,6 +1,6 @@
 <script lang="ts">
   import { _ } from 'svelte-i18n'
-  import {previews} from '../../javascript/database.js'
+  import {previews, firebaseSessionsKey} from '../../javascript/database.js'
 
   export let params
   export let callback
@@ -21,17 +21,16 @@
     {/each}
   </ul>
   {/await}
-  <h3>{$_('navbar.file.recover')}</h3>
-  {#await previews()}
-    Loading...
-  {:then sessions}
+  {#if localStorage[firebaseSessionsKey]}
+  <h3>{$_('navbar.file.recoverFire')}</h3>
   <ul>
-    {#each sessions as session}
-    <li><a href={'#msession=' + session.id}>{session.name}
-        <span>{session.time.toLocaleDateString()} {session.time.toLocaleTimeString()}</span></a></li>
+    {#each Object.entries(JSON.parse(localStorage[firebaseSessionsKey]))
+      .sort( ([id1, session1], [id2, session2]) => session2.time - session1.time) as [id, session]}
+    <li><a href={'#fsession=' + id}>{session.name}
+        <span>{new Date(session.time).toLocaleDateString()} {new Date(session.time).toLocaleTimeString()}</span></a></li>
     {/each}
   </ul>
-  {/await}
+  {/if}
   <button class="cancel" on:click={() => callback(false)}>{$_('dialogs.cancel')}</button>
 </div>
 
