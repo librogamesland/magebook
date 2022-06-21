@@ -27,7 +27,8 @@
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
-    "check": "svelte-check --tsconfig ./tsconfig.json"
+    "check": "svelte-check --tsconfig ./tsconfig.json",
+    "test": "echo 'work in progress :)'"
   },
   "devDependencies": {
     "@codemirror/commands": "^6.0.0",
