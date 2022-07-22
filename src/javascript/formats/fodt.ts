@@ -67,6 +67,7 @@ const bookmark = (key, text) =>
 const encode = (bookText) => {
   const indexedBook = extractIndexedBook(bookText)
   const properties = sanitizeProperties(indexedBook.properties)
+  const inlineStyle = properties.titleStyle == 'inline'
 
   let result = ''
   for(const [key, chapter] of indexedBook.chapters){ 
@@ -87,11 +88,19 @@ const encode = (bookText) => {
     })
 
 
-    // Add chapter heading
-    result+= `<text:p text:style-name="Heading_3" text:outline-level="3">${bookmark(renamedKey, renamedTitle)}</text:p>`
+    // Get chapter heading
+    const bookmarkText = bookmark(renamedKey, renamedTitle)
     
-    // Add chapter text (or blank line if chapter is empty)
-    result+= encodeToHTML(text, renderer(indexedBook, properties, chapter)).trim() || `<text:p text:style-name="justify"> </text:p>`
+    // Get chapter text (or blank line if chapter is empty)
+    const newChapter = encodeToHTML(text, renderer(indexedBook, properties, chapter)).trim() || `<text:p text:style-name="justify"> </text:p>`
+
+    // Add them
+    if(inlineStyle){
+      result+= newChapter.replace('>', '>' + bookmarkText + ' ')
+    }else{
+      result+= `<text:p text:style-name="Heading_3" text:outline-level="3">${bookmarkText}</text:p>` + newChapter
+    }  
+
 
     // Add blank line after 
     const shouldBreak = false
