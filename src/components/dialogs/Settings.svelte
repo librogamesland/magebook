@@ -1,6 +1,6 @@
 <script lang="ts">
   import { _ } from 'svelte-i18n'
-  import { font, fontSize, editorMargins, titleHighlight, lineMargin, lineSpacing } from '../../javascript/settings'
+  import { font, fontSize, editorMargins, titleHighlight, justifyText, lineMargin, lineSpacing } from '../../javascript/settings'
 
   export let params : null
   export let callback : (value: any) => void
@@ -47,7 +47,7 @@
     <tr>
       <th>font-size:</th>
       <td><input type="number" bind:value={$fontSize}  min="2" max="50"></td>
-    </tr>   
+    </tr>
     <tr>
       <th>editor-margins:</th>
       <td><input type="text" bind:value={$editorMargins}></td>
@@ -64,6 +64,10 @@
       <th>title-highlight:</th>
       <td><input type="range" bind:value={$titleHighlight} min="1" max="2"></td>
     </tr>  
+    <tr>
+      <th>justify-text:</th>
+      <td><input type="range" bind:value={$justifyText}  min="1" max="2"></td>
+    </tr>
 
   </table>
   <button class="ok" on:click={() => callback(true)}>{$_('dialogs.ok')}</button>

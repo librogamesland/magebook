@@ -14,7 +14,7 @@
   import { isApp, loadAppMode } from '../javascript/appMode'
 
 
-  import {font, fontSize, editorMargins, titleHighlight, lineMargin, lineSpacing} from '../javascript/settings'
+  import {font, fontSize, editorMargins, titleHighlight, justifyText, lineMargin, lineSpacing} from '../javascript/settings'
 
   
   
@@ -97,6 +97,7 @@
  --mage-settings-editormargins: ${$editorMargins.trim()};
  --mage-settings-linemargin: ${String($lineMargin).trim()}px;
  --mage-settings-linespacing: ${String($lineSpacing).trim()};
+ --mage-settings-textalign: ${$justifyText == '1' ? 'left' : 'justify'};
  ${$titleHighlight == '1' ? '--mage-settings-titlehighlight: transparent;' : ''}`
  }>
   <div class="toolbar">
@@ -359,6 +360,8 @@
 
     line-height: 140%;
     line-height: calc(var(--mage-settings-linespacing, 140%));
+
+    text-align: var(--mage-settings-textalign, left);
   }
 
 

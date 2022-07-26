@@ -10,15 +10,17 @@ export const font = writable(lastSettings.font || "Arial")
 export const fontSize = writable(lastSettings.fontSize || "14")
 export const editorMargins = writable(lastSettings.editorMargins || "20% - 45px")
 export const titleHighlight = writable(lastSettings.titleHighlight || "2")
+export const justifyText = writable(lastSettings.justifyText || "1")
+
 
 export const lineSpacing = writable(lastSettings.lineSpacing || "140%")
-export const lineMargin = writable(lastSettings.lineMargin === null ? lastSettings.lineMargin : "4")
+export const lineMargin = writable(lastSettings.lineMargin === null ? "4" : lastSettings.lineMargin)
 
 
 
 
-export const settings = derived([theme, font, fontSize, editorMargins, titleHighlight, lineSpacing, lineMargin], 
-  ([$theme, $font, $fontSize, $editorMargins, $titleHighlight, $lineSpacing, $lineMargin]) => ({
+export const settings = derived([theme, font, fontSize, editorMargins, titleHighlight, lineSpacing, lineMargin, justifyText], 
+  ([$theme, $font, $fontSize, $editorMargins, $titleHighlight, $lineSpacing, $lineMargin, $justifyText]) => ({
     theme: $theme,
     font: $font,
     fontSize: $fontSize,
@@ -26,6 +28,7 @@ export const settings = derived([theme, font, fontSize, editorMargins, titleHigh
     titleHighlight: $titleHighlight,
     lineSpacing: $lineSpacing,
     lineMargin: $lineMargin,
+    justifyText: $justifyText,
 }))
 
 
