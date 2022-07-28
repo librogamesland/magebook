@@ -69,10 +69,14 @@
       <p on:click={() => dialog(Img, () => graphToImg(book.flush()))}>{$_('navbar.book.graph')}</p>
       <p on:click={() => dialog(Shuffle)}>{$_('navbar.book.shuffle')}</p>
       <p on:click={async() => {
-        if(await(dialog(Confirm, $_('dialogs.confirm'), $_('dialogs.chapter.sort'), true)))  getEditor().setValue(sortBook($book), -1) 
+        if(await(dialog(Confirm, $_('dialogs.confirm'), $_('dialogs.chapter.sort'), true))) getEditor().dispatch({
+          changes: {from: 0, to: getEditor().state.doc.length, insert: sortBook($book)}
+        })
       }}>{$_('navbar.book.sort')}</p>
       <p on:click={async() => {
-        if(await(dialog(Confirm, $_('dialogs.confirm'), $_('dialogs.chapter.compact'), true)))  getEditor().setValue(compactBook($book), -1) 
+        if(await(dialog(Confirm, $_('dialogs.confirm'), $_('dialogs.chapter.compact'), true))) getEditor().dispatch({
+          changes: {from: 0, to: getEditor().state.doc.length, insert: compactBook($book)}
+        })
       }}>{$_('navbar.book.compact')}</p>
       </div>
   </div>

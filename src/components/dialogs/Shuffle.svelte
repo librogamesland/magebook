@@ -50,7 +50,10 @@
     const shuffled = shuffleBook($book, {selectedFlags, filter})
 
     if($isFirebase || $isApp){
-      getEditor().setValue(shuffled, -1)
+      getEditor().dispatch({
+        changes: {from: 0, to: getEditor().state.doc.length, insert: shuffled}
+      })
+
       callback(false)
       return
     }

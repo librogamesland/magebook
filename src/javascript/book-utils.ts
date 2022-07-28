@@ -209,9 +209,15 @@ export const remapBook = (indexedBook, chapterMap : Map<string, string>) => {
     })
   }
 
-  return result.replace(/\[([^\[]*)\](\(\s*#(\w+)\s*\))/g, (...all) => `[${all[1]}](#${
+  let text = result.replace(/\[([^\[]*)\](\(\s*#(\w+)\s*\))/g, (...all) => `[${all[1]}](#${
     inverseMap.has(all[3]) ? inverseMap.get(all[3]) : all[3]
-  })`) 
+  })`)
+
+  if(!indexedBook.properties['disableShortLinks']) text = text.replace(/\[([^\[]*)\]/g, (...all) => `[${
+    inverseMap.has(all[1]) ? inverseMap.get(all[1]) : all[1]
+  }]`) 
+
+  return text
 }
 
 export const shuffleBook = (bookText, {selectedFlags = [], groupsFilter = [], onlyNumbers = true} = {}) => {
@@ -266,7 +272,7 @@ export const sortBook = (bookText) => {
     if(isNatNumber(key)) toSort.push(Number(key))
   }
 
-  toSort.sort()
+  toSort.sort( (a, b) => Number(a) - Number(b))
 
   return remapBook(indexedBook,  new Map (toSort.map( key => [String(key), String(key)])))
 }
