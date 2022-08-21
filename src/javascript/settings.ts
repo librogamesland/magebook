@@ -7,24 +7,26 @@ const lastSettings = JSON.parse(localStorage.getItem(key) || '{}')
 
 export const theme = writable(lastSettings.theme || "light")
 export const font = writable(lastSettings.font || "Arial")
-export const fontSize = writable(lastSettings.fontSize || "14")
-export const editorMargins = writable(lastSettings.editorMargins || "20% - 45px")
+export const fontSize = writable(lastSettings.fontSize || "12")
+export const pageWidth = writable(lastSettings.pageWidth || "108")
+export const pageZoom = writable(lastSettings.pageZoom || "120")
 export const titleHighlight = writable(lastSettings.titleHighlight || "2")
 export const justifyText = writable(lastSettings.justifyText || "1")
 
 
 export const lineSpacing = writable(lastSettings.lineSpacing || "140%")
-export const lineMargin = writable(lastSettings.lineMargin === null ? "4" : lastSettings.lineMargin)
+export const lineMargin = writable(lastSettings.lineMargin == null ? "4" : lastSettings.lineMargin)
 
 
 
 
-export const settings = derived([theme, font, fontSize, editorMargins, titleHighlight, lineSpacing, lineMargin, justifyText], 
-  ([$theme, $font, $fontSize, $editorMargins, $titleHighlight, $lineSpacing, $lineMargin, $justifyText]) => ({
+export const settings = derived([theme, font, fontSize, pageWidth, pageZoom, titleHighlight, lineSpacing, lineMargin, justifyText], 
+  ([$theme, $font, $fontSize, $pageWidth, $pageZoom, $titleHighlight, $lineSpacing, $lineMargin, $justifyText]) => ({
     theme: $theme,
     font: $font,
     fontSize: $fontSize,
-    editorMargins: $editorMargins,
+    pageWidth: $pageWidth,
+    pageZoom: $pageZoom,
     titleHighlight: $titleHighlight,
     lineSpacing: $lineSpacing,
     lineMargin: $lineMargin,

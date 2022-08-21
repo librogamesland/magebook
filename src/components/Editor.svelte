@@ -14,7 +14,7 @@
   import { isApp, loadAppMode } from '../javascript/appMode'
 
 
-  import {font, fontSize, editorMargins, titleHighlight, justifyText, lineMargin, lineSpacing} from '../javascript/settings'
+  import {font, fontSize, pageWidth, pageZoom, titleHighlight, justifyText, lineMargin, lineSpacing} from '../javascript/settings'
 
   
   
@@ -93,8 +93,8 @@
 
 <main class="editor" style={
 `--mage-settings-font: ${$font.trim()};
- --mage-settings-fontsize: ${String($fontSize).trim()}pt;
- --mage-settings-editormargins: ${$editorMargins.trim()};
+ --mage-settings-fontsize: ${Number(String($fontSize).trim()) * $pageZoom / 100}pt;
+ --mage-settings-pagewidth: ${Number(String($pageWidth).trim()) * 2.85 * $pageZoom / 100}pt;
  --mage-settings-linemargin: ${String($lineMargin).trim()}px;
  --mage-settings-linespacing: ${String($lineSpacing).trim()};
  --mage-settings-textalign: ${$justifyText == '1' ? 'left' : 'justify'};
@@ -351,12 +351,14 @@
 
 
   :global(#main-editor .cm-line){
-    padding: 4px calc(20% - 45px);
+    padding: 4px;
+    width: 320pt;
+    width: calc(var(--mage-settings-pagewidth, 320pt));
+    max-width: 94vw;
+    margin-left: auto;
+    margin-right: auto;
     padding-top: calc(var(--mage-settings-linemargin, 4px));
     padding-bottom: calc(var(--mage-settings-linemargin, 4px));
-
-    padding-left: calc(var(--mage-settings-editormargins, calc(20% - 45px)));
-    padding-right: calc(var(--mage-settings-editormargins, calc(20% - 45px)));
 
     line-height: 140%;
     line-height: calc(var(--mage-settings-linespacing, 140%));

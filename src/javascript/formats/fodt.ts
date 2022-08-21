@@ -6,23 +6,21 @@ import {extractIndexedBook } from '../book-utils'
 const mimetype = 'application/vnd.oasis.opendocument.text'
 
 const whitemap = {
+  '<p>': `<text:p text:style-name="Standard">`,
+  '</p>': `</text:p>`,
   '<b>': `<text:span text:style-name="bold">`, 
   '</b>': `</text:span>`,  
   '<i>': `<text:span text:style-name="italic">`, 
   '</i>': `</text:span>`,
   '<u>': `<text:span text:style-name="underline">`, 
   '</u>': `</text:span>`,
+
+  // Temp links
+  '<mage-link to="': '<text:a xlink:type="simple" text:style-name="Internet_20_link" text:visited-style-name="Visited_20_Internet_20_Link" xlink:href="#',
+  '</mage-link>': '</text:a>',
 }
 
-
-const sanitize = (text) => {
-  const opened = (text.match(/\<text\:span/g) || []).length;
-  const closed = (text.match(/\<\/text\:span\>/g) || []).length;
-  if(opened < closed) return '<text:span>'.repeat(closed - opened) + text 
-  if(opened > closed) return text + '</text:span>'.repeat(opened - closed)
-  return text
-}
-
+/*
 const inlineRenderer = () => ({
   html:      text => whitemap[text.trim().toLowerCase()] ? whitemap[text.trim().toLowerCase()] : mangle(text),
   paragraph: text => sanitize(text),
@@ -56,11 +54,66 @@ const renderer = (indexedBook, properties, currentChapter) => ({
 
     }), inlineRenderer())}</text:a>`
   },
+})*/
+
+
+
+const whitelist = ['<b>', '</b>', '<i>', '</i>', '<u>', '</u>']
+
+const inlineRenderer = () => ({
+  html:      text => whitelist.includes(text.trim().toLowerCase()) ? text.trim().toLowerCase() : mangle(text),
+  paragraph: text => `${text}`,
+  strong:    text => `<b>${text}</b>`,
+  em:        text => `<i>${text}</i>`,
+  codespan:  () => '',
+  code: () => '',
+  link: () => '',
 })
+
+const renderer = (indexedBook, properties, currentChapter) => ({
+  html:      text => whitelist.includes(text.trim().toLowerCase()) ? text.trim().toLowerCase() : mangle(text),
+  paragraph: text => `<p>${text}</p>`,
+  strong:    text => `<b>${text}</b>`,
+  em:        text => `<i>${text}</i>`,
+  codespan:  text => '',
+  code: (code, lang) => '',
+  link: (fullKey, i, text) => {
+    
+    const key = fullKey.replace('#', '').trim()
+    const renamedKey = properties.renameAnchor({
+      key,
+      book: indexedBook
+    })
+    const chapter = indexedBook.chapters.has(key) ? indexedBook.chapters.get(key) : null
+
+    return `<mage-link to="${renamedKey}">${encodeToHTML(properties.renameLink({
+      book: indexedBook,
+      text: text.trim(), 
+      chapter,
+      title: chapter ? chapter.title : null,
+      key,
+      currentChapter,
+
+    }), inlineRenderer())}</mage-link>`
+  },
+})
+
 
 const bookmark = (key, text) =>
 `<text:span text:style-name="bold"><text:bookmark-start text:name="${key}"/>${encodeToHTML(text, inlineRenderer())}<text:bookmark-end text:name="${key}"/></text:span>`
 
+
+const sanitizeAndConvertToOpenOffice = (text : string) : string => {
+  const t = document.createElement("p")
+  t.innerHTML = text
+  text = t.innerHTML
+
+  for(const tag in whitemap){
+    text = text.replaceAll(tag, whitemap[tag])
+  }
+
+  return text
+}
 
 
 
@@ -92,7 +145,9 @@ const encode = (bookText) => {
     const bookmarkText = bookmark(renamedKey, renamedTitle)
     
     // Get chapter text (or blank line if chapter is empty)
-    const newChapter = encodeToHTML(text, renderer(indexedBook, properties, chapter)).trim() || `<text:p text:style-name="justify"> </text:p>`
+    const htmlText = encodeToHTML(text, renderer(indexedBook, properties, chapter)).replaceAll('<br>', '</p><p>').trim() || `<p></p>`
+
+    const newChapter = sanitizeAndConvertToOpenOffice(htmlText)
 
     // Add them
     if(inlineStyle){

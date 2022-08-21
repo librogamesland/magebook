@@ -6,11 +6,15 @@ import {keymap, highlightActiveLine, ViewUpdate, ViewPlugin, DecorationSet} from
 import {Decoration} from "@codemirror/view"
 import {syntaxTree} from "@codemirror/language"
 import {search, searchKeymap} from '@codemirror/search'
+import { historyKeymap} from "@codemirror/commands"
 import { debounced } from './debounced-store.js'
 import { goToChapter } from './navigator.js'
 
 
 import { book, $bookIndex} from './new-book.js'
+
+
+
 
 export const editorComponentID = 'main-editor'
 export const cursorPosition = debounced(10, {from: 0, to: 0})
@@ -133,23 +137,25 @@ const magePlugin = ViewPlugin.fromClass(class {
 })
 
 export const setupCodemirror = (text : string) => {
+  const extensions =  [
+    minimalSetup,
+    highlightActiveLine(),
+    markdown(),
+    search(),
+    EditorView.lineWrapping,
+    syntaxHighlighting(classHighlighter), 
+    magePlugin,     
+
+    keymap.of([
+      ...searchKeymap,
+      { ...historyKeymap[1] , key: 'Mod-Shift-z'}
+    ])
+  ]
+
   const editor = new EditorView({
     doc: text,
     parent: document.getElementById(editorComponentID),
-    extensions: [
-      minimalSetup,
-      highlightActiveLine(),
-      markdown(),
-      search(),
-      EditorView.lineWrapping,
-      syntaxHighlighting(classHighlighter), 
-      magePlugin,     
-
-      keymap.of([
-        ...searchKeymap,
-
-      ])
-   ],
+    extensions,
   })
 
 
@@ -160,5 +166,5 @@ export const setupCodemirror = (text : string) => {
 
   //editor.session.selection.on('changeCursor', () => cursorPosition.lazySet(editor.selection.getCursor()))
 
-  return editor
+  return [editor, extensions]
 }

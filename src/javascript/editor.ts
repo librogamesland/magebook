@@ -57,7 +57,7 @@ const currentChapterFullTitle = derived(
 const initEditorLocal = (data) => {
   book.set(data.book)
   cursorPosition.set({from: 0, to: 0})
-  editor = setupCodemirror(data.book)
+  ;[editor] = setupCodemirror(data.book)
 
   isLoaded.set(true)
 }
@@ -68,7 +68,9 @@ const initEditorFirebase = (config) => {
   try{
     cursorPosition.set({from: 0, to: 0})
 
-    editor = setupCodemirror("")
+    let extensions = []
+
+    ;[editor, extensions] = setupCodemirror("")
 
 
     const app = firebase.initializeApp(config);
@@ -82,8 +84,8 @@ const initEditorFirebase = (config) => {
 
     //// Create Firepad.
     firepad = Firepad.fromCodeMirror6(database.ref(config.book), editor, {
-      defaultText: get(_)('books.fire').replace('%1', config.book)
-
+      defaultText: get(_)('books.fire').replace('%1', config.book),
+      recreateWith: extensions,
     });
 
     firepad.on('ready', function() {

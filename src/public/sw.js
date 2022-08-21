@@ -1,18 +1,24 @@
 // @ts-ignore: worker
-importScripts('https://storage.googleapis.com/workbox-cdn/releases/4.3.1/workbox-sw.js');
-workbox.setConfig({debug: true})
 
-workbox.routing.registerRoute(
-  /\/assets/,
-  new workbox.strategies.CacheFirst(),
-);
+// Only work outside of localhost
+if(self.location.hostname !== 'localhost'){
 
-workbox.routing.registerRoute(
-  /\/pwa/,
-  new workbox.strategies.CacheFirst(),
-);
+  importScripts('https://storage.googleapis.com/workbox-cdn/releases/4.3.1/workbox-sw.js');
+  workbox.setConfig({debug: true})
 
-workbox.routing.registerRoute(
-  /\//,
-  new workbox.strategies.StaleWhileRevalidate(),
-);
+  workbox.routing.registerRoute(
+    /\/assets/,
+    new workbox.strategies.CacheFirst(),
+  );
+
+  workbox.routing.registerRoute(
+    /\/pwa/,
+    new workbox.strategies.CacheFirst(),
+  );
+
+  workbox.routing.registerRoute(
+    /\//,
+    new workbox.strategies.StaleWhileRevalidate(),
+  );
+
+}

@@ -23,6 +23,7 @@
   import NewFirebook    from './dialogs/NewFirebook.svelte'
   import Recover        from './dialogs/Recover.svelte'
   import Settings       from './dialogs/Settings.svelte'
+  import Import         from './dialogs/Import.svelte'
 
 
 
@@ -57,6 +58,7 @@
           accept=".xlgc,.md"
           on:change={e => open(e.target )} />
         <label for="open">{$_("navbar.file.open")} </label>
+        <!-- <p on:click={() => dialog(Import)}>{$_('navbar.file.import')}</p> -->
         <p on:click={() => download('md', book.flush())}>{$_('navbar.file.save')}</p>
         <p on:click={() => dialog(Recover)}>{$_('navbar.file.recover')}</p>
       {/if}

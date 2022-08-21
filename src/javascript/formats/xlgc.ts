@@ -134,6 +134,13 @@ const renderer = {
   link: (href,i, text) => `{link ${href.replace('#', '')}:${text || '@T'}}`
 }
 
+const sanitizeHTML = (text: string) => {
+  const t = document.createElement("p")
+  t.innerHTML = text
+  return t.innerHTML
+
+}
+
 // Crea la sezione "game" con i metadati in info
 const encodeProperties = (properties, key) =>
   `<entity group="setup" name="game" type="entity">` +
@@ -159,7 +166,7 @@ const encodeMap = properties => !properties.map ? '' :
 // Crea una sezione/paragrafo
 const encodeEntity = (key, entity) =>
   `<entity group="${entity.group || ''}" name="${key}" type="${isNumber(key) ? 'chapter' : 'section'}">` +
-  `<attribute name="description" type="string"><![CDATA[${encodeToHTML(entity.text,renderer) || '<p></p>'}]]></attribute>` +
+  `<attribute name="description" type="string"><![CDATA[${sanitizeHTML(encodeToHTML(entity.text,renderer)) || '<p></p>'}]]></attribute>` +
   `<attribute name="chapter_title" type="string"><![CDATA[${entity.title ||  ''}]]></attribute>` +
   `${ entity.type && entity.type !== 'chapter'  ? '' : 
     `<attribute name="flag_final" type="boolean"><![CDATA[${ entity.flags && entity.flags.includes('final') ? 'true' : 'false'}]]></attribute>` +

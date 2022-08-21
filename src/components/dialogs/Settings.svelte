@@ -1,6 +1,6 @@
 <script lang="ts">
   import { _ } from 'svelte-i18n'
-  import { font, fontSize, editorMargins, titleHighlight, justifyText, lineMargin, lineSpacing } from '../../javascript/settings'
+  import { font, fontSize, pageWidth, pageZoom, titleHighlight, justifyText, lineMargin, lineSpacing } from '../../javascript/settings'
 
   export let params : null
   export let callback : (value: any) => void
@@ -14,17 +14,17 @@
     'American Typewriter', 'Andale Mono', 'Arial', 'Arial Black', 'Arial Narrow', 'Arial Rounded MT Bold', 'Arial Unicode MS', 'Avenir', 'Avenir Next', 'Avenir Next Condensed', 'Baskerville', 'Big Caslon', 'Bodoni 72', 'Bodoni 72 Oldstyle', 'Bodoni 72 Smallcaps', 'Bradley Hand', 'Brush Script MT', 'Chalkboard', 'Chalkboard SE', 'Chalkduster', 'Charter', 'Cochin', 'Comic Sans MS', 'Copperplate', 'Courier', 'Courier New', 'Didot', 'DIN Alternate', 'DIN Condensed', 'Futura', 'Geneva', 'Georgia', 'Gill Sans', 'Helvetica', 'Helvetica Neue', 'Herculanum', 'Hoefler Text', 'Impact', 'Lucida Grande', 'Luminari', 'Marker Felt', 'Menlo', 'Microsoft Sans Serif', 'Monaco', 'Noteworthy', 'Optima', 'Palatino', 'Papyrus', 'Phosphate', 'Rockwell', 'Savoye LET', 'SignPainter', 'Skia', 'Snell Roundhand', 'Tahoma', 'Times', 'Times New Roman', 'Trattatello', 'Trebuchet MS', 'Verdana', 'Zapfino',
   ].sort());
 
-  const listFonts = () => {
+  const listFonts = new Promise( (resolve) => setTimeout( () => {
     const fontAvailable = new Set();
 
     for (const font of fontCheck.values()) {
-      if (document.fonts.check(`12px "${font}"`)) {
+      if (window.document.fonts.check(`12px "${font}"`)) {
         fontAvailable.add(font);
       }
     }
 
-    return [...fontAvailable.values()];
-  }
+    resolve([...fontAvailable.values()]);
+  }))
 
   !params;
 </script>
@@ -37,21 +37,31 @@
       <td>
         <input type="text" bind:value={$font} list="fonts">
         <datalist id="fonts">
-          {#each listFonts() as font}
+          {#await listFonts}
+            
+          {:then fonts} 
+          {#each fonts as font}
             <option value={font}>
           {/each}
+          {/await}
         </datalist>
     
       </td>
     </tr>
     <tr>
-      <th>font-size:</th>
+      <th>font-size (pt):</th>
       <td><input type="number" bind:value={$fontSize}  min="2" max="50"></td>
     </tr>
+    <tr style="height: 15px;"></tr> 
     <tr>
-      <th>editor-margins:</th>
-      <td><input type="text" bind:value={$editorMargins}></td>
+      <th>page-width (mm):</th>
+      <td><input type="number" bind:value={$pageWidth} min="1" max="400"></td>
     </tr> 
+    <tr>
+      <th>page-zoom (%):</th>
+      <td><input type="number" bind:value={$pageZoom} min="10" max="400"></td>
+    </tr>
+    <tr style="height: 15px;"></tr> 
     <tr>
       <th>line-spacing:</th>
       <td><input type="text"  bind:value={$lineSpacing} ></td>
@@ -68,6 +78,7 @@
       <th>justify-text:</th>
       <td><input type="range" bind:value={$justifyText}  min="1" max="2"></td>
     </tr>
+    <tr style="height: 15px;"></tr> 
 
   </table>
   <button class="ok" on:click={() => callback(true)}>{$_('dialogs.ok')}</button>

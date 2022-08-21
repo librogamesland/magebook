@@ -118,7 +118,7 @@ const encode = (bookText) => {
 
   
     const l = document.createElement("div")
-    l.innerHTML = encodeToHTML(text, renderer(indexedBook,properties, chapter)) || '<p></p>'
+    l.innerHTML = encodeToHTML(text, renderer(indexedBook,properties, chapter)).replaceAll('<br>', '</p><p>') || '<p></p>'
   
     // Create paragraphs
     const paragraphs = []

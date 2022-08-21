@@ -107,6 +107,12 @@ const encode = (bookText) => {
     }
   }
 
+  // sanitize
+  const t = document.createElement("p")
+  t.innerHTML = result
+  result = t.innerHTML
+
+
   return template(indexedBook.properties.title, indexedBook.properties.author, toc, result, properties) //.split('\n').map( line  => line.trim()).join('')
 }
 

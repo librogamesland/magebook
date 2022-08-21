@@ -66,11 +66,11 @@ const defaultHTMLRenderer = {
 export const encodeToHTML = (text, renderer = defaultHTMLRenderer, linkToGenerate = []) => {  
   
   
-  return marked(text.replace(/\n/g, '\n\n'), { 
+  return marked(text.replace(/\n/g, '\\\n'), { 
     renderer: Object.assign(
       new marked.Renderer(),
       renderer,
-      {code: (text, ...all) => renderer.code(text.replace(/\n\n/g, '\n').replace('\n', ''), ...all)},
+      {code: (text, ...all) => renderer.code(text.replaceAll('\\\n', '\n').replace('\n', ''), ...all)},
   )})
 }
 
