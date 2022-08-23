@@ -15,7 +15,6 @@ import { book, $bookIndex} from './new-book.js'
 
 
 
-
 export const editorComponentID = 'main-editor'
 export const cursorPosition = debounced(10, {from: 0, to: 0})
 
@@ -144,6 +143,8 @@ export const setupCodemirror = (text : string) => {
     search(),
     EditorView.lineWrapping,
     syntaxHighlighting(classHighlighter), 
+    EditorView.contentAttributes.of({ spellcheck: 'true' }),
+
     magePlugin,     
 
     keymap.of([
@@ -152,11 +153,15 @@ export const setupCodemirror = (text : string) => {
     ])
   ]
 
+
   const editor = new EditorView({
     doc: text,
     parent: document.getElementById(editorComponentID),
     extensions,
+
   })
+
+
 
 
 
