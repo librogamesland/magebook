@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { encode } from 'js-base64';
   import { _ } from 'svelte-i18n'
   export let params
   export let callback
@@ -11,7 +12,7 @@
 
   const loadNewBook = () => {
 
-    const config = encodeURIComponent(btoa(JSON.stringify({
+    const config = encodeURIComponent(encode(JSON.stringify({
         apiKey: apiKey.replaceAll('",', '').replaceAll('"', '').replaceAll('apiKey:', '').trim(),
         databaseURL: databaseURL.replaceAll('",', '').replaceAll('"', '').replaceAll('databaseURL:', '').trim(),
         book

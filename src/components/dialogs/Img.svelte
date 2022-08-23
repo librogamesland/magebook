@@ -1,8 +1,9 @@
 <script lang="ts">
+  import { encode } from 'js-base64';
   import { _ } from 'svelte-i18n'
   import { onDestroy } from 'svelte';
   import { tick } from 'svelte'
-import { bookIndex } from '../../javascript/new-book';
+  import { bookIndex } from '../../javascript/new-book';
   export let params
   export let callback
 
@@ -50,8 +51,10 @@ import { bookIndex } from '../../javascript/new-book';
           const element = document.createElement('a')
           element.setAttribute(
             'href',
-            `data:image/svg+xml;base64,${window.btoa(src)}`
+            `data:image/svg+xml;base64,${encode(src)}`
           )
+
+          console.log("encoded with new js-base64 lib")
 
           element.setAttribute('download', ($bookIndex.properties.title || 'graph') + '.svg')
           element.style.display = 'none'

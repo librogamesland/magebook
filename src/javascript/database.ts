@@ -1,5 +1,7 @@
 import Dexie from 'dexie'
 import queryString from 'query-string'
+import { decode } from 'js-base64';
+
 
 import { get, derived, writable } from 'svelte/store'
 import { _ } from 'svelte-i18n'
@@ -73,7 +75,7 @@ const session = new (function(){
         window.location.reload()
       }, false);
   
-      initEditorFirebase(JSON.parse(atob(decodeURIComponent(parsedHash.fsession))))
+      initEditorFirebase(JSON.parse(decode(decodeURIComponent(parsedHash.fsession))))
       isLoaded.subscribe( $isLoaded =>{
         if($isLoaded){
           const sessions = JSON.parse(localStorage[firebaseSessionsKey] || '{}')

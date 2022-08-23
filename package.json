@@ -1,6 +1,6 @@
 {
   "name": "magebook",
-  "version": "1.2.7",
+  "version": "1.2.8",
   "author": "Luca Fabbian",
   "email": "luca.fabbian.1999@gmail.com",
   "description": "Interactive fiction editor",
@@ -59,6 +59,7 @@
   },
   "dependencies": {
     "@types/sanitize-html": "^2.6.2",
+    "js-base64": "^3.7.2",
     "sanitize-html": "^2.7.1"
   }
 }
