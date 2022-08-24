@@ -24,6 +24,11 @@ if ('serviceWorker' in navigator && !get(isApp)) {
   })
 }
 
+
+document.body.addEventListener('click', (e) => {
+  console.log(e.target)
+})
+
 new App({
   target: document.body,
 })

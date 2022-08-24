@@ -263,7 +263,9 @@
     }
 
     aside {
+      visibility: hidden;
       opacity: 0;
+      display: flex;
       transition: opacity 0.2s,  transform 0.2s;
       position: fixed;
       z-index: 10000;
@@ -281,6 +283,8 @@
       opacity: 1;
       display: flex;
       transform: translateX(0);
+      visibility: visible;
+
     }
 
     h1 {
