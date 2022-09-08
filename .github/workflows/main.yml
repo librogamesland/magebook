@@ -19,9 +19,10 @@ jobs:
         run: npm run test
 
       - name: Publish to npm registry
+        continue-on-error: true
         run: |
           npm config set //registry.npmjs.org/:_authToken=$NPM_AUTH_TOKEN
-          npm publish || exit 0
+          npm publish
         env:
           NPM_AUTH_TOKEN: ${{ secrets.NPM_AUTH_TOKEN }}
 
@@ -32,6 +33,7 @@ jobs:
 
       - name: Tag snapshot
         uses: tvdias/github-tagger@v0.0.1
+        continue-on-error: true
         with:
           repo-token: ${{ secrets.GITHUB_TOKEN }}
           tag: ${{ steps.version.outputs.version }}
