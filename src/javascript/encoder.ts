@@ -58,18 +58,22 @@ const defaultHTMLRenderer = {
   paragraph: text => `${text.trim()}<br>`,
   strong:    text => `<b>${text}</b>`,
   em:        text => `<i>${text}</i>`,
-  codespan:  text => raw(text),
+  codespan:  text => '',
   code:      text => '',
   reflink:   (...e)  => JSON.stringify(e),
   br:        (...e) => '</p><p>',
 }
 
-export const encodeToHTML = (text, renderer = defaultHTMLRenderer, linkToGenerate = []) => {    
-  return marked(text.replace(/\n/g, ' \\\n'), { 
+export const encodeToHTML = (text, renderer = defaultHTMLRenderer, linkToGenerate = []) => {
+  return marked(text.replace(/\n/g, ' \\\n').replaceAll(' \\\n```', '\n\n```'), { 
     renderer: Object.assign(
       new marked.Renderer(),
       renderer,
-      {code: (text, ...all) => renderer.code(text.replaceAll('\\\n', '\n').replace('\n', ''), ...all)},
+      {
+        code: (text, infostring, ...all) => {
+          return renderer.code(text.replaceAll(' \\\n', '\n'), infostring.replace(' \\', ''), ...all)
+        }
+      },
   )})
 }
 
@@ -181,8 +185,8 @@ export const sanitizeProperties = (p) => {
   if(p['renameLink'])   properties.renameLink   = new Function('{book, text, chapter, title, key, currentChapter}', 'return ' + p['renameLink'].trim()) 
   if(p['renameAnchor']) properties.renameAnchor = new Function('{book, key}', 'return ' + p['renameAnchor'].trim())
   
-  console.log('Parsing book properties')
-  console.log(properties)
+  //console.log('Parsing book properties')
+  //console.log(properties)
   return properties
 }
 

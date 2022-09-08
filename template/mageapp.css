@@ -126,7 +126,11 @@ input[type='file'].mageapp-fileloader {
 
 .mageapp-storebuttons {
   text-align: center;
-  margin-top: 40px;
+  margin-top: 30px;
+}
+
+.mageapp-storebuttons button {
+  margin-top: 7px;
 }
 
 

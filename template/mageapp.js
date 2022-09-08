@@ -39,7 +39,14 @@ var MageApp = (function(){
         </Transition>
       </main>
       <aside :class="{visible: showSidemenu, mageapp: true, dark: $settings.dark}">
-        <slot></slot>
+        <slot>
+          <mageapp-settings></mageapp-settings>
+          <mageapp-notes
+            store="notes"
+            default=""      
+          >notes</mageapp-notes>
+          <mageapp-storebuttons></mageapp-storebuttons>
+        </slot>
       </aside>` 
   }
 

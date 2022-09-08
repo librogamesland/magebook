@@ -1,10 +1,9 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
 	<meta charset='utf-8'>
 	<meta name='viewport' content='width=device-width,initial-scale=1'>
-
-	<title>Magebook web editor</title>
+	<title>Gamebook app</title>
   <meta name="theme-color" content="rgb(47, 99, 255)">
   
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/material-design-iconic-font/2.2.0/css/material-design-iconic-font.min.css">
@@ -13,24 +12,13 @@
 <body style="--theme-color: rgb(47, 99, 255)">
 
   <div id="app" v-cloak>
-    <mageapp-main>
-      <mageapp-settings></mageapp-settings>
-      <mageapp-list
-        store="zaino"
-        :default="[]"
-      >zaino</mageapp-list> 
-      <mageapp-notes
-        store="appunti"
-        default=""      
-      >appunti</mageapp-notes>
-      <mageapp-storebuttons></mageapp-storebuttons>
-    </mageapp-main>
+    <mageapp-main></mageapp-main>
   </div>
 
   <script src="https://unpkg.com/vue@3"></script>
   <script src="https://lucafabbian.github.io/finaldialog/dist/finaldialog.js"></script>
-  <script src="Liberty.js"></script>
   <script src="mageapp.js"></script>
+  <script>window.$magebook = %%MAGEBOOK%%</script>
   <script>
     const { createApp } = Vue
 
