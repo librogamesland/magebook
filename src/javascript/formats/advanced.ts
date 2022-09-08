@@ -98,10 +98,16 @@ const encode = (bookText) => {
 
   }
 
+  let template = defaultTemplate
+  const tIndex = indexedBook.titlePage.indexOf('\n```template') 
+  if(tIndex > 0){
+    const startIndex = tIndex + '\n```template'.length
+    const endIndex = indexedBook.titlePage.indexOf('\n```', startIndex)
+    template = indexedBook.titlePage.substring(startIndex, endIndex).trim()
+  }
+  const encodedBook = template.replace('%%MAGEBOOK%%', JSON.stringify(result, null, 2))//`window.magebook = ${JSON.stringify(result, null, 2)}` //.split('\n').map( line  => line.trim()).join('')
 
-  const encodedBook = defaultTemplate.replace('%%MAGEBOOK%%', JSON.stringify(result, null, 2))//`window.magebook = ${JSON.stringify(result, null, 2)}` //.split('\n').map( line  => line.trim()).join('')
-
-  return { encodedBook, mimetype: 'text/html', extension: 'html'}
+  return { encodedBook, mimetype: properties.advancedFormat[0], extension: properties.advancedFormat[1]}
 }
 
 

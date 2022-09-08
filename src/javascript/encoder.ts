@@ -108,6 +108,8 @@ export const sanitizeProperties = (p) => {
       renameTitle: ({book, chapter, key, title}) => '<b>' + (title == '' ? key : title) + '</b>',
       renameLink: ({book, chapter, text, title, key, currentChapter}) => text == '' ? (chapter == null ? 'ERROR' : (title == '' ? key : title)) : text,
       renameAnchor: ({book, key}) => key,
+
+      advancedFormat: ['text/html', 'html'],
     }
 
   if(p['disableShortLinks'] && p['disableShortLinks'].trim().toLowerCase() == 'true'){
@@ -185,6 +187,12 @@ export const sanitizeProperties = (p) => {
   if(p['renameLink'])   properties.renameLink   = new Function('{book, text, chapter, title, key, currentChapter}', 'return ' + p['renameLink'].trim()) 
   if(p['renameAnchor']) properties.renameAnchor = new Function('{book, key}', 'return ' + p['renameAnchor'].trim())
   
+
+  if(p['advancedFormat']){
+    const formatInfos = p['advancedFormat'].split(',')
+    if(formatInfos[0]) properties.advancedFormat[0] = formatInfos[0].trim()
+    if(formatInfos[1]) properties.advancedFormat[1] = formatInfos[1].trim()
+  }
   //console.log('Parsing book properties')
   //console.log(properties)
   return properties
