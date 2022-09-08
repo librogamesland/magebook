@@ -1,9 +1,11 @@
 import {template} from './fodt-template.js'
-import {marked, encodeToHTML, mangle, sanitizeProperties} from '../encoder.js'
+import {trimHTML, encodeToHTML, mangle, sanitizeProperties} from '../encoder.js'
 import {extractIndexedBook } from '../book-utils'
 
 
 const mimetype = 'application/vnd.oasis.opendocument.text'
+const extension = 'fodt'
+
 
 const whitemap = {
   '<p>': `<text:p text:style-name="Standard">`,
@@ -19,42 +21,6 @@ const whitemap = {
   '<mage-link to="': '<text:a xlink:type="simple" text:style-name="Internet_20_link" text:visited-style-name="Visited_20_Internet_20_Link" xlink:href="#',
   '</mage-link>': '</text:a>',
 }
-
-/*
-const inlineRenderer = () => ({
-  html:      text => whitemap[text.trim().toLowerCase()] ? whitemap[text.trim().toLowerCase()] : mangle(text),
-  paragraph: text => sanitize(text),
-  strong:    text => `<text:span text:style-name="bold">${text}</text:span>`,
-  em:        text => `<text:span text:style-name="italic">${text}</text:span>`,
-})
-
-
-const renderer = (indexedBook, properties, currentChapter) => ({
-  html:      text => whitemap[text.trim().toLowerCase()] ? whitemap[text.trim().toLowerCase()] : mangle(text),
-  paragraph: text => `<text:p text:style-name="Standard">${sanitize(text)}</text:p>`,
-  strong:    text => `<text:span text:style-name="bold">${text}</text:span>`,
-  em:        text => `<text:span text:style-name="italic">${text}</text:span>`,
-  codespan:  () => '',
-  code:      () => '',
-  link: (fullKey, i, text) => {
-    const key = fullKey.replace('#', '').trim()
-    const renamedKey = properties.renameAnchor({
-      key,
-      book: indexedBook
-    })
-    const chapter = indexedBook.chapters.has(key) ? indexedBook.chapters.get(key) : null
-    return `<text:a xlink:type="simple" xlink:href="#${renamedKey}" text:style-name="Internet_20_link" text:visited-style-name="Visited_20_Internet_20_Link">${
-      encodeToHTML(properties.renameLink({
-        book: indexedBook,
-        text: text.trim(), 
-        chapter,
-        title: chapter ? chapter.title : null,
-        key,
-        currentChapter,
-
-    }), inlineRenderer())}</text:a>`
-  },
-})*/
 
 
 
@@ -75,6 +41,7 @@ const renderer = (indexedBook, properties, currentChapter) => ({
   paragraph: text => `<p>${text}</p>`,
   strong:    text => `<b>${text}</b>`,
   em:        text => `<i>${text}</i>`,
+  br:        () => '</p><p>',
   codespan:  text => '',
   code: (code, lang) => '',
   link: (fullKey, i, text) => {
@@ -145,7 +112,7 @@ const encode = (bookText) => {
     const bookmarkText = bookmark(renamedKey, renamedTitle)
     
     // Get chapter text (or blank line if chapter is empty)
-    const htmlText = encodeToHTML(text, renderer(indexedBook, properties, chapter)).replaceAll('<br>', '</p><p>').trim() || `<p></p>`
+    const htmlText = trimHTML(encodeToHTML(text, renderer(indexedBook, properties, chapter)).replaceAll('<br>', '</p><p>').trim() || `<p></p>`)
 
     const newChapter = sanitizeAndConvertToOpenOffice(htmlText)
 
@@ -162,7 +129,9 @@ const encode = (bookText) => {
     result +=  `<text:p text:style-name="${shouldBreak ? 'break' : 'Standard'}"/>`
   }
 
-  return template(result, properties).split('\n').map( line  => line.trim()).join('')
+  const encodedBook = template(result, properties).split('\n').map( line  => line.trim()).join('')
+  return {encodedBook, mimetype, extension }
+
 }
 
 export default { encode, mimetype }

@@ -55,18 +55,17 @@ export const disableShortLinks = (disabled)  =>  {
 
 const defaultHTMLRenderer = {
   html:      text => mangle(text),
-  paragraph: text => `${text}<br>`,
+  paragraph: text => `${text.trim()}<br>`,
   strong:    text => `<b>${text}</b>`,
   em:        text => `<i>${text}</i>`,
   codespan:  text => raw(text),
   code:      text => '',
-  reflink:   (...e)  => JSON.stringify(e) + "sdfvgbfvdcsa",
+  reflink:   (...e)  => JSON.stringify(e),
+  br:        (...e) => '</p><p>',
 }
 
-export const encodeToHTML = (text, renderer = defaultHTMLRenderer, linkToGenerate = []) => {  
-  
-  
-  return marked(text.replace(/\n/g, '\\\n'), { 
+export const encodeToHTML = (text, renderer = defaultHTMLRenderer, linkToGenerate = []) => {    
+  return marked(text.replace(/\n/g, ' \\\n'), { 
     renderer: Object.assign(
       new marked.Renderer(),
       renderer,
@@ -75,7 +74,12 @@ export const encodeToHTML = (text, renderer = defaultHTMLRenderer, linkToGenerat
 }
 
 
-
+export const trimHTML = (htmlText) => {
+  return htmlText
+    .replaceAll(/( )*\<p\>( )*/g, '<p>')
+    .replaceAll(/( )*\<\/p\>( )*/g, '</p>')
+    .replaceAll(/( )*\<br>( )*/g, '<br>')
+}
 
 
 export const sanitizeProperties = (p) => {

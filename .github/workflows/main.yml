@@ -21,7 +21,7 @@ jobs:
       - name: Publish to npm registry
         run: |
           npm config set //registry.npmjs.org/:_authToken=$NPM_AUTH_TOKEN
-          npm publish
+          npm publish || exit 0
         env:
           NPM_AUTH_TOKEN: ${{ secrets.NPM_AUTH_TOKEN }}
 

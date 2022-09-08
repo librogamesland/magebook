@@ -77,7 +77,8 @@ html  = "Website (.html)"
 fodt  = "Libreoffice (.fodt)"
 xlgc  = "LibroGameCreator 3"
 json  = "Json"
-vuejs = "Vue.js"
+advanced = "Advanced webapp"
+
 
 others       = "Others (ebook, Android app, ...)"
 otherslink   = "https://librogamesland.github.io/magebook/index.html#/?id=other-formats"

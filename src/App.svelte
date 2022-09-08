@@ -43,16 +43,18 @@
   } 
   const version = localStorage[key]
   try {
-    const [savedMajor, minor, ] = version.split('.')
+    const [savedMajor, minor, savedPatch] = version.split('.')
     const [currentMajor, currentMinor, ] = manifest.version.split('.')
     console.log('Checking migration from: ', version, ' to:', manifest.version)
 
-    if(savedMajor !== currentMajor || minor != currentMinor){
+    if(savedMajor !== currentMajor || minor !== currentMinor){
       dialog(
           Alert,
           $_('dialogs.version.title') + manifest.version, 
           $_('dialogs.version.' + currentMajor + '.' + currentMinor) + '<br><br>' + $_('dialogs.version.text')
         ).then( () => localStorage[key] = manifest.version)
+    }else{
+      localStorage[key] = manifest.version
     }
   }catch(e){}
 </script>

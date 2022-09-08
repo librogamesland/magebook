@@ -1,10 +1,12 @@
 import {isNatNumber} from '../utils.js'
-import {encodeToHTML, raw, mangle} from '../encoder.js'
+import {trimHTML, encodeToHTML, raw, mangle} from '../encoder.js'
 import {extractIndexedBook } from '../book-utils'
 
 const isNumber = isNatNumber
 
 const mimetype = 'application/xml'
+const extension = 'xlgc'
+
 
 
 const sortedKeys = (chapters) => Object.keys(chapters).sort( (a, b) => {
@@ -81,11 +83,11 @@ const decode = xlgc => {
       }
     })
     // Inserisce nel jlgc l'oggetto section appena creato
-    chapter.text =  raw(chapter.text.replace(/\<\/\p\>/g,'\n').replace(/\<\p\>/g,'')
+    chapter.text =  raw(chapter.text.replace(/\<\/\p\>/g,'\n').replace(/\<\p\>/g,'').replaceAll('<br>', '\n')
       .replace(/\<i\>/g, '&lt;i&gt;').replace(/\<\/i\>/g, '&lt;/i&gt;')
       .replace(/\<b\>/g, '&lt;b&gt;').replace(/\<\/b\>/g, '&lt;/b&gt;')
       .replace(/\<u\>/g, '&lt;b&gt;').replace(/\<\/u\>/g, '&lt;/b&gt;')
-      .replace(/{link (\w+):([^\}\{]+)}/g, (...all) =>`[${all[2].trim() == '@T' ? '': all[2]}](#${all[1]})`  )
+      .replace(/{link (\w+):([^\}\{]+)}/g, (...all) => all[2].trim() == '@T' ? `[${all[1]}]` : `[${all[2]}](#${all[1]})` )
       .replace(/[\n\s]+$/, ""))
     chapters[id] = chapter
   })
@@ -131,7 +133,8 @@ const renderer = {
   em:        text => `<i>${text}</i>`,
   codespan:  text => '`' + text + '`',
   code: (code, lang) => '<p>```' + lang + mangle(code).replace(/\n/g, '</p><p>') + '```</p>',
-  link: (href,i, text) => `{link ${href.replace('#', '')}:${text || '@T'}}`
+  link: (href,i, text) => `{link ${href.replace('#', '')}:${text || '@T'}}`,
+  br: () => '</p><p>'
 }
 
 const sanitizeHTML = (text: string) => {
@@ -166,7 +169,7 @@ const encodeMap = properties => !properties.map ? '' :
 // Crea una sezione/paragrafo
 const encodeEntity = (key, entity) =>
   `<entity group="${entity.group || ''}" name="${key}" type="${isNumber(key) ? 'chapter' : 'section'}">` +
-  `<attribute name="description" type="string"><![CDATA[${sanitizeHTML(encodeToHTML(entity.text,renderer)) || '<p></p>'}]]></attribute>` +
+  `<attribute name="description" type="string"><![CDATA[${trimHTML(sanitizeHTML(encodeToHTML(entity.text,renderer)) || '<p></p>')}]]></attribute>` +
   `<attribute name="chapter_title" type="string"><![CDATA[${entity.title ||  ''}]]></attribute>` +
   `${ entity.type && entity.type !== 'chapter'  ? '' : 
     `<attribute name="flag_final" type="boolean"><![CDATA[${ entity.flags && entity.flags.includes('final') ? 'true' : 'false'}]]></attribute>` +
@@ -190,7 +193,7 @@ const encode = book => {
     r += encodeEntity(key, chapter)
   }
 
-  return r + `</entities>`
+  return {encodedBook: r + `</entities>`, mimetype, extension }
 }
 
 

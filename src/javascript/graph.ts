@@ -1,4 +1,3 @@
-import md   from './formats/md.js'
 import {indexBook}   from './book-utils'
 
 

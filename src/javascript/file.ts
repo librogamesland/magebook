@@ -3,19 +3,16 @@ import xlgc from './formats/xlgc.js'
 import fodt from './formats/fodt.js'
 import docx from './formats/docx.js'
 import html from './formats/html.js'
+import advanced from './formats/advanced.js'
 
+import { extractIndexedBook } from './book-utils.js'
 import {disableShortLinks} from './encoder.js'
 import {session} from './database.js'
 
 
 
-const formats = {
-  'md': md,
-  'xlgc': xlgc,
-  'fodt': fodt,
-  'docx': docx,
-  'html': html,
-}
+const formats = { md, xlgc, fodt, docx, html, advanced }
+
 
 
 // Read file from fileinput
@@ -35,9 +32,7 @@ const open = (elem) => {
 
     const book = reader.result
     const decodedMd = formats[extension].decode(book)
-    const encodedBook = (extension === 'md') 
-      ? book
-      : await Promise.resolve(decodedMd)
+    const encodedBook = await Promise.resolve(decodedMd)
 
 
     
@@ -45,7 +40,6 @@ const open = (elem) => {
       data: {
         book: encodedBook,
         cursor: {row: 0, column: 0},
-        title: decodedMd.title,
       }
     })
 
@@ -59,21 +53,20 @@ const open = (elem) => {
 const download = async(formatKey, book) => {
 
   const format = formats[formatKey]
-  const decodedMd = md.decode(book)
+  const indexedBook = extractIndexedBook(book)
+ 
 
-  disableShortLinks(decodedMd.properties.disableShortLinks && decodedMd.properties.disableShortLinks.trim() == "true")
-  const encodedBook = (formatKey === 'md') 
-    ? book
-    : await Promise.resolve(format.encode(book))
+  disableShortLinks(indexedBook.properties.disableShortLinks && indexedBook.properties.disableShortLinks.trim() == "true")
+  const { encodedBook, mimetype, extension } = await Promise.resolve(format.encode(book))
 
   if(!encodedBook) return
 
   const element = document.createElement('a')
   element.setAttribute(
     'href',
-    `data:${format.mimetype};charset=utf-8,${encodeURIComponent(encodedBook)}`
+    `data:${mimetype};charset=utf-8,${encodeURIComponent(encodedBook)}`
   )
-  element.setAttribute('download', (decodedMd.properties.title || 'magebook') + '.' + formatKey)
+  element.setAttribute('download', (indexedBook.properties.title || 'magebook') + '.' + extension)
 
   element.style.display = 'none'
   document.body.appendChild(element)

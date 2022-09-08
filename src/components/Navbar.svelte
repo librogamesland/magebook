@@ -89,6 +89,7 @@
       <p on:click={() => download('docx', book.flush())}>{$_('navbar.export.docx')}</p>
       <p on:click={() => download('fodt', book.flush())}>{$_('navbar.export.fodt')}</p>
       <p on:click={() => download('html', book.flush())}>{$_('navbar.export.html')}</p>
+      <p on:click={() => download('advanced', book.flush())}>{$_('navbar.export.advanced')}</p>
       <p on:click={() => download('xlgc', book.flush())}>{$_('navbar.export.xlgc')}</p>
       <hr>
       <a href={$_('navbar.export.otherslink')} target="_blank" rel="noopener">{$_('navbar.export.others')}</a>

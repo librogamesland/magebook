@@ -1,0 +1,173 @@
+html, body, #app { 
+  overscroll-behavior: contain; 
+  margin: 0; padding: 0; 
+  height: 100%; font-family: Arial, Helvetica, sans-serif; 
+}
+#app { display: flex; flex-direction: row; }
+main { display: flex; flex-direction: column; flex: 1 1 0; }
+.content { 
+  margin: 0 auto;  
+  max-width: 500px; 
+  word-break: break-word; 
+  box-sizing: border-box;
+}
+nav, aside h2 { user-select: none;}
+#app[v-cloak] {visibility: hidden;}
+
+select { padding: 10px 3px; outline: 0;}
+
+nav {
+  height: 56px;
+  width: 100%;
+  background-color: var(--theme-color, rgb(47, 99, 255));
+  color: #fff;
+  box-shadow: rgba(0, 0, 0, 0.35) 0px 5px 15px;
+  box-sizing: border-box;
+  padding: 0 20px;
+  font-size: 20px;
+}
+nav select {
+  flex: 1 0 auto;
+  background-color:  var(--theme-color, rgb(47, 99, 255));
+  color: #fff;
+  border: none;
+  margin-right: 50px;
+  font-size:20px;
+  width: 0px;
+}
+nav .content { height: 56px; display: flex; align-items: center; }
+nav .zmdi, nav p { padding: 10px 10px; }
+nav .zmdi-paste { display: none; }
+
+
+aside {
+  background-color: #ddd;
+  width: calc(170px + 16vw);
+  box-shadow: rgba(0, 0, 0, 0.35) 0px 5px 15px;
+  padding: 10px 35px 35px 35px;
+  box-sizing: border-box;
+  z-index: 10;
+  overflow-y: auto;
+}
+aside h2 { margin: 40px 0 8px 0; font-size: 14.5pt;}
+aside p  { margin: 10px 0;}
+
+.mageapp-book {
+  overflow-y: auto;
+  padding: 20px 20px 100px 20px;
+  text-align: justify;
+  flex-grow: 1;
+  scrollbar-gutter: stable;
+}
+
+.mageapp-book div.space {
+  margin: 12px 0;
+  line-height: 100%;
+}
+
+@media screen and (max-width: 550px) {
+  aside {
+    position: fixed;
+    bottom: 0;
+    width: 100vw;
+    height: 300px;
+    max-height: calc(100vh - 56px);
+    visibility: hidden;
+    transform: translateY(300px);
+    transition: transform 0.3s ease-in-out, visibility 0.3s ease-in-out;
+
+  }
+  .mageapp-book { padding-bottom: 350px; }
+  aside.visible{ visibility: visible; transform: translateY(0); }
+  nav .zmdi-paste { display: inline-block; }
+  nav, .mageapp-book { width: 100vw; box-sizing: border-box; }
+}
+
+button, label.mageapp-fileloader {
+  background-color: #777;
+  color: #fff;
+  border: none;
+  box-shadow: rgba(0, 0, 0, 0.25) 0px 5px 15px;
+  border-radius: 4px;
+  margin: 0 4px;
+  padding: 7px 12px;
+  font-size: 16px;
+  user-select: none;
+}
+button.main, label.mageapp-fileloader.main { background-color: var(--theme-color, rgb(47, 99, 255)); }
+button[disabled], label.mageapp-fileloader[disabled] { opacity: 40% !important; box-shadow: none;}
+select, button, label.mageapp-fileloader, .clickable { cursor: pointer;}
+
+
+.mageapp-list, .mageapp-notes { background-color: #fff; border: solid 1px #ccc; height: 180px; overflow-y: auto; }
+.mageapp-list > div { width: 100%; box-sizing: border-box; padding: 10px; }
+.mageapp-list > div:nth-child(even) { background-color: #eee; }
+.mageapp-list > div.selected { background-color: #ccc; }
+
+.mageapp-notes {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 10px;
+  resize: none;
+}
+
+input[type='file'].mageapp-fileloader {
+  width: 0.1px;
+  height: 0.1px;
+  opacity: 0;
+  overflow: hidden;
+  position: absolute;
+  z-index: -1;
+}
+
+.mageapp-settings {user-select: none; display: flex;}
+.mageapp-settings .font { flex: 1 1 auto; width: 0px;}
+.mageapp-settings .zmdi{ padding: 10px 6px; font-size: 20px;}
+
+.mageapp-storebuttons {
+  text-align: center;
+  margin-top: 40px;
+}
+
+
+/* Dark mode */
+
+.mageapp.dark {
+  color-scheme: dark;
+}
+
+aside.mageapp.dark {
+  color: #eee;
+  background-color: #393939;
+}
+
+main.mageapp.dark {
+  background-color: #222;
+  color: #eee;
+}
+
+.mageapp.dark .mageapp-list, .mageapp.dark .mageapp-notes {background-color: #222;}
+.mageapp.dark .mageapp-list > div:nth-child(even) { background-color: #333; }
+.mageapp.dark .mageapp-list > div.selected { background-color: #444; }
+
+/* Hover */
+@media (hover: hover) and (pointer: fine) {
+  button:hover, label.mageapp-fileloader:hover {
+    opacity: 80%;
+  }
+
+  .clickable:hover, .clickable:hover::before {
+    opacity: 75%;
+  }
+
+}
+
+
+
+/* Animation */
+.v-enter-active, .v-leave-active {
+  transition: opacity 0.5s ease;
+}
+.v-enter-from, .v-leave-to {
+  opacity: 0;
+}

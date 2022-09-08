@@ -1,8 +1,12 @@
 import saveAs from 'file-saver'
-import {mangle, encodeToHTML, sanitizeProperties} from '../encoder.js'
+import {trimHTML, mangle, encodeToHTML, sanitizeProperties} from '../encoder.js'
 import {extractIndexedBook} from '../book-utils'
 
 import docx, { UnderlineType } from 'docx'
+
+const mimetype = 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+const extension = 'docx'
+
 
 const textNodesUnder = (el) => {
   var n, a=[], walk=document.createTreeWalker(el,NodeFilter.SHOW_TEXT);
@@ -118,7 +122,7 @@ const encode = (bookText) => {
 
   
     const l = document.createElement("div")
-    l.innerHTML = encodeToHTML(text, renderer(indexedBook,properties, chapter)).replaceAll('<br>', '</p><p>') || '<p></p>'
+    l.innerHTML = trimHTML(encodeToHTML(text, renderer(indexedBook,properties, chapter)).replaceAll('<br>', '</p><p>') || '<p></p>')
   
     // Create paragraphs
     const paragraphs = []
@@ -264,7 +268,8 @@ const encode = (bookText) => {
     saveAs(blob, name + '.docx');
   });
 
-  
+  return {encodedBook: '', mimetype, extension }
+
 
 }
 
