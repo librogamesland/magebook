@@ -2,6 +2,8 @@
   import { _ } from 'svelte-i18n'
   import manifest from '../../../package.json'
   import logo from '../../assets/img/logo.png'
+  import { externalLink }   from '../../javascript/appMode.js'
+
 
 
   export let params : null
@@ -15,7 +17,7 @@
   <img src={logo} alt="Magebook logo">
   <br>
   <p>{@html $_('about.text')}</p>
-  <p>{$_('about.contact')}: <a target="_blank" rel="noopener" href="mailto:luca.fabbian.1999@gmail.com?subject=Magebook%20-%20Segnalazione">luca.fabbian.1999@gmail.com</a></p>
+  <p>{$_('about.contact')}: <a on:click={externalLink} target="_blank" rel="noopener" href="mailto:luca.fabbian.1999@gmail.com?subject=Magebook%20-%20Segnalazione">luca.fabbian.1999@gmail.com</a></p>
   <button class="ok" on:click={() => callback(true)}>{$_('dialogs.ok')}</button>
 </div>
 

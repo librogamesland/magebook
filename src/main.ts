@@ -16,6 +16,7 @@ init({ fallbackLocale: 'en', initialLocale: locale })
 
 
 
+
 // Offline support
 if ('serviceWorker' in navigator && !get(isApp)) {
   // Use the window load event to keep the page load performant

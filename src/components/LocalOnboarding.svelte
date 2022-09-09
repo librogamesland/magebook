@@ -1,28 +1,32 @@
 <script lang="ts">
 import { appPath, recentFiles } from '../javascript/appMode.js'
 import { _ } from "svelte-i18n";
-import manifest from '../../package.json'
+import logo from '../assets/img/logo.png'
+
 
 
 let updating = false
 let updatingMsg = "Updating"
 
 const newFile = async() => {
-  appPath.set(await window.dialogFile($_('app.openlocal')))
+  appPath.set(await window.Neutralino.os.showSaveDialog($_('app.openlocal'), {
+    defaultPath: 'book.md',
+    forceOverwrite: true,
+    filters: [
+      {name: 'Books', extensions: ['md', 'xlgc']},
+      {name: 'All files', extensions: ['*']}
+    ]
+
+  }))
+
 }
 
 let recentParsed = []
 
 
 $: {
-  let recent = []
   if($recentFiles){
-    Object.entries($recentFiles).forEach( ([key, val]) => {
-      const data = JSON.parse(val.Data)
-      recent.push({path: decodeURIComponent(key), title: data.title, timestamp: val.Timestamp})
-    })
-
-    recentParsed = recent.sort( (a, b) => b.timestamp - a.timestamp )
+    recentParsed = Object.entries($recentFiles).sort( ([aK, a], [bK, b]) => b.timestamp - a.timestamp )
   }
 }
 
@@ -40,17 +44,18 @@ $: {
 {:else}
 <div class="dialog-container">
   <div style="display: flex; align-items: center; margin-top: 20px">
-    <img src="./static/img/logo.png" alt="logo">
+    <img src={logo} alt="logo">
     <div style="margin-left:50px">
       <button class="ok" on:click={newFile}>{$_('app.openlocal')}</button><br>
-      {#await window.appGetVersion()}
+      {#await window.Neutralino.updater.checkForUpdates('https://librogamesland.github.io/magebook/neutralino.config.json')}
         <!-- -->
-      {:then version}
-        {#if version != manifest.version}
+      {:then manifest}
+        {#if manifest.version != NL_APPVERSION}W
           <button class="error" on:click={async() => {
             updating = true
-            updatingMsg = await window.appUpdate()
-          }}>Update to v {version}</button>
+            await window.Neutralino.updater.install();
+            await window.Neutralino.app.restartProcess();
+          }}>Update to v {manifest.version}</button>
         {/if}
       {:catch error}
         <p style="color: red">{error.message}</p>
@@ -59,20 +64,19 @@ $: {
     </div>
   </div>
   <div class="card-container">
-    {#each recentParsed as recentBook}
-    <div class="card" on:click={()=> appPath.set(recentBook.path)}>
+    {#each recentParsed as [path, recentBook]}
+    <div class="card" on:click={()=> appPath.set(path)}>
       <div style="flex-grow: 1">
         <div style="font-weight: bold">{recentBook.title || ""}</div>
-        <div>{recentBook.path}</div>
+        <div>{path}</div>
       </div>
       <div>
-        <div>{new Date(recentBook.timestamp * 1000).toLocaleDateString()}</div>
-        <div>{new Date(recentBook.timestamp * 1000).toLocaleTimeString()}</div>
+        <div>{new Date(recentBook.timestamp).toLocaleDateString()}</div>
       </div>
     </div>
     {/each}
   </div>
-  <p>Magebook editor - v {manifest.version}</p>
+  <p>Magebook editor - v {NL_APPVERSION}</p>
 </div>
 {/if}
 

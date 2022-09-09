@@ -9,7 +9,7 @@
 
   import { getEditor, showSidemenu } from '../javascript/editor.js'
 
-  import { isApp, appReload }   from '../javascript/appMode.js'
+  import { isApp, appReload, externalLink }   from '../javascript/appMode.js'
 
 
 
@@ -24,8 +24,6 @@
   import Recover        from './dialogs/Recover.svelte'
   import Settings       from './dialogs/Settings.svelte'
   import Import         from './dialogs/Import.svelte'
-
-
 
 
   ctrlShortcuts({
@@ -92,9 +90,9 @@
       <p on:click={() => download('advanced', book.flush())}>{$_('navbar.export.advanced')}</p>
       <p on:click={() => download('xlgc', book.flush())}>{$_('navbar.export.xlgc')}</p>
       <hr>
-      <a href={$_('navbar.export.otherslink')} target="_blank" rel="noopener">{$_('navbar.export.others')}</a>
+      <a on:click={externalLink} href={$_('navbar.export.otherslink')} target="_blank" rel="noopener">{$_('navbar.export.others')}</a>
       <hr>
-      <a href={$_('navbar.export.settingslink')} target="_blank" rel="noopener">{$_('navbar.export.settings')}</a>
+      <a on:click={externalLink} href={$_('navbar.export.settingslink')} target="_blank" rel="noopener">{$_('navbar.export.settings')}</a>
     </div>
   </div>
   {/if}
@@ -103,10 +101,10 @@
   <div>
     <h1>{$_('navbar.help.title')}</h1>
     <div class="content">
-      <a href={$_('navbar.help.guidefile')} target="_blank" rel="noopener">
+      <a on:click={externalLink} target="_blank" rel="noopener" href={$_('navbar.help.guidefile')} >
         {$_('navbar.help.guide')}
       </a>
-      <a href="https://www.librogame.net/index.php/forum/topic?id=5182&p=1#p148583" target="_blank" rel="noopener">
+      <a on:click={externalLink} target="_blank" rel="noopener" href="https://www.librogame.net/index.php/forum/topic?id=5182&p=1#p148583">
         {$_('navbar.help.forum')}
       </a>
       <p on:click={() => dialog(About)}>{$_('navbar.help.about')}</p>
@@ -119,6 +117,7 @@
   <div style="margin: auto"></div>
 
   <span class={"nav-buttons " + ($showSidemenu ? "display" : "hidden")}>
+    {#if $isApp}
     <div title={$_('navbar.buttons.fullscreen')}>
       <span aria-label={$_('navbar.buttons.fullscreen')} class={"dropbtn " + (fullscreen ? "icon-resize-small" : "icon-resize-full")}
       on:click={() => {
@@ -129,6 +128,7 @@
           }
         }} />
     </div>
+    {/if}
 
     <div title={$_('navbar.buttons.darktheme')}>
       <span aria-label={$_('navbar.buttons.darktheme')} class={"dropbtn " + ($theme == 'light' ? "icon-moon" : "icon-sun")}

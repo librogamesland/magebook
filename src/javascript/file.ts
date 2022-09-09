@@ -9,6 +9,9 @@ import { extractIndexedBook } from './book-utils.js'
 import {disableShortLinks} from './encoder.js'
 import {session} from './database.js'
 
+import {get} from 'svelte/store'
+import { isApp } from './appMode.js'
+
 
 
 const formats = { md, xlgc, fodt, docx, html, advanced }
@@ -61,6 +64,21 @@ const download = async(formatKey, book) => {
 
   if(!encodedBook) return
 
+
+  if(get(isApp)){
+    const savePath = await window.Neutralino.os.showSaveDialog('Export file', {
+      defaultPath: (indexedBook.properties.title || 'magebook') + '.' + extension,
+      forceOverwrite: false,
+      filters: [
+        {name: 'Book', extensions: [extension]},
+        {name: 'All files', extensions: ['*']}
+      ]
+    })
+
+    await Neutralino.filesystem.writeFile(savePath, encodedBook)
+
+    return
+  }
   const element = document.createElement('a')
   element.setAttribute(
     'href',

@@ -24,8 +24,11 @@
     "docs": "docsify serve . --port 3005",
     "version": "echo $npm_package_version",
     "cypress:open": "cypress open",
+    "desktop:build": "vite build --emptyOutDir -c desktop-vite.config.ts && neu build --release",
+    "desktop:dev": "vite -c desktop-vite.config.ts",
+    "desktop:launch": "neu run --frontend-lib-dev",
     "dev": "vite",
-    "build": "vite build",
+    "build": "vite build --emptyOutDir",
     "preview": "vite preview",
     "check": "svelte-check --tsconfig ./tsconfig.json",
     "test": "echo 'work in progress :)'"

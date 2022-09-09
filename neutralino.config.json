@@ -1,0 +1,69 @@
+{
+  "applicationId": "net.librogame.magebook",
+  "version": "1.0.0",
+  "resourcesURL": "https://librogamesland.github.io/magebook/dist/magebook/resources.neu",
+  "defaultMode": "window",
+  "port": 0,
+  "documentRoot": "/desktop",
+  "url": "/desktop.html",
+  "enableServer": true,
+  "enableNativeAPI": true,
+  "tokenSecurity": "one-time",
+  "logging": {
+    "enabled": true,
+    "writeToLogFile": false
+  },
+  "nativeAllowList": [
+    "app.*",
+    "os.*",
+    "storage.*",
+    "filesystem.*",
+    "debug.log"
+  ],
+  "modes": {
+    "window": {
+      "title": "magebook",
+      "width": 1200,
+      "height": 800,
+      "minWidth": 750,
+      "minHeight": 550,
+      "fullScreen": false,
+      "alwaysOnTop": false,
+      "icon": "/desktop/icons/appIcon.png",
+      "enableInspector": true,
+      "borderless": false,
+      "maximize": false,
+      "hidden": false,
+      "resizable": true,
+      "exitProcessOnClose": true
+    },
+    "browser": {
+      "nativeBlockList": [
+        "filesystem.*"
+      ]
+    },
+    "cloud": {
+      "url": "/resources/#cloud",
+      "nativeAllowList": [
+        "app.*"
+      ]
+    },
+    "chrome": {
+      "width": 1200,
+      "height": 800,
+      "args": "--user-agent=\"Neutralinojs chrome mode\""
+    }
+  },
+  "cli": {
+    "binaryName": "magebook",
+    "resourcesPath": "/desktop/",
+    "extensionsPath": "/extensions/",
+    "clientLibrary": "/desktop/js/neutralino.js",
+    "binaryVersion": "4.7.0",
+    "clientVersion": "3.6.0",
+    "frontendLibrary": {
+      "patchFile": "/src/desktop.html",
+      "devUrl": "http://localhost:3000/desktop.html"
+    }
+  }
+}
