@@ -7,7 +7,7 @@ const decode = (file) => {
 
 
 const encode = (book) => {
-  return {encodedBook: book.book, mimetype, extension }
+  return {encodedBook: book.book || book, mimetype, extension }
 }
 
 
