@@ -1,0 +1,25 @@
+name: publish website
+on: [push]
+
+jobs:
+  build-and-deploy-website:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v2
+
+    - name: Build and deploy website
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      run: |
+        npm ci
+        npm run build
+        cd editor
+        git config --global user.email luca.fabbian.1999@gmail.com
+        git config --global user.name lucafabbian
+        git init
+        git add .
+        git commit -am "Website updated (through custom github action)"
+        git branch -M main
+        git remote add origin "https://$GITHUB_TOKEN@github.com/magebook/magebook.github.io.git"
+        git push -f -u origin main

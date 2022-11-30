@@ -218,7 +218,6 @@ const session = new (function(){
   this.lock = () => {
     localStorage.setItem(`mage-lock-${sessionName}`, lock)
     lockStore.set({ lock: false })
-    book.refresh()
   }
 
 

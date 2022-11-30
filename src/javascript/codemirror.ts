@@ -2,7 +2,7 @@ import {EditorView, minimalSetup} from 'codemirror'
 import {markdown} from '@codemirror/lang-markdown'
 import {classHighlighter} from "@lezer/highlight"
 import {syntaxHighlighting } from "@codemirror/language"
-import {keymap, highlightActiveLine, ViewUpdate, ViewPlugin, DecorationSet} from '@codemirror/view'
+import {keymap, highlightActiveLine, ViewUpdate, ViewPlugin} from '@codemirror/view'
 import {Decoration} from "@codemirror/view"
 import {syntaxTree} from "@codemirror/language"
 import {search, searchKeymap} from '@codemirror/search'
