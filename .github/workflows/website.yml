@@ -10,7 +10,7 @@ jobs:
 
     - name: Build and deploy website
       env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        GITHUB_TOKEN: ${{ secrets.API_TOKEN_GITHUB }}
       run: |
         npm ci
         npm run build
