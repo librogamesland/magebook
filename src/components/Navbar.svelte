@@ -90,9 +90,9 @@
       <p on:click={() => download('advanced', book.flush())}>{$_('navbar.export.advanced')}</p>
       <p on:click={() => download('xlgc', book.flush())}>{$_('navbar.export.xlgc')}</p>
       <hr>
-      <a on:click={externalLink} href={$_('navbar.export.otherslink')} target="_blank" rel="noopener">{$_('navbar.export.others')}</a>
+      <a on:click={externalLink} href={$_('navbar.export.otherslink')} target="_blank" rel="noreferrer">{$_('navbar.export.others')}</a>
       <hr>
-      <a on:click={externalLink} href={$_('navbar.export.settingslink')} target="_blank" rel="noopener">{$_('navbar.export.settings')}</a>
+      <a on:click={externalLink} href={$_('navbar.export.settingslink')} target="_blank" rel="noreferrer">{$_('navbar.export.settings')}</a>
     </div>
   </div>
   {/if}
@@ -101,10 +101,10 @@
   <div>
     <h1>{$_('navbar.help.title')}</h1>
     <div class="content">
-      <a on:click={externalLink} target="_blank" rel="noopener" href={$_('navbar.help.guidefile')} >
+      <a on:click={externalLink} target="_blank" rel="noreferrer" href={$_('navbar.help.guidefile')} >
         {$_('navbar.help.guide')}
       </a>
-      <a on:click={externalLink} target="_blank" rel="noopener" href="https://www.librogame.net/index.php/forum/topic?id=5182&p=1#p148583">
+      <a on:click={externalLink} target="_blank" rel="noreferrer" href="https://www.librogame.net/index.php/forum/topic?id=5182&p=1#p148583">
         {$_('navbar.help.forum')}
       </a>
       <p on:click={() => dialog(About)}>{$_('navbar.help.about')}</p>

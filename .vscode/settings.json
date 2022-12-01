@@ -1,0 +1,6 @@
+{
+    "svelte.plugin.svelte.compilerWarnings": {
+      "unused-export-let": "ignore",
+      "a11y-click-events-have-key-events": "ignore"
+    },
+  }

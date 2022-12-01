@@ -1,4 +1,4 @@
-<script lang="ts">
+<script>
   import { _ } from 'svelte-i18n'
   import { font, fontSize, pageWidth, pageZoom, titleHighlight, justifyText, lineMargin, lineSpacing } from '../../javascript/settings'
 

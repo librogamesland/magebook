@@ -13,7 +13,14 @@ export default defineConfig({
     outDir: '../editor',
   },
   plugins: [
-    svelte({ preprocess: sveltePreprocess() }),
+    svelte({
+      preprocess: sveltePreprocess(),
+      onwarn: (warning, handler) => {
+          // disable a11y warnings
+          if (warning.code.startsWith("a11y-")) return;
+          handler(warning);
+      },
+    }),
     toml(),
   ]
 })
