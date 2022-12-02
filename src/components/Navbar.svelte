@@ -105,7 +105,7 @@
         {$_('navbar.help.guide')}
       </a>
       <a on:click={externalLink} target="_blank" rel="noreferrer" href="https://www.librogame.net/index.php/forum/topic?id=5182&p=1#p148583">
-        {$_('navbar.help.forum')}
+        {$_('navbar.help.forum') + (window.ISVSCODE ? 'ciao':'addio')} 
       </a>
       <p on:click={() => dialog(About)}>{$_('navbar.help.about')}</p>
     </div>

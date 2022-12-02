@@ -147,7 +147,7 @@
   }
 
   :global(#main-editor .cm-activeLine){
-    background-color: #ededed;
+    background-color: #94949414;
   }
 
   :global(#main-editor .cm-content){
@@ -440,7 +440,7 @@
 }
 
 :global(.mage-theme-dark #main-editor .cm-activeLine){
-    background-color: #222;
+    background-color: #53535333;
   }
 
 
