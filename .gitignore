@@ -41,3 +41,6 @@ dist-ssr
 # Build dir
 editor/*
 editor
+
+# VSCode built extension
+.vsix

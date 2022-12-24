@@ -56,7 +56,7 @@
       <p on:click={() => dialog(NewFirebook)}>{$_('navbar.file.newFire')}</p>
       <hr>
       <input type="file" name="open" id="open"
-        accept=".xlgc,.md"
+        accept=".xlgc,.md, .magebook"
         on:change={e => open(e.target )} />
       <label for="open">{$_("navbar.file.open")} </label>
       <!-- <p on:click={() => dialog(Import)}>{$_('navbar.file.import')}</p> -->

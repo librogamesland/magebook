@@ -51,6 +51,7 @@ class MagebookDocument implements vscode.CustomDocument {
 		this.text = initialContent;
 	}
 
+	// @ts-ignore
 	get uint8data () { return new TextEncoder().encode(this.text);	}
 
 	dispose(): void {}
@@ -125,7 +126,7 @@ export class MagebookEditorProvider implements vscode.CustomEditorProvider<Mageb
 				case 'askSettings':
 					webviewPanel.webview.postMessage({
 						type: 'update',
-						settings: await this.context.globalState.get('magebook.settings'),
+						settings: (await this.context.globalState.get('magebook.settings')) || {},
 					});
 					return;
 
@@ -149,10 +150,12 @@ export class MagebookEditorProvider implements vscode.CustomEditorProvider<Mageb
 
 				case 'saveFile':
 					if(document.uri.fsPath){
-						const name = document.uri.path.substring(document.uri.path.lastIndexOf('/'), document.uri.path.lastIndexOf('.mage.md'));
+						const name = document.uri.path.substring(document.uri.path.lastIndexOf('/'), document.uri.path.lastIndexOf('.'));
 						const fileUri = vscode.Uri.file(vscode.Uri.joinPath(document.uri, `../${name}${e.suffix.replace(/[^0-9a-z\.\-\_]/gi, '')}`).path);
 						
 						if(e.data){
+
+							// @ts-ignore
 							await vscode.workspace.fs.writeFile(fileUri, new TextEncoder().encode(e.data));
 							await vscode.env.openExternal(fileUri);
 						}else if(e.blob){
@@ -163,7 +166,7 @@ export class MagebookEditorProvider implements vscode.CustomEditorProvider<Mageb
 							var byteString = decode(dataURI.split(',')[1]);
 
 							// separate out the mime component
-							var mimeString = dataURI.split(',')[0].split(':')[1].split(';')[0]
+							var mimeString = dataURI.split(',')[0].split(':')[1].split(';')[0];
 
 							const ia = Uint8Array.from(byteString, c => c.charCodeAt(0));
 

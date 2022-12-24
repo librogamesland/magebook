@@ -34,7 +34,9 @@ const open = (elem) => {
   // Usa un fileReader per leggere il file come testo
   const reader = new FileReader()
   reader.onload = async() => {
-    const extension = name.substr(name.lastIndexOf('.') + 1)
+    let extension = name.substr(name.lastIndexOf('.') + 1)
+    if(extension == 'magebook') extension = 'md' // treat magebook files as md
+
     if(!['md', 'xlgc'].includes(extension)){
       console.error("Unsupported format")
       return

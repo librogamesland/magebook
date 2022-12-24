@@ -40,7 +40,7 @@
         <input type="text" bind:value={$font} list="fonts">
         <datalist id="fonts">
           {#await listFonts}
-            
+            <!-- nothing -->
           {:then fonts} 
           {#each fonts as font}
             <option value={font}>
