@@ -1,4 +1,4 @@
-import {indexBook}   from './book-utils'
+import {extractIndexedBook}   from './book-utils'
 
 
 const hpccWasm = window["@hpcc-js/wasm"];
@@ -18,8 +18,7 @@ const nodeStyle  = (key, flags, indexBook) => {
 
 const generateGraph = (book) => {
 
-  const indexedBook = indexBook(book)
-  console.log(indexedBook)
+  const indexedBook = extractIndexedBook(book)
 
   let s = `digraph{
     graph [fontname="arial", fontsize=10]; 
@@ -30,9 +29,9 @@ const generateGraph = (book) => {
   const groups = Object.fromEntries([...indexedBook.groups].map(group => [group, []]))
 
 
-  for(let [key, {title, group, links, flags}] of indexedBook.chapters){
+  for(let [key, {title, group, links, flags, text}] of indexedBook.chapters){
     s += `
-      ${key} [label="${sanitizeLabel(title ? `${key} - ${title}` : key)}"${nodeStyle(key, flags, indexedBook)}]`
+      ${key} [label="${sanitizeLabel(title ? `${key} - ${title}` : key)}", tooltip="${text.replaceAll(/[^0-9a-z \`\<\>\.\'\[\]\(\)]/gi, '')}"${nodeStyle(key, flags, indexedBook)}]`
 
     for(const link of links){
       if(indexedBook.chapters.has(link)) s += `
@@ -70,7 +69,6 @@ const generateGraph = (book) => {
 
 // Return the src attribute of an img tag
 const graphToImg = (book) => {
-  console.log("generating graph..")
   return hpccWasm.graphviz.layout(generateGraph(book), "svg", "dot")
 }
 

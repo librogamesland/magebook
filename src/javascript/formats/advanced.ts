@@ -46,7 +46,7 @@ const renderer = (indexedBook, properties, currentChapter) => ({
     const code = raw(text).trim();
     return code.trim().startsWith('<') && code.trim().endsWith('>') ? code : ''
   },
-  code:      (code, infostring) => (console.log(code, infostring), infostring.trim() == 'html' ? code : ''),
+  code:      (code, infostring) => infostring.trim() == 'html' ? code : '',
   br:        () => '<br><div class="space"></div>',
   link: (fullKey, i, text) => {
     

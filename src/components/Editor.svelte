@@ -1,92 +1,29 @@
 <script lang="ts">
   import { _ } from 'svelte-i18n'
 	import { onMount } from 'svelte'
-  import { EditorView } from 'codemirror';
-  import { undo, redo } from '@codemirror/commands'
-  import { openSearchPanel } from '@codemirror/search'
   import { session } from '../javascript/database.js'
-  import { cursorPosition, getEditor, currentChapterFullTitle, currentChapterKey, bookIndex } from '../javascript/editor.js'
-  import { ctrlShortcuts } from '../javascript/shortcuts.js'
+  import { currentChapterFullTitle } from '../javascript/editor.js'
 
   import { showSidemenu, isSynced } from '../javascript/editor'
   import { editorComponentID } from '../javascript/codemirror';
   import { firstAvaiableKey, addChapter, getRightOrderKey} from '../javascript/actions'
-  import { isApp, loadAppMode } from '../javascript/appMode'
 
+  import { isVSCode, loadVSSession } from '../javascript/vscode.js';
 
-  import {font, fontSize, pageWidth, pageZoom, titleHighlight, justifyText, lineMargin, lineSpacing} from '../javascript/settings'
-
+  import EditorButtons from './EditorButtons.svelte';
   
-  
+  import {s} from '../javascript/settings'
+  const {font, fontSize, pageWidth, pageZoom, titleHighlight, justifyText, lineMargin, lineSpacing} = s
 
   onMount(() => {
-    if($isApp){
-      loadAppMode()
-      return
-    }
-    session.load()
-  })
-
-
-  const addLink = () => {
-    const {from, to} = $cursorPosition
-    
-    const short = $bookIndex.properties['disableShortLinks'] == 'true' 
-    getEditor().dispatch({ changes: { from: to, to, insert: short ? '[](#)' : '[]' }, })
-
-    getEditor().dispatch({
-      selection: {anchor: to +  (short ? 4: 1)},
-      effects: [
-      EditorView.scrollIntoView(to)
-    ]})
-
-    getEditor().focus()
-
-
-  }
-
-  
-
-  const addQuickLink = () => {
-    let { from, to} = $cursorPosition
-
-    const {contentStart, end } = $bookIndex.chapters.get($currentChapterKey)
-    
-    const key = firstAvaiableKey()
-    const link = $bookIndex.properties['disableShortLinks'] == 'true' 
-      ? `[](#${firstAvaiableKey()})`
-      : `[${firstAvaiableKey()}]`
-
-
-
-    if(contentStart != (getEditor().state.doc.lineAt(to).number -1) ){
-      getEditor().dispatch({ changes: { from: to, to, insert: link }, })
-      to += link.length
+    if(!isVSCode){
+      session.load()
     }else{
-      // Special case: if is on same line of heading, create a new line skip
-      getEditor().dispatch({ changes: { from: to, to, insert: '\n' + link }, })
-      to += link.length + 1
-      
+      loadVSSession()
     }
-
-    addChapter(key, `\n\n### ${key}`)
-
-    if(getRightOrderKey(key) <= contentStart) to += `\n\n### ${key}`.length + 1
-    getEditor().dispatch({
-      selection: {anchor: to},
-      effects: [
-      EditorView.scrollIntoView(to)
-    ]})
-
-
-
-    getEditor().focus()
-  }
-
-  ctrlShortcuts({
-    'K': () => addQuickLink(),
-    'L': () => addLink()
   })
+
+
 
 
 </script>
@@ -100,30 +37,17 @@
  --mage-settings-textalign: ${$justifyText == '1' ? 'left' : 'justify'};
  ${$titleHighlight == '1' ? '--mage-settings-titlehighlight: transparent;' : ''}`
  }>
+
+  {#if !isVSCode}
   <div class="toolbar">
     <h1 class="only-desktop" on:click={ () => $showSidemenu = !$showSidemenu} title={$currentChapterFullTitle}>
       {$currentChapterFullTitle}
     </h1>
-    
-    <div on:click={async() => {
-      openSearchPanel(getEditor())
-    }} title={$_('editor.buttons.find')}><span class="icon-search"/></div>
-
-    <div on:click={async() => {
-      undo(getEditor())
-    }} title={$_('editor.buttons.undo')}><span class="icon-ccw"/></div>
-
-    <div on:click={async() => {
-      redo(getEditor())
-    }} title={$_('editor.buttons.redo')}><span class="icon-cw"/></div>
-    
-    <div on:click={addQuickLink} title={$_('editor.buttons.quicklink')}>
-      <span class="link">[<span class="icon-flash"/>]</span>
-    </div>
-
-    <div on:click={addLink} title={$_('editor.buttons.link')}>[L]</div>
-  </div>
   
+    <EditorButtons></EditorButtons>
+  </div>
+  {/if}
+
   <div class="textarea" id={editorComponentID}>
     
   </div>
@@ -204,6 +128,11 @@
       "textarea"
       "margin";
   }
+  :global(.vscode) main {
+    grid-template-rows: 1fr;
+    grid-template-areas: 
+      "textarea";
+  }
 
   .toolbar {
     background-color: #eee;
@@ -228,24 +157,13 @@
 
   }
 
-  span.icon-flash::before{
-    margin: 0 !important;
-    margin-left: -2px !important;
-  }
+
 
   .toolbar{
     grid-area: toolbar;
   }
 
-  .toolbar > div {
-    color: rgb(22, 12, 92);
-    text-decoration: underline;
-    border-left: rgb(192, 192, 192) solid 1px;
-    padding: 7px 22px 6px;
-    cursor: pointer;
-    user-select: none;
-    white-space: nowrap;
-  }  
+
 
   .textarea {
     grid-area: textarea;
@@ -283,14 +201,14 @@
       padding-left: 0 !important;
     }
 
-    .toolbar > * {
+    .toolbar > :global(*) {
       flex: 1 1 auto;
       padding-left: 0 !important;
       padding-right: 0 !important;
       text-align: center;
     }
     
-    .toolbar > div:first-of-type {
+    .toolbar >  :global(div:first-of-type) {
       border: 0 !important;
     }
   }

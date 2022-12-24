@@ -48,8 +48,6 @@ const addChapter = (key, text) => {
   book.flush()
 
   const index = getEditor().state.doc.line(getRightOrderKey(key) + 1).to
-  console.log("index", index)
-
   getEditor().dispatch({
     changes: { from: index, to: index, insert: '\n' + text },
   })

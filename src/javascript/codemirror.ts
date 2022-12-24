@@ -2,16 +2,19 @@ import {EditorView, minimalSetup} from 'codemirror'
 import {markdown} from '@codemirror/lang-markdown'
 import {classHighlighter} from "@lezer/highlight"
 import {syntaxHighlighting } from "@codemirror/language"
-import {keymap, highlightActiveLine, ViewUpdate, ViewPlugin} from '@codemirror/view'
+import {keymap, highlightActiveLine, ViewUpdate, ViewPlugin, highlightSpecialChars, drawSelection} from '@codemirror/view'
 import {Decoration} from "@codemirror/view"
 import {syntaxTree} from "@codemirror/language"
 import {search, searchKeymap} from '@codemirror/search'
-import { historyKeymap} from "@codemirror/commands"
+import { defaultKeymap } from "@codemirror/commands"
 import { debounced } from './debounced-store.js'
 import { goToChapter } from './navigator.js'
 
+import { history, historyKeymap } from './history'
+
 
 import { book, $bookIndex} from './new-book.js'
+import { isVSCode } from './vscode.js'
 
 
 
@@ -136,8 +139,11 @@ const magePlugin = ViewPlugin.fromClass(class {
 })
 
 export const setupCodemirror = (text : string) => {
-  const extensions =  [
-    minimalSetup,
+  const extensions = isVSCode
+  ? [
+    highlightSpecialChars(),
+    history(),
+    drawSelection(),  
     highlightActiveLine(),
     markdown(),
     search(),
@@ -147,8 +153,27 @@ export const setupCodemirror = (text : string) => {
 
     magePlugin,     
 
-    keymap.of([
+    keymap.of([    
+      ...defaultKeymap,
       ...searchKeymap,
+    ])
+  ] : [
+    highlightSpecialChars(),
+    history(),
+    drawSelection(),  
+    highlightActiveLine(),
+    markdown(),
+    search(),
+    EditorView.lineWrapping,
+    syntaxHighlighting(classHighlighter), 
+    EditorView.contentAttributes.of({ spellcheck: 'true' }),
+
+    magePlugin,     
+
+    keymap.of([    
+      ...defaultKeymap,
+      ...searchKeymap,
+      ...historyKeymap,
       { ...historyKeymap[1] , key: 'Mod-Shift-z'}
     ])
   ]
@@ -169,7 +194,6 @@ export const setupCodemirror = (text : string) => {
 
   window['$bookIndex'] = $bookIndex
 
-  //editor.session.selection.on('changeCursor', () => cursorPosition.lazySet(editor.selection.getCursor()))
 
   return [editor, extensions]
 }

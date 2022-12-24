@@ -1,5 +1,5 @@
 const mimetype = 'text/markdown'
-const extension = 'md'
+const extension = 'mage.md'
 
 const decode = (file) => {
   return file

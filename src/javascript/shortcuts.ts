@@ -1,6 +1,6 @@
 
 const shortcutsList = {
-  'O': () => console.log('ciao')
+
 }
 
 const ctrlShortcuts = (shortcuts) => Object.assign(shortcutsList, shortcuts)

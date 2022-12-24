@@ -193,8 +193,7 @@ export const sanitizeProperties = (p) => {
     if(formatInfos[0]) properties.advancedFormat[0] = formatInfos[0].trim()
     if(formatInfos[1]) properties.advancedFormat[1] = formatInfos[1].trim()
   }
-  //console.log('Parsing book properties')
-  //console.log(properties)
+
   return properties
 }
 

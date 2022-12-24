@@ -1,15 +1,17 @@
 import * as vscode from 'vscode';
-import { MagebookEditorProvider } from './magebookEditor';
+import { MagebookEditorProvider, MagebookSymbolProvider } from './magebookEditor';
 
 
 
 export function activate(context: vscode.ExtensionContext) {
-	console.log('Congratulations, your extension "magebook" is now active!');
-
 
 	context.subscriptions.push(vscode.commands.registerCommand('magebook.helloWorld', () => {
 		vscode.window.showInformationMessage('Hello World from Magebook!');
 	}));
+
+	// Currently not working
+	//context.subscriptions.push(vscode.languages.registerDocumentSymbolProvider({ "pattern": "*.mage.md" }, new MagebookSymbolProvider());
+	
 	context.subscriptions.push(MagebookEditorProvider.register(context));
 }
 

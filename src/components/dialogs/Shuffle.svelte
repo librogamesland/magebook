@@ -6,7 +6,7 @@
   import { session } from '../../javascript/database.js'
   import { download } from '../../javascript/file.js'
   import { isFirebase } from '../../javascript/database.js'
-  import { isApp } from '../../javascript/appMode.js'
+  import { isVSCode } from '../../javascript/vscode'
   import { getEditor } from '../../javascript/editor.js'
 
   import death from '../../assets/img/flags/death.png'
@@ -49,7 +49,7 @@
 
     const shuffled = shuffleBook($book, {selectedFlags, filter})
 
-    if($isFirebase || $isApp){
+    if($isFirebase || isVSCode){
       getEditor().dispatch({
         changes: {from: 0, to: getEditor().state.doc.length, insert: shuffled}
       })

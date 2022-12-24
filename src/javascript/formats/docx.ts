@@ -1,4 +1,3 @@
-import saveAs from 'file-saver'
 import {trimHTML, mangle, encodeToHTML, sanitizeProperties} from '../encoder.js'
 import {extractIndexedBook} from '../book-utils'
 
@@ -264,11 +263,7 @@ const encode = (bookText) => {
     }],
   });
 
-  docx.Packer.toBlob(doc).then(blob => {
-    saveAs(blob, name + '.docx');
-  });
-
-  return {encodedBook: '', mimetype, extension }
+  return {encodedBook: '', mimetype, extension, blob: docx.Packer.toBlob(doc) }
 
 
 }

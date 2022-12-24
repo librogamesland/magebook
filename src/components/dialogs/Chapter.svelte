@@ -13,6 +13,30 @@
   export let params
   export let callback
 
+
+
+/*
+  function urlContentToDataUri(url){
+    return  fetch(url)
+            .then( response => response.blob() )
+            .then( blob => new Promise( callback =>{
+                let reader = new FileReader() ;
+                reader.onload = function(){ callback(this.result) } ;
+                reader.readAsDataURL(blob) ;
+            }) ) ;
+}
+
+  const fetchImage = urlContentToDataUri('https://api.codetabs.com/v1/proxy/?quest=https://avatars.githubusercontent.com/u/1365071?v=4')
+
+  {#await fetchImage}
+	<p>...waiting</p>
+{:then data}
+	<img src={data} alt="Dog image" />
+{:catch error}
+	<p>An error occurred!</p>
+{/await}
+
+*/
   // Entity input bindings
   let dialogTitle, key, value, title, flags, group, originalKey
   const filterFlags = () => Object.keys(flags).filter(key => flags[key])
@@ -35,6 +59,9 @@
   $: groupIsValid = group === sanitizeKey(group)
 </script>
 <div class="dialog">
+
+
+
   <h3>{dialogTitle}</h3>
   <div class="input">
     <span>{$_('dialogs.chapter.name')}</span>
@@ -46,7 +73,13 @@
   </div>
   <div class="input">
     <span>{$_('dialogs.chapter.group')}</span>
-    <input class:error={!groupIsValid} bind:value={group} type="text" />
+    <input class:error={!groupIsValid} bind:value={group} type="text" list="chapters-groups" />
+    <datalist id="chapters-groups">
+      {#each [...($bookIndex.groups)] as group}
+        <option value={group}>{group}</option>
+      {/each}
+    </datalist>
+
   </div>
   <div class="flags">
     {#each ['final', 'fixed', 'death'] as flag}

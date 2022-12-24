@@ -1,6 +1,8 @@
 <script lang="ts">
   import { _ } from 'svelte-i18n'
-  import { font, fontSize, pageWidth, pageZoom, titleHighlight, justifyText, lineMargin, lineSpacing } from '../../javascript/settings'
+  import { s } from '../../javascript/settings'
+
+  const {font, fontSize, pageWidth, pageZoom, titleHighlight, justifyText, lineMargin, lineSpacing, dateFormat} = s
 
   export let params : null
   export let callback : (value: any) => void
@@ -78,6 +80,10 @@
       <th>justify-text:</th>
       <td><input type="range" bind:value={$justifyText}  min="1" max="2"></td>
     </tr>
+    <tr>
+      <th>date-format:</th>
+      <td><input type="text"  bind:value={$dateFormat} ></td>
+    </tr> 
     <tr style="height: 15px;"></tr> 
 
   </table>

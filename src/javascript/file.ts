@@ -1,3 +1,8 @@
+import dateFormat from 'date-format'
+import saveAs from 'file-saver'
+import { encode } from 'js-base64';
+
+
 import md   from './formats/md.js'
 import xlgc from './formats/xlgc.js'
 import fodt from './formats/fodt.js'
@@ -5,12 +10,14 @@ import docx from './formats/docx.js'
 import html from './formats/html.js'
 import advanced from './formats/advanced.js'
 
+
 import { extractIndexedBook } from './book-utils.js'
 import {disableShortLinks} from './encoder.js'
 import {session} from './database.js'
+import {s} from './settings'
 
 import {get} from 'svelte/store'
-import { isApp } from './appMode.js'
+import { isVSCode, vscode } from './vscode'
 
 
 
@@ -60,36 +67,62 @@ const download = async(formatKey, book) => {
  
 
   disableShortLinks(indexedBook.properties.disableShortLinks && indexedBook.properties.disableShortLinks.trim() == "true")
-  const { encodedBook, mimetype, extension } = await Promise.resolve(format.encode(book))
-
-  if(!encodedBook) return
+  const { encodedBook, mimetype, extension, blob = null } = await Promise.resolve(format.encode(book))
 
 
-  if(get(isApp)){
-    const savePath = await window.Neutralino.os.showSaveDialog('Export file', {
-      defaultPath: (indexedBook.properties.title || 'magebook') + '.' + extension,
-      forceOverwrite: false,
-      filters: [
-        {name: 'Book', extensions: [extension]},
-        {name: 'All files', extensions: ['*']}
-      ]
-    })
+  const suffix = `-${dateFormat.asString(get(s.dateFormat), new Date())}.${extension}`
+  const fileName = `${indexedBook.properties.title || 'magebook'}${suffix}`
 
-    await Neutralino.filesystem.writeFile(savePath, encodedBook)
 
+
+
+
+
+  if(encodedBook){
+    if(isVSCode){
+      vscode.postMessage({
+        type: 'saveFile',
+        suffix,
+        data: encodedBook,
+      });
+      return
+    }
+
+    const element = document.createElement('a')
+    element.setAttribute(
+      'href',
+      `data:${mimetype};charset=utf-8,${encodeURIComponent(encodedBook)}`
+    )
+    element.setAttribute('download', fileName)
+
+    element.style.display = 'none'
+    document.body.appendChild(element)
+    element.click()
+    document.body.removeChild(element)
     return
-  }
-  const element = document.createElement('a')
-  element.setAttribute(
-    'href',
-    `data:${mimetype};charset=utf-8,${encodeURIComponent(encodedBook)}`
-  )
-  element.setAttribute('download', (indexedBook.properties.title || 'magebook') + '.' + extension)
 
-  element.style.display = 'none'
-  document.body.appendChild(element)
-  element.click()
-  document.body.removeChild(element)
+  }
+
+
+  if(blob){
+    blob.then(blobResult => {
+      if(isVSCode){
+        let reader = new FileReader();
+        reader.onload = function() {
+          vscode.postMessage({
+            type: 'saveFile',
+            suffix,
+            blob: reader.result,
+          });
+        };
+        reader.readAsDataURL(blobResult); // converts the blob to base64 and calls onload
+
+        return
+      }
+
+      saveAs(blobResult, fileName);
+    });
+  }
 }
 
 

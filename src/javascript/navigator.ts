@@ -53,7 +53,6 @@ const goBack = () => {
   if(chapterHistory.length == 0) return
   if(chapterHistory.length == 1) historyCanGoBack.set(false)
 
-  console.log(chapterHistory.length)
   goToChapter(chapterHistory.pop(), false)
 }
 

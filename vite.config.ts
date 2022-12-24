@@ -10,6 +10,7 @@ export default defineConfig({
   root: 'src',
   base: './',
   build: {
+    emptyOutDir: true,
     outDir: '../editor',
   },
   plugins: [

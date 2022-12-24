@@ -9,13 +9,15 @@
   import Navbar  from './components/Navbar.svelte'
   import Editor  from './components/Editor.svelte'
   import Sidebar from './components/Sidebar.svelte'
-  import LocalOnboarding from './components/LocalOnboarding.svelte'
   import { bookIndex, isLoaded } from './javascript/new-book'
   import { handleShortcuts } from './javascript/shortcuts'
-  import { isApp, appPath } from './javascript/appMode'
   import { initError }from './javascript/editor'
-  import { theme } from './javascript/settings' 
+  import { s } from './javascript/settings' 
   import manifest from '../package.json'
+  import { isVSCode } from './javascript/vscode';
+
+  const { theme } = s
+  
   // Change theme from dark to light and vice versa
   $: {
     const b = window.document.body
@@ -29,6 +31,11 @@
     color-scheme: ${$theme == 'dark' ? 'dark' : 'light'};
   }
   </style>`
+
+  if(isVSCode) window.document.body.classList.add('vscode')
+
+
+
   // Change page title if the page is visited by a real user 
   // keep "Magebook" title for web engines
   $: { if(!(/bot|google|baidu|bing|msn|duckduckbot|teoma|slurp|yandex/i.test(navigator.userAgent))){
@@ -65,23 +72,19 @@
 
 <svelte:window on:keydown={handleShortcuts}/>
 
-{#if $isApp && $appPath == ''}
-  <LocalOnboarding  />
-{:else}
-  {#if !$isLoaded}
-    <div class="loading-mask">
-      <div class="dialog" style="text-align: center; margin-top: 10vh">
-        <div class="spinner-1"></div>
-        <p style="color:white">{$initError}</p>
-      </div>
-      
+{#if !$isLoaded}
+  <div class="loading-mask">
+    <div class="dialog" style="text-align: center; margin-top: 10vh">
+      <div class="spinner-1"></div>
+      <p style="color:white">{$initError}</p>
     </div>
-  {/if}
-  <Dialogs />
-  <Navbar />
-  <Sidebar />
-  <Editor />
+    
+  </div>
 {/if}
+<Dialogs />
+<Navbar />
+<Sidebar />
+<Editor />
 
 
 <style>

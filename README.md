@@ -13,8 +13,6 @@ Magebook provides a javascript ([Node.js](https://nodejs.org/)) api to work with
 
 Currently the api is under a major rework - do not expect it to work until version 1.1
 
-[ciao]: csd
-
 ---
 Looking for an app template working out of the box? --> [https://github.com/librogamesland/magebook-template](https://github.com/librogamesland/magebook-template)
 

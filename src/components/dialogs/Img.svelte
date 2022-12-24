@@ -1,9 +1,15 @@
 <script lang="ts">
   import { encode } from 'js-base64';
+  import dateFormat from 'date-format';
   import { _ } from 'svelte-i18n'
   import { onDestroy } from 'svelte';
   import { tick } from 'svelte'
   import { bookIndex } from '../../javascript/new-book';
+  import { isVSCode, vscode } from '../../javascript/vscode';
+  import {s} from '../../javascript/settings'
+
+  import {get} from 'svelte/store'
+
   export let params
   export let callback
 
@@ -34,10 +40,22 @@
   callback(false)
 }}>
   
-  <div on:click|stopPropagation={() => console.log("clickOnImg")} style="max-width:90vw; max-height: 80vh; overflow: auto;">
+  <div on:click|stopPropagation={() => {}} style="max-width:90vw; max-height: 80vh; overflow: auto;">
   {@html src}
   </div>
   <div>
+    {#if isVSCode }
+    <button class="error" on:click={ () => {
+        const suffix = `-${dateFormat.asString(get(s.dateFormat), new Date())}.svg`
+
+          vscode.postMessage({
+            type: 'saveFile',
+            suffix,
+            blob: `data:image/svg+xml;base64,${encode(src)}`,
+          });
+      
+      }}>{$_('dialogs.graph.download')}</button>
+    {:else}
     <button class="ok" on:click={ () => {
       const blob = new window.Blob([src], { type: "image/svg+xml" });
       // create an URI pointing to that blob
@@ -54,8 +72,6 @@
             `data:image/svg+xml;base64,${encode(src)}`
           )
 
-          console.log("encoded with new js-base64 lib")
-
           element.setAttribute('download', ($bookIndex.properties.title || 'graph') + '.svg')
           element.style.display = 'none'
           document.body.appendChild(element)
@@ -63,7 +79,8 @@
           document.body.removeChild(element)
       
       }}>{$_('dialogs.graph.download')}</button>
-    </div> 
+    {/if}
+  </div> 
 </div>
 {:else if waiting}
 <div class="dialog" style="text-align: center">
