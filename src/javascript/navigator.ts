@@ -2,7 +2,11 @@ import { get, writable } from 'svelte/store'
 import { getEditor, currentChapterKey, showSidemenu } from './editor.js'
 import { book, bookIndex, isLoaded } from './new-book.js'
 import { addChapter, generateChapterText } from './actions.js'
-import { EditorView} from  'codemirror'
+import { EditorView } from  'codemirror'
+import { StateEffect } from "@codemirror/state"
+
+
+export const subviewUpdateEffect = StateEffect.define<string>();
 
 const chapterHistory = []
 const historyCanGoBack = writable(false) 
@@ -33,6 +37,8 @@ const goToChapter = (key, updateHistory = true) => {
       $bookIndex.chapters.get(key).contentEnd + 1
     ).to},
     effects: [
+      subviewUpdateEffect.of("subviewUpdate"),
+
       EditorView.scrollIntoView(
         editor.state.doc.line(
           $bookIndex.chapters.get(key).contentStart + 1

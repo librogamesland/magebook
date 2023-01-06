@@ -120,6 +120,9 @@ redo = "Ripristina ultimo cambiamento (ctrl+shift+Z)"
 quicklink  = "Link al primo paragrafo disponibile (ctrl+K)"
 link  = "Aggiungi link (ctrl+L)"
 
+[editor]
+chars = "caratteri"
+
 
 [about]
 contact = "Contattami"

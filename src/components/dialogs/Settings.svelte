@@ -2,7 +2,7 @@
   import { _ } from 'svelte-i18n'
   import { s } from '../../javascript/settings'
 
-  const {font, fontSize, pageWidth, pageZoom, titleHighlight, justifyText, lineMargin, lineSpacing, dateFormat} = s
+  const {font, fontSize, pageWidth, pageZoom, titleHighlight, justifyText, lineMargin, lineSpacing, dateFormat, singleChapterMode, countChars} = s
 
   export let params : null
   export let callback : (value: any) => void
@@ -33,7 +33,16 @@
 
 <div class="dialog">
   <h3>Settings</h3>
+  <div class="settings">
   <table>
+    <tr>
+      <th>single-chapter-mode:</th>
+      <td><input type="range" bind:value={$singleChapterMode} min="1" max="2"></td>
+    </tr> 
+    <tr>
+      <th>count-chars:</th>
+      <td><input type="range" bind:value={$countChars} min="1" max="2"></td>
+    </tr>  
     <tr>
       <th>font-family:</th>
       <td>
@@ -87,6 +96,7 @@
     <tr style="height: 15px;"></tr> 
 
   </table>
+</div>
   <button class="ok" on:click={() => callback(true)}>{$_('dialogs.ok')}</button>
 </div>
 
@@ -99,10 +109,16 @@
   button {
     margin-right: 0;
   }
+  .settings {
+    max-height: 50vh;
+    display: flex;
+    flex-direction: column;
+    overflow-y: auto;
+  }
 
   table {
-    width: 100%;
     text-align: left;
+    flex: 1 1 auto;
   }
   td > *{
     width: 100%;

@@ -2,22 +2,24 @@
   import { _ } from 'svelte-i18n'
 	import { onMount } from 'svelte'
   import { session } from '../javascript/database.js'
-  import { currentChapterFullTitle } from '../javascript/editor.js'
+  import { currentChapterFullTitle, getEditor } from '../javascript/editor.js'
 
   import { showSidemenu, isSynced } from '../javascript/editor'
   import { editorComponentID } from '../javascript/codemirror';
   import { firstAvaiableKey, addChapter, getRightOrderKey} from '../javascript/actions'
+  import { book } from '../javascript/new-book.js'
 
   import { isVSCode, loadVSSession } from '../javascript/vscode.js';
 
   import EditorButtons from './EditorButtons.svelte';
   
   import {s} from '../javascript/settings'
-  const {font, fontSize, pageWidth, pageZoom, titleHighlight, justifyText, lineMargin, lineSpacing} = s
+  const {font, fontSize, pageWidth, pageZoom, titleHighlight, justifyText, lineMargin, lineSpacing, countChars} = s
 
   onMount(() => {
     if(!isVSCode){
       session.load()
+
     }else{
       loadVSSession()
     }
@@ -52,6 +54,9 @@
     
   </div>
   <div class="margin">
+    {#if String($countChars) === '2'}
+    <span class="chars-count">{($book || "").length + ' ' + $_('editor.chars')}</span>
+    {/if}
     {#if $isSynced === true}
       <i class="icon-ok" style="color: green;"></i>
     {:else if $isSynced === false}
@@ -63,6 +68,12 @@
 </main>
 
 <style>
+
+  .chars-count {
+    color: #555;
+    font-size: 11px;
+    user-select: none;
+  }
 
   :global(#main-editor){
     background-color: #fff;
@@ -174,12 +185,14 @@
   }
 
   .margin {
+    float: right;
     margin-top: -5px;
     grid-area: margin;
     overflow-y: auto;
-    display: grid;
-    grid-template-columns: 100%;
-    grid-template-rows: 100%;
+    display: flex;
+    align-items: flex-end;
+    justify-content: right;
+    
     background-color: #fff;
     text-align: right;
     overflow: hidden;
@@ -497,6 +510,23 @@
     transform: rotate(359deg);
   }
 }
+
+
+
+/*
+:global(.cm-line:not(.cm-subview)){
+  visibility: hidden  !important;
+  display: none;
+  user-select: none;
+  pointer-events:none;
+
+  
+}
+
+:global(.cm-subview.cm-line){
+  visibility: visible !important;
+}*/
+
 </style>
 
 

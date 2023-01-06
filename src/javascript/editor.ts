@@ -2,8 +2,9 @@ import { writable, derived, get } from 'svelte/store';
 import { debounced } from './debounced-store.js'
 import { book, bookIndex, isLoaded, $bookIndex} from './new-book.js'
 import { _ } from 'svelte-i18n'
-import { setupCodemirror, cursorPosition } from './codemirror.js';
-
+import { setupCodemirror, cursorPosition, subviewChapter, allowedRange } from './codemirror.js';
+import { subviewUpdateEffect} from './navigator'
+import { s} from './settings'
 
 import firebase from 'firebase/compat/app'
 import 'firebase/compat/database'
@@ -23,24 +24,102 @@ export const initError = writable("")
 
 
 
+let lastUpdate = null
 
 const currentChapterKey = derived(
-  [cursorPosition, bookIndex],
-  ([$cursorPosition, $bookIndex]) => {
-    // Last valid position in the document
-    const lastPos = editor?.state.doc.toString().length
-    let cursorRow = editor?.state.doc.lineAt(Math.min($cursorPosition.from, Math.max(0, lastPos - 1))).number - 1
-    let lastWorkingKey = ''
-    for(const [key, chapter] of $bookIndex.chapters.entries()) {
-      if(chapter.contentStart <= cursorRow){
-        lastWorkingKey = key
-      } else {
-        return lastWorkingKey
+  [cursorPosition, bookIndex, s.singleChapterMode],
+  ([$cursorPosition, $bookIndex, $singleChapterMode]) => {
+
+
+    const [$currentChapterKey, $chapter] = (() => {
+      // Last valid position in the document
+      const lastPos = editor?.state.doc.toString().length
+      let cursorRow = editor?.state.doc.lineAt(Math.min($cursorPosition.from, Math.max(0, lastPos - 1))).number - 1
+      let lastWorkingKey = ''
+      let lastWorkingChapter = null
+      for(const [key, chapter] of $bookIndex.chapters.entries()) {
+        if(chapter.contentStart <= cursorRow){
+          lastWorkingKey = key
+          lastWorkingChapter = chapter
+        } else {
+          return [lastWorkingKey, lastWorkingChapter]
+        }
       }
-    }
-    return lastWorkingKey
+      return [lastWorkingKey, lastWorkingChapter]
+    })()
+
+    console.log("currentchapterkey ", $currentChapterKey)
+
+    ;(() => {
+      if(editor == null) return;
+
+      if(String($singleChapterMode) !== "2"){
+        allowedRange.set([0, Infinity])
+        const newUpdate = []
+        if(JSON.stringify(lastUpdate) !== JSON.stringify(newUpdate)){
+
+          setTimeout( () => {
+            lastUpdate = newUpdate
+            subviewChapter.set(newUpdate)
+            editor?.dispatch({ 
+              effects: subviewUpdateEffect.of("subviewUpdate")
+            })        
+          })
+        }
+        return
+      }      
+      if($chapter === null){
+        let startLine = (get(book) || "").split('\n').size
+        try{
+          startLine = [...$bookIndex.chapters.entries()][0][1].start
+        }catch(e){}
+
+        try{
+          console.log(startLine)
+          let line =  editor.state.doc.line(startLine)
+          allowedRange.set([0, line.to])
+          const newUpdate = [[line.to, editor.state.doc.toString().length + 10000]]
+          if(JSON.stringify(lastUpdate) !== JSON.stringify(newUpdate)){
+
+            setTimeout( () => {
+              lastUpdate = newUpdate
+              subviewChapter.set(newUpdate)
+              editor?.dispatch({ 
+                effects: subviewUpdateEffect.of("subviewUpdate")
+              })        
+            })
+          }
+        }catch(e){}
+
+        
+        return;
+      }
+      try {
+        let line =  editor.state.doc.line($chapter.contentStart + 2)
+        let end = editor.state.doc.line($chapter.end + 1)
+  
+        allowedRange.set([line.from, end.to])
+      
+        const newUpdate = [[0, line.from], [end.to +1, editor.state.doc.toString().length + 1000]]
+        console.log(lastUpdate, newUpdate)
+        if(JSON.stringify(lastUpdate) !== JSON.stringify(newUpdate)){
+          lastUpdate = newUpdate
+          setTimeout( () => {
+            subviewChapter.set(newUpdate)
+            editor?.dispatch({ 
+              effects: subviewUpdateEffect.of("subviewUpdate")
+            })        
+          })
+        }
+      }catch(e){ }  
+    })()
+
+    return $currentChapterKey
   } 
 )
+
+
+
 
 const currentChapterFullTitle = derived(
   [currentChapterKey, bookIndex],

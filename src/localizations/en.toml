@@ -120,6 +120,9 @@ redo = "Redo last change (ctrl+shift+Z)"
 quicklink = "Link to the first avaiable chapter (ctrl+K)"
 link      = "Add link (ctrl+L)"
 
+[editor]
+chars = "characters"
+
 
 [about]
 contact = "Contact me"

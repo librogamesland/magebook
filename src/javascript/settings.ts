@@ -16,6 +16,8 @@ const defaultValues = {
   lineSpacing: "140%",
   lineMargin: "4",
   dateFormat: "yyyymmdd-hhmmss",
+  singleChapterMode: "1",
+  countChars: "2",
 }
 
 
