@@ -1,16 +1,6 @@
 # Developer tools' files
 .lite_workspace.lua
 
-# Neutralinojs binaries and builds
-/bin
-/dist
-
-# Neutralinojs client (minified)
-neutralino.js
-
-# Neutralinojs related files
-.storage
-*.log
 
 
 # Logs
@@ -23,7 +13,6 @@ pnpm-debug.log*
 lerna-debug.log*
 
 node_modules
-dist
 dist-ssr
 *.local
 
