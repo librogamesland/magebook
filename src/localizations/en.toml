@@ -13,9 +13,10 @@ exists  = "Chapter already exists"
 sort    = "Chapters will be sorted. This will change the book structure permanently."
 compact = "Chapters will be renamed so no number will be missing in the middle. This will change the book structure permanently."
 
-name   = "Key"
-title  = "Title"
-group  = "Group"
+name         = "Key"
+title        = "Title"
+group        = "Group"
+genericFlags = "Type here any other flag you need, one per line"
 
 [dialogs.chapter.warnings]
 duplicate    = "Another key with same name exists"
@@ -88,13 +89,13 @@ settingslink = "https://librogamesland.github.io/magebook/index.html#/?id=proper
 [navbar.help]
 title     = "Help"
 guide     = "User guide"
-guidefile = "https://librogamesland.github.io/magebook" 
+guidefile = "https://librogamesland.github.io/magebook"
 forum     = "Lgl forum"
 report    = "Report bug/suggest feature"
 about     = "About"
 
 [navbar.buttons]
-fullscreen = "Fullscreen" 
+fullscreen = "Fullscreen"
 darktheme  = "Toggle dark/light theme"
 
 
@@ -161,6 +162,6 @@ chooseother  = "Choose another book"
 [dialogs.version]
 title = "New version - "
 text  = 'Discover more on the <a target="_blank" href="https://librogamesland.github.io/magebook/#/?id=changelog">user guide page</a>.'
-"1.0" = "Initial release." 
-"1.1" = "Added short links format [number] and 'disableShortLinks: true'.<br>Links to orphan chapters are highlighted in the sidemenu.<br>General restyle.<br>New Website export.<br>Bug fixes." 
+"1.0" = "Initial release."
+"1.1" = "Added short links format [number] and 'disableShortLinks: true'.<br>Links to orphan chapters are highlighted in the sidemenu.<br>General restyle.<br>New Website export.<br>Bug fixes."
 "1.2" = "Major internal rewrite.<br>The editor is now powered by Codemirror6 instead of Ace. It should be prettier and more mobile friendly.<br>New setting and export properties such as renameLink, page, textFont,...<br>Now 'Latest sessions' keeps a record of collaborative projects too."

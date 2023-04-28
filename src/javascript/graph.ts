@@ -12,6 +12,12 @@ const nodeStyle  = (key, flags, indexBook) => {
   if(flags.includes('final')) return ', color="#ffa200"'
   if(flags.includes('death')) return ', color="#000000", fontcolor="#FFFFFF"'
   if(flags.includes('fixed')) return ', color="#b02900", fontcolor="#FFFFFF"'
+  if(flags.length > 0) {
+    const relevantPart = /\w+/g.exec(flags[0])[0]
+    const seed = relevantPart.split("").reduce((acc, item) => acc + item.charCodeAt(0), 0)
+    const color = seed % 8 + 1
+    return `, color="${color}:1", fillcolor="#D3D3D3" style="rounded,filled,bold", colorscheme="accent8"`
+  }
 
   return ''
 }
@@ -25,7 +31,7 @@ const generateGraph = (book) => {
     node  [fontname="arial", fontsize=12, style="rounded,filled", shape=box];
     edge  [fontname="arial", fontsize=12];
   `
-  
+
   const groups = Object.fromEntries([...indexedBook.groups].map(group => [group, []]))
 
 

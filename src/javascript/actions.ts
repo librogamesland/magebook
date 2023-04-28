@@ -16,7 +16,7 @@ const firstAvaiableKey = ()  => {
 const generateChapterText = ({spacelines = 2, key, title = '', group = '', flags = [], content}) => {
   let r = '\n'.repeat(spacelines)
   r += (title) ? `### ${title} {#${key}}` : `### ${key}`
-  if(flags && flags.length> 0)  r += "\n" + flags.map( flag => `![][flag-${flag}]`).join(' ')
+  if(flags && flags.length> 0)  r += "\n" + flags.map( flag => `![][flag-${flag}]`).join('\n')
   if(group) r+= `\n[group]:<> ("${group}")`
   if(content) r+= `\n${content}`
 
