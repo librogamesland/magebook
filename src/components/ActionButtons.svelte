@@ -11,16 +11,16 @@
   import Chapter    from './dialogs/Chapter.svelte'
   import Confirm    from './dialogs/Confirm.svelte'
 
- 
+
   const add = async () => {
     const result = await dialog(
       Chapter,
       $_('dialogs.chapter.add'),
       firstAvaiableKey(),
       {
-        title: "", 
-        group: $currentChapterKey == '' ? '' : $bookIndex.chapters.get($currentChapterKey).group || '', 
-        flags:[], 
+        title: "",
+        group: $currentChapterKey == '' ? '' : $bookIndex.chapters.get($currentChapterKey).group || '',
+        flags:[],
         text: ""
       }
     )
@@ -42,7 +42,7 @@
   }
 
   const edit = async () => {
-    
+
     const cKey = $currentChapterKey
     if(cKey == '') return
     const result = await dialog(
@@ -76,30 +76,33 @@
     // Get old content
     const chapter =  $bookIndex.chapters.get(cKey)
 
+    // We want to get the whole chapter content and throw away:
+    // - the title (!line.startsWith('### '))
+    // - the group (!(line.includes('[group]:<>'))
+    // - the flags (line.includes('![flag-') || line.includes('![][flag-')))
+    // We will feed such content to the `generateChapterText`, which will add the edited title, group and flags
     const content = getEditor().state.sliceDoc(
-        getEditor().state.doc.line(chapter.contentStart + 2).from,
-        getEditor().state.doc.line(chapter.contentEnd + 2 ).to
-      ).split('\n').filter( line => !(line.includes('[group]:<>') || line.includes('![flag-') || line.includes('![][flag-'))).join('\n').trim()
-    
-    // Delete chapter
+        getEditor().state.doc.line(chapter.contentStart + 1).from,
+        getEditor().state.doc.line(chapter.contentEnd + 1).to
+      ).split('\n').filter(line => !line.startsWith('### ')).filter( line => !(line.includes('[group]:<>') || line.includes('![flag-') || line.includes('![][flag-'))).join('\n').trim()
+
+    // Replace chapter
     const start = getEditor().state.doc.line(chapter.start ).to
     const end = getEditor().state.doc.line(chapter.contentEnd + 1).to
-    getEditor().dispatch({
-      changes: { from: start, to: end, insert: '' },
-    })
 
-    
-    book.flush()
-
-
-    addChapter(key, generateChapterText({
+    const newContent = generateChapterText({
       spacelines: 2,
       key,
       title: value.title || '',
       group: value.group,
       flags: value.flags || [],
       content
-    }))
+    })
+
+    getEditor().dispatch({
+      changes: { from: start, to: end, insert: newContent },
+    })
+
     book.flush()
     goToChapter(key)
 
@@ -174,5 +177,5 @@
   }
   :global(.mage-theme-dark aside .buttons > div:hover ){
     background-color: #444 !important;
-  } 
+  }
 </style>
