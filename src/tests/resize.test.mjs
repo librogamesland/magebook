@@ -7,7 +7,7 @@ import puppeteer from 'puppeteer';
 
 
 
-describe('basic', async () => {
+describe('ui resizing', async () => {
 
   let server, browser, page;
 
