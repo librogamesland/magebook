@@ -7,14 +7,10 @@ const isLoaded = writable(false)
 
 const book = debounced(100, '')
 
-
-
-const $bookIndex = {}
-
 const bookIndex = derived(
 	book,
-	$book => (Object.assign($bookIndex, indexBook($book)), $bookIndex)
+	$book => indexBook($book),
 );
 
 
-export {isLoaded, book, bookIndex, $bookIndex}
+export {isLoaded, book, bookIndex}

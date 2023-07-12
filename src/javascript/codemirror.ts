@@ -1,4 +1,4 @@
-import {EditorView, minimalSetup} from 'codemirror'
+import {EditorView } from 'codemirror'
 import {markdown} from '@codemirror/lang-markdown'
 import {classHighlighter} from "@lezer/highlight"
 import {syntaxHighlighting } from "@codemirror/language"
@@ -14,7 +14,7 @@ import { goToChapter } from './navigator.js'
 import { history, historyKeymap } from './history'
 
 import { s } from './settings'
-import { book, $bookIndex } from './new-book.js'
+import { book, bookIndex } from './new-book.js'
 import { isVSCode } from './vscode.js'
 import { get, writable } from 'svelte/store'
 
@@ -45,6 +45,8 @@ const getChapterFromLink = (rawText : string) => rawText.includes('(#')
 
 /* Iterate through visible links and mark them as working/broken */
 const getLinkDecorations = (view: EditorView) => {
+
+  const $bookIndex = get(bookIndex)
 
   let decos = []
 
@@ -269,8 +271,15 @@ export const setupCodemirror = (text : string) => {
 
   window['editor'] = editor
 
-  window['$bookIndex'] = $bookIndex
-
+  Object.defineProperty(window,'$bookIndex',{
+    get: function(){
+        return get(bookIndex)
+    },
+    set: function(val){
+        console.log('windowProperty is being set');
+    },
+    configurable: true,
+  });
 
   return [editor, extensions]
 }

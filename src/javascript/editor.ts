@@ -1,6 +1,6 @@
 import { writable, derived, get } from 'svelte/store';
 import { debounced } from './debounced-store.js'
-import { book, bookIndex, isLoaded, $bookIndex} from './new-book.js'
+import { book, bookIndex, isLoaded} from './new-book.js'
 import { _ } from 'svelte-i18n'
 import { setupCodemirror, cursorPosition, subviewChapter, allowedRange } from './codemirror.js';
 import { subviewUpdateEffect} from './navigator'
@@ -188,6 +188,5 @@ const initEditorFirebase = (config) => {
 
 
 const getEditor = () => editor 
-
 
 export {bookIndex, initEditorLocal, initEditorFirebase, getEditor, cursorPosition, currentChapterKey, currentChapterFullTitle }

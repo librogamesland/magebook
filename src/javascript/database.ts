@@ -8,7 +8,7 @@ import { _ } from 'svelte-i18n'
 
 import { randomString } from './utils.js'
 import {lockStore} from '../components/Dialogs.svelte'
-import {$bookIndex, book, bookIndex, isLoaded } from './new-book.js'
+import {book, bookIndex, isLoaded } from './new-book.js'
 import {cursorPosition, initEditorLocal, initEditorFirebase} from './editor.js'
 
 
@@ -78,6 +78,7 @@ const session = new (function(){
       initEditorFirebase(JSON.parse(decode(decodeURIComponent(parsedHash.fsession))))
       isLoaded.subscribe( $isLoaded =>{
         if($isLoaded){
+          const $bookIndex = get(bookIndex)
           const sessions = JSON.parse(localStorage[firebaseSessionsKey] || '{}')
           sessions[parsedHash.fsession as string] = {
             name: $bookIndex.properties.title,
