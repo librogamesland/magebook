@@ -1,17 +1,60 @@
 # Magebook web editor
-A web editor for gamebook writing. Try NEW VERSION here: [https://librogamesland.github.io/magebook/editor](https://librogamesland.github.io/magebook/editor)
+A web editor for gamebook writing. Try NEW VERSION here: [https://magebook.github.io](https://magebook.github.io)
 
 
 <img src="https://librogamesland.github.io/magebook/docs/screenshots/1.jpg" alt="magebook screenshot" style="max-width:100%;">
 
-Old version here: [https://librogamesland.github.io/magebook/alpha](https://librogamesland.github.io/magebook/alpha)
 
+
+## Usage guide
+
+This file is intended for developer who wants to contribute to Magebook. If you are an user or a write, check the [official guide instead](https://librogamesland.github.io/magebook).
+
+
+
+## Getting started 
+
+Make sure to have git and node.js installed on your system.
+
+First of all, clone the project from github:
+```bash
+git clone https://github.com/librogamesland/magebook.git
+cd magebook  # move inside the directory
+```
+
+
+Setup dependencies.
+
+Optional: keep in mind that we use google chrome to test components. You may skip chrome download and use your local chrome by exporting the following env vars:
+```bash
+export PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true
+export PUPPETEER_EXECUTABLE_PATH=/usr/bin/google-chrome
+```
+(replace `/usr/bin/google-chrome` with your local path, on linux you may find it with `whereis google-chrome`)
+
+Finally, install dependencies with:
+
+```
+npm i
+```
+
+
+Now you may run:
+```bash
+npm run dev        # start magebook locally with live reload on save
+npm run build      # prepare for deployment
+npm run preview    # run 
+
+
+npm run docs       # start docs server
+npm run test       # run tests (you need to export PUPPETEER_EXECUTABLE_PATH again)
+```
 
 
 ## Developer api
-Magebook provides a javascript ([Node.js](https://nodejs.org/)) api to work with Magebook md format. You can use it to convert book formats, analyze books, or bundle your book inside a web app with [Rollup](https://rollupjs.org/). [ciao] [cd]
+Magebook provides a javascript ([Node.js](https://nodejs.org/)) api to work with Magebook md format. You can use it to convert book formats, analyze books, or bundle your book inside a web app with [Rollup](https://rollupjs.org/). 
 
-Currently the api is under a major rework - do not expect it to work until version 1.1
+Currently the api is under a major rework - do not expect it to work 
 
 ---
 Looking for an app template working out of the box? --> [https://github.com/librogamesland/magebook-template](https://github.com/librogamesland/magebook-template)

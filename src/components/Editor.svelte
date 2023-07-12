@@ -146,8 +146,9 @@
   }
 
   .toolbar {
+    @apply z-[50];
     background-color: #eee;
-    z-index: 50;
+    
     box-shadow: 0 4px 20px rgb(0 0 0 / 25%);
     display: flex;
     flex-direction: row;
