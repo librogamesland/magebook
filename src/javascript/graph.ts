@@ -25,17 +25,17 @@ const generateGraph = (book) => {
     node  [fontname="arial", fontsize=12, style="rounded,filled", shape=box];
     edge  [fontname="arial", fontsize=12];
   `
-  
+
   const groups = Object.fromEntries([...indexedBook.groups].map(group => [group, []]))
 
 
   for(let [key, {title, group, links, flags, text}] of indexedBook.chapters){
     s += `
-      ${key} [label="${sanitizeLabel(title ? `${key} - ${title}` : key)}", tooltip="${text.replaceAll(/[^0-9a-z \`\<\>\.\'\[\]\(\)]/gi, '')}"${nodeStyle(key, flags, indexedBook)}]`
+      "${key}" [label="${sanitizeLabel(title ? `${key} - ${title}` : key)}", tooltip="${text.replaceAll(/[^0-9a-z \`\<\>\.\'\[\]\(\)]/gi, '')}"${nodeStyle(key, flags, indexedBook)}]`
 
     for(const link of links){
       if(indexedBook.chapters.has(link)) s += `
-        ${key} -> ${sanitizeLink(link)}`
+        "${key}" -> "${sanitizeLink(link)}"`
 
     }
     if(group) groups[group].push(key)
