@@ -5,8 +5,6 @@ import {isNatNumber, shuffleArray} from './utils'
 export const sanitizeKey = (key : string) => key.replace(/[^a-z0-9]/gi,'')
 
 
-
-
 export const generateChapterFullText = ({key, title = '', flags = [], group= '', text = '', beforeSpaceLines = 2, afterSpaceLines= 0}) => {
   let r = '\n'.repeat(beforeSpaceLines)
   r += (title) ? `### ${title} {#${key}}` : `### ${key}`
@@ -34,13 +32,13 @@ export const indexBook = (bookText) => {
   let lastContentLinePlusOne = 1
 
   const lines = bookText.split('\n')
-  lines.forEach( (oLine, zeroIndexlineNumber) => { 
+  lines.forEach( (oLine, zeroIndexlineNumber) => {
     const i = zeroIndexlineNumber  // We keep zero indexed as reference
     const line = oLine.trim()
 
-    if(lastLineHadContent) lastContentLinePlusOne = i 
+    if(lastLineHadContent) lastContentLinePlusOne = i
     lastLineHadContent = (line !== '')
-  
+
     // Parsing dell'header
     if(key === '' && !line.startsWith('### ')) {
       if(line.startsWith('# ')) {
@@ -53,7 +51,7 @@ export const indexBook = (bookText) => {
       }
       return
     }
-  
+
     // Parsing del testo
     if(line.startsWith('### ')){
       if(key !== ''){
@@ -81,11 +79,12 @@ export const indexBook = (bookText) => {
       }
       return
     }
-  
+
     if(line.includes('![flag-') || line.includes('![][flag-')){
-      ;['final', 'fixed', 'death'].forEach( (flag) => {
-        if(line.includes(`![flag-${flag}]`) || line.includes(`![][flag-${flag}]`)) chapter.flags.push(flag)
-      })
+      const maybeMatch = /!(?:\[\])?\[flag-(.*)\]/g.exec(line);
+      if (maybeMatch) {
+        chapter.flags.push(maybeMatch[1])
+      }
       return
     }
     const groupIndex = line.indexOf('[group]:<> ("')
@@ -182,7 +181,7 @@ export const firstAvaiableKey = (bookText)  => {
 export const remapBook = (indexedBook, chapterMap : Map<string, string>) => {
   // Create an object mapping old chapters' keys to new keys
   const inverseMap = new Map<string, string>()
-  for(const [key, val] of chapterMap) inverseMap.set(val, key) 
+  for(const [key, val] of chapterMap) inverseMap.set(val, key)
 
   // Array of new keys
   const mapKeys = [...chapterMap.keys()]
@@ -215,7 +214,7 @@ export const remapBook = (indexedBook, chapterMap : Map<string, string>) => {
 
   if(!indexedBook.properties['disableShortLinks']) text = text.replace(/\[([^\[]*)\]/g, (...all) => `[${
     inverseMap.has(all[1]) ? inverseMap.get(all[1]) : all[1]
-  }]`) 
+  }]`)
 
   return text
 }
@@ -227,7 +226,7 @@ export const shuffleBook = (bookText, {selectedFlags = [], groupsFilter = [], on
   /* Find key that should be shuffled */
   for (const [key, {group, flags}] of indexedBook.chapters){
     // Skip key if is not numeric and onlyNumbers = true
-    if(onlyNumbers && !isNatNumber(key)) continue; 
+    if(onlyNumbers && !isNatNumber(key)) continue;
 
     // Skip key if groupsFilter and group is not whitelisted
     if(groupsFilter.length > 0 && !groupsFilter.includes(group)) continue;

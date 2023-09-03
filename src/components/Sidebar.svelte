@@ -14,9 +14,9 @@
   import death from '../assets/img/flags/death.png'
   import fixed from '../assets/img/flags/fixed.png'
   import final from '../assets/img/flags/final.png'
+  import generic from '../assets/img/flags/generic.png'
 
-  const flags = {death, final, fixed}
-
+  const flags = {death, final, fixed, generic}
 
   $: { if($currentChapterKey != '') {
     (async () =>{
@@ -37,7 +37,7 @@
           scrollMode: 'if-needed',
         });
       }catch(e){}
-    })()    
+    })()
   }}
 
   let selectedGroup = 'allgroupidtag'
@@ -78,7 +78,7 @@
 
     return (hasEntering ? '' : '<i class="icon-help"></i>') +
         ((hasEntering && hasExiting) ? '' : '<i class="icon-right"></i>') +
-        (hasExiting ? '' : '<i class="icon-help"></i>')    
+        (hasExiting ? '' : '<i class="icon-help"></i>')
   }
 
   const brokenLinks = (key, chapter) => {
@@ -119,7 +119,7 @@
       {key}
       <b>{chapter.title || ''}</b>
       {#each chapter.flags || [] as flag}
-        <img src={flags[flag]} alt={flag}/>
+        <img src={flags[flag] ?? flags.generic} alt={flag} title={flag}/>
       {/each}
       <span class="errors">{@html chapterErrors(key, chapter)} </span>
       <span class="errors">{@html brokenLinks(key, chapter)} </span>
@@ -136,7 +136,7 @@
       {key}
       <b>{$bookIndex.chapters.get(key).title || ''}</b>
       {#each $bookIndex.chapters.get(key).flags || [] as flag}
-        <img src={flags[flag]} alt={flag}/>
+        <img src={flags[flag] ?? flags.generic} alt={flag} title={flag}/>
       {/each}
     </li>
     {/each}
@@ -227,7 +227,7 @@
     overflow: auto;
   }
 
-  
+
 
   li:nth-child(even) {
     background-color: rgb(245, 245, 245);
@@ -314,27 +314,27 @@
     background-color: #272727 !important;
     color: #bbb !important;
   }
- 
+
   :global(.mage-theme-dark aside ul){
     background-color: #161616 !important;
   }
 
   :global(.mage-theme-dark aside ul li:nth-child(even) ){
     background-color: #000 !important;
-  } 
+  }
 
   :global(.mage-theme-dark aside ul li b){
     color: #fff !important;
-  } 
+  }
 
   :global(.mage-theme-dark aside ul li:hover ){
     background-color: #444 !important;
-  } 
+  }
 
   :global(.mage-theme-dark aside ul li.selected ){
     background-color: #2b356b !important;
-  } 
-  
+  }
+
 
 
 </style>

@@ -38,8 +38,8 @@
 
 */
   // Entity input bindings
-  let dialogTitle, key, value, title, flags, group, originalKey
-  const filterFlags = () => Object.keys(flags).filter(key => flags[key])
+  let dialogTitle, key, value, title, flags, group, originalKey, genericFlags
+  const filterFlags = () =>  Object.keys(flags).filter(key => flags[key]).concat(genericFlags.split('\n').map(el => el.trim()).filter(el => el.length > 0))
 
   const unsubscribe = params.subscribe( p => {
     ;([dialogTitle, key, value] = p)
@@ -51,6 +51,7 @@
       fixed: flagProps.includes('fixed'),
       death: flagProps.includes('death'),
     }
+    genericFlags = flagProps.filter(el => el !== 'final' && el !== 'fixed' && el !== 'death').join('\n')
   })
 
   onDestroy(unsubscribe)
@@ -90,6 +91,9 @@
       </div>
     {/each}
   </div>
+  <div class="flags-generic">
+    <textarea placeholder={$_('dialogs.chapter.genericFlags')} bind:value={genericFlags}></textarea>
+  </div>
   <p style="font-size: 85%" class:hide={!keyDuplicate}><i class="icon-warning"></i>{$_('dialogs.chapter.warnings.duplicate')}</p>
   <p style="font-size: 85%" class:hide={keyIsValid}><i class="icon-warning"></i>{$_('dialogs.chapter.warnings.invalidkey')}</p>
   <p style="font-size: 85%" class:hide={groupIsValid}><i class="icon-warning"></i>{$_('dialogs.chapter.warnings.invalidgroup')}</p>
@@ -113,24 +117,24 @@
     margin-top: calc((2.5rem - 20px) / 2);
   }
 
-  
+
   .input {
     width: 100%;
     display: flex;
     align-items: center;
   }
-  
+
   .input > input {
     height: 1rem;
     margin: 0.5rem 0;
     flex-grow: 1;
     flex-shrink: 1;
     min-width: 0;
-  } 
+  }
 
   .input > span {
     min-width: calc(40px + 4vw);
-  } 
+  }
 
   .flags {
     display: flex;
@@ -154,6 +158,17 @@
     .flags > div:hover {
       background-color: #ddd;
     }
+  }
+
+  .flags-generic {
+    width: 100%;
+  }
+
+  .flags-generic > textarea {
+    width: 100%;
+    height: 100px;
+    box-sizing: border-box;
+    padding: 5px;
   }
 
 
