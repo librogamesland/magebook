@@ -50,6 +50,21 @@ npm run docs       # start docs server
 npm run test       # run tests (you need to export PUPPETEER_EXECUTABLE_PATH again)
 ```
 
+### Deploy on firebase
+
+As explained here: <https://medium.com/@prathampoddar01/deploying-a-vite-app-with-firebase-a-beginners-overview-c4064959353a>
+
+```bash
+npm install -g firebase-tools
+
+firebase login
+firebase init hosting
+
+# And after npm run build
+cd editor
+firebase deploy
+
+```
 
 ## Developer api
 Magebook provides a javascript ([Node.js](https://nodejs.org/)) api to work with Magebook md format. You can use it to convert book formats, analyze books, or bundle your book inside a web app with [Rollup](https://rollupjs.org/). 

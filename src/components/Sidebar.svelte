@@ -1,12 +1,10 @@
 <script lang="ts">
   import { _ } from 'svelte-i18n'
   import { tick } from 'svelte';
-  import { book, bookIndex } from '../javascript/new-book.js'
-  import { currentChapterKey } from '../javascript/editor.js'
   import { goToChapter } from '../javascript/navigator.js'
   import scrollIntoView from 'smooth-scroll-into-view-if-needed';
 
-  import { showSidemenu } from '../javascript/editor.js'
+  import { showSidemenu, store } from '../javascript/store.js'
 
 
   import ActionButtons from './ActionButtons.svelte'
@@ -17,6 +15,57 @@
 
   const flags = {death, final, fixed}
 
+  let book = null, currentChapterKey = null, currentChapterFullTitle = null
+  store.then( r => ({book, currentChapterKey, currentChapterFullTitle} = r))
+
+  let windowW = 0
+  let w = localStorage['mage-sidebar-width'] ? parseInt(localStorage['mage-sidebar-width']) : 250
+
+  let preferredW = localStorage['mage-sidebar-preferredwidth'] ? parseInt(localStorage['mage-sidebar-preferredwidth']) : 250
+  let newpreferredW = preferredW
+
+  let startW = 0
+
+  $: {
+    localStorage['mage-sidebar-width'] = w
+    localStorage['mage-sidebar-preferredwidth'] = preferredW
+  }
+
+
+  const resize = (e : MouseEvent | TouchEvent) => {
+			const x = ("touches" in e) ? e.changedTouches[0].pageX : e.x
+			newpreferredW = w = Math.min(Math.max(startW - x, 0), window.innerWidth * 0.45)
+	}
+
+  const endResize = () => {
+    if(w < 100){
+      w = 10
+    }else{
+      preferredW = newpreferredW
+    }
+  }
+
+	const handleResize = (e : MouseEvent | TouchEvent) => {
+    startW = (("touches" in e) ? e.changedTouches[0].pageX : e.x) + w
+  
+		if("touches" in e){
+				document.addEventListener("touchmove", resize, false);
+				document.addEventListener("touchend", () => {
+            endResize()
+						document.removeEventListener("touchmove", resize, false);
+				}, {once: true});
+		}else{
+				document.addEventListener("mousemove", resize, false);
+				document.addEventListener("mouseup", () => {
+            endResize()
+						document.removeEventListener("mousemove", resize, false);
+				}, {once: true});
+		}
+	}
+
+
+
+  
 
   $: { if($currentChapterKey != '') {
     (async () =>{
@@ -42,16 +91,16 @@
 
   let selectedGroup = 'allgroupidtag'
 
-  $: filterChapters = [...($bookIndex.chapters)].filter( ([key, chapter]) => {
+  $: filterChapters = book === null ? [] : [...($book.index.chapters)].filter( ([key, chapter]) => {
     if(!selectedGroup || selectedGroup == 'allgroupidtag') return true
     if(selectedGroup == 'allgrouperrorsidtag'){
-      const linksHere = $bookIndex.linksToChapter.get(key)
+      const linksHere = $book.index.linksToChapter.get(key)
       const hasEntering = linksHere && linksHere.size > 0
       const hasExiting  = (chapter.links && chapter.links.size > 0) || (chapter.flags && chapter.flags.length > 0)
       return (!hasEntering || !hasExiting)
     }
     if(selectedGroup == 'allgrouporphanlinksidtag'){
-      const hasBrokenLinks = chapter.links && [...chapter.links].some(link => !$bookIndex.chapters.has(link))
+      const hasBrokenLinks = chapter.links && [...chapter.links].some(link => !$book.index.chapters.has(link))
       return hasBrokenLinks
     }
     const group = chapter.group
@@ -59,7 +108,8 @@
   })
 
   $: {
-    if(![...($bookIndex.groups), 'allgroupidtag', 'allgrouperrorsidtag', 'allgrouporphanlinksidtag'].includes(selectedGroup)){
+    if(book !== null) 
+    if(![...($book.index.groups), 'allgroupidtag', 'allgrouperrorsidtag', 'allgrouporphanlinksidtag'].includes(selectedGroup)){
       selectedGroup = 'allgroupidtag'
     }
   }
@@ -70,11 +120,11 @@
   }
 
   const chapterErrors = (key, chapter) => {
-    const linksHere = $bookIndex.linksToChapter.get(key)
+    const linksHere = $book.index.linksToChapter.get(key)
     const hasEntering = linksHere && linksHere.size > 0
     const hasExiting  = (chapter.links && chapter.links.size > 0) || (chapter.flags && chapter.flags.length > 0)
 
-    const brokenLinks = chapter.links && [...chapter.links].some(link => !$bookIndex.chapters.has(link))
+    const brokenLinks = chapter.links && [...chapter.links].some(link => !$book.index.chapters.has(link))
 
     return (hasEntering ? '' : '<i class="icon-help"></i>') +
         ((hasEntering && hasExiting) ? '' : '<i class="icon-right"></i>') +
@@ -82,14 +132,17 @@
   }
 
   const brokenLinks = (key, chapter) => {
-    const hasBrokenLinks = chapter.links && [...chapter.links].some(link => !$bookIndex.chapters.has(link))
+    const hasBrokenLinks = chapter.links && [...chapter.links].some(link => !$book.index.chapters.has(link))
     return (hasBrokenLinks ? '<b>[</b><i class="icon-help"></i><b>]</b>' : '');
   }
 
   // Regex per matchare i link in markdown
-  $: linksHere = [... ($bookIndex.linksToChapter.get($currentChapterKey) || new Set())]
+  $: linksHere = book === null ? [] : [... ($book.index.linksToChapter.get($currentChapterKey) || new Set())]
 
 </script>
+
+<svelte:window bind:innerWidth={windowW} />
+
 
 <div
   class={`mask ${$showSidemenu ? 'foreground' : ''}`}
@@ -97,50 +150,67 @@
 />
 
 
-<aside class={$showSidemenu ? 'foreground' : ''}>
-  <h1>
-    <span class="select-dropdown">
-      <select bind:value={selectedGroup}>
-        <option value="allgroupidtag">{$_('sidemenu.allgroup')}</option>
-        <option value="allgrouperrorsidtag">{$_('sidemenu.allgrouperrors')}</option>
-        <option value="allgrouporphanlinksidtag">{$_('sidemenu.allgrouporphanlinks')}</option>
-        {#each [...($bookIndex.groups)] as group}
-          <option value={group}>{group}</option>
-        {/each}
-      </select>
-    </span>
-  </h1>
-  <ActionButtons />
-  <ul class="chapters">
-    {#each filterChapters as [key, chapter]}
-    <li
-      class:selected={key === $currentChapterKey}
-      on:click={() => goToChapter(key)}>
-      {key}
-      <b>{chapter.title || ''}</b>
-      {#each chapter.flags || [] as flag}
-        <img src={flags[flag]} alt={flag}/>
-      {/each}
-      <span class="errors">{@html chapterErrors(key, chapter)} </span>
-      <span class="errors">{@html brokenLinks(key, chapter)} </span>
+<aside class={($showSidemenu ? 'foreground' : '') + ' flex flex-row'} style={`width: ${w}px`}>
+  <div class="sidebar-resizer bg-[#ccc] hover:bg-zinc-500 border-l-2 flex-initial w-[6px] min-w-[6px] flex-shrink-0 h-full cursor-col-resize"
+  on:touchstart|preventDefault|stopPropagation={handleResize} on:mousedown|preventDefault|stopPropagation={handleResize}>
+  </div>
+  <div class={"max-w-[400px] pb-5 mx-auto h-full flex flex-col w-full overflow-hidden " + (( w > 150 || windowW < 680) ? 'px-8' : 'px-3')} >
+    {#if book && (w > 100 || windowW < 680)}
+    <h1>
+      <span class="select-dropdown w-full">
+        <select bind:value={selectedGroup}>
+          <option value="allgroupidtag">{$_('sidemenu.allgroup')}</option>
+          <option value="allgrouperrorsidtag">{$_('sidemenu.allgrouperrors')}</option>
+          <option value="allgrouporphanlinksidtag">{$_('sidemenu.allgrouporphanlinks')}</option>
+          {#each [...($book.index.groups)] as group}
+            <option value={group}>{group}</option>
+          {/each}
+        </select>
+      </span>
+    </h1>
+    <ActionButtons {windowW} {w}/>
+    <ul class="chapters">
+      {#each filterChapters as [key, chapter]}
+      <li
+        class:selected={key === $currentChapterKey}
+        on:click={() => goToChapter(key)}>
+        {#if w > 200 || windowW < 680}
 
-    </li>
-    {/each}
-  </ul>
-  <h1>{$_("sidemenu.linkshere")} {$currentChapterKey}:</h1>
-  <ul class="links-here">
-    {#each linksHere as key}
-    <li
-      class:selected={key === $currentChapterKey}
-      on:click={() => goToChapter(key)}>
-      {key}
-      <b>{$bookIndex.chapters.get(key).title || ''}</b>
-      {#each $bookIndex.chapters.get(key).flags || [] as flag}
-        <img src={flags[flag]} alt={flag}/>
+        {key}
+
+        <b>{chapter.title || ''}</b>
+        {#each chapter.flags || [] as flag}
+          <img src={flags[flag]} alt={flag}/>
+        {/each}
+        <span class="errors">{@html chapterErrors(key, chapter)} </span>
+        <span class="errors">{@html brokenLinks(key, chapter)} </span>
+        {:else}
+          <div class="text-center w-full mx-auto">{key}</div>
+        {/if}
+      </li>
       {/each}
-    </li>
-    {/each}
-  </ul>
+    </ul>
+    <h1>{$_("sidemenu.linkshere")} {$currentChapterKey}:</h1>
+    <ul class="links-here">
+      {#each linksHere as key}
+      <li
+        class:selected={key === $currentChapterKey}
+        on:click={() => goToChapter(key)}>
+        {#if w > 200 || windowW < 680}
+
+        {key}
+        <b>{$book.index.chapters.get(key).title || ''}</b>
+        {#each $book.index.chapters.get(key).flags || [] as flag}
+          <img src={flags[flag]} alt={flag}/>
+        {/each}
+        {:else}
+          <div class="text-center w-full mx-auto">{key}</div>
+        {/if}
+      </li>
+      {/each}
+    </ul>
+    {/if}
+  </div>
 </aside>
 
 <style>
@@ -148,11 +218,6 @@
     user-select: none;
     grid-area: sidebar;
     background-color: #ccc;
-    padding: 0px 4vw;
-    padding-bottom: 50px;
-    display: flex;
-    flex-direction: column;
-    max-height: 100%;
   }
 
 
@@ -274,17 +339,22 @@
       right: 0;
       box-sizing: border-box;
       height: 100vh;
-      width: calc(90vw - 80px);
+      width: calc(90vw - 80px) !important;
       max-width: 320px;
       transform: translateX(317px);
       background-color: rgb(209, 209, 209);
     }
+
     aside.foreground {
       opacity: 1;
       display: flex;
       transform: translateX(0);
       visibility: visible;
 
+    }
+
+    .sidebar-resizer {
+      display: none;
     }
 
     h1 {
@@ -294,7 +364,7 @@
 
   @media only screen and (max-width: 360px) {
     aside{
-      width: calc(90vw - 40px);
+      width: calc(90vw - 40px) !important;
     }
   }
 

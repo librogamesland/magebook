@@ -64,9 +64,11 @@
   "dependencies": {
     "@codemirror/view": "^6.6.0",
     "@types/sanitize-html": "^2.6.2",
+    "@zerodevx/svelte-toast": "^0.9.5",
     "date-format": "^4.0.14",
     "js-base64": "^3.7.3",
     "node-fetch": "^2.6.1",
-    "sanitize-html": "^2.7.3"
+    "sanitize-html": "^2.7.3",
+    "tmp-promise": "^3.0.3"
   }
 }

@@ -8,20 +8,23 @@ import {Decoration} from "@codemirror/view"
 import {syntaxTree} from "@codemirror/language"
 import {search, searchKeymap} from '@codemirror/search'
 import { defaultKeymap, indentWithTab } from "@codemirror/commands"
-import { debounced } from './debounced-store.js'
+import { debouncable } from './debounced-store.js'
 import { goToChapter } from './navigator.js'
 
 import { history, historyKeymap } from './history'
 
 import { s } from './settings'
-import { book, bookIndex } from './new-book.js'
 import { isVSCode } from './vscode.js'
 import { get, writable } from 'svelte/store'
+import { indexBook } from './book-utils.js'
 
+
+let onChangeCallback = (text: string) => ({text, index: indexBook(text)})
+export const setOnChangeCallback = callback => onChangeCallback = callback
 
 
 export const editorComponentID = 'main-editor'
-export const cursorPosition = debounced(10, {from: 0, to: 0})
+export const cursorPosition = debouncable(10, {from: 0, to: 0})
 export const allowedRange = writable([0, Infinity])
 
 
@@ -38,15 +41,14 @@ const HTMLu = Decoration.mark({class: "cm-mage-HTMLu"})
 
 
 
-const getChapterFromLink = (rawText : string) => rawText.includes('(#') 
+const getChapterFromLink = (rawText : string) => rawText.includes('(#')
     ? rawText.substring(rawText.indexOf('(#') + 2, rawText.lastIndexOf(')')).trim()
     : rawText.substring(rawText.indexOf('[') + 1, rawText.indexOf(']')).trim()
 
 
 /* Iterate through visible links and mark them as working/broken */
-const getLinkDecorations = (view: EditorView) => {
+const getLinkDecorations = (view: EditorView, {text, index}) => {
 
-  const $bookIndex = get(bookIndex)
 
   let decos = []
 
@@ -59,28 +61,28 @@ const getLinkDecorations = (view: EditorView) => {
           const rawText = view.state.doc.sliceString(node.from, node.to)
 
           if(rawText === '[group]'){
-            decos.push(group.range(node.from, node.to))  
-          }else if($bookIndex.properties['disableShortLinks'] == 'true' ){
+            decos.push(group.range(node.from, node.to))
+          }else if(index.properties['disableShortLinks'] == 'true' ){
             if(rawText.includes('(#')){
               const text = getChapterFromLink(rawText)
-              const link = $bookIndex.chapters.has(text) ? workingLink : brokenLink
-              decos.push(link.range(node.from, node.to))  
+              const link = index.chapters.has(text) ? workingLink : brokenLink
+              decos.push(link.range(node.from, node.to))
             }
-          }else{            
+          }else{
             const splitIndex = rawText.indexOf('][')
             if(splitIndex != -1 ){
               const text1 = getChapterFromLink(rawText.substring(0, splitIndex + 1))
-              const link1 = $bookIndex.chapters.has(text1) ? workingLink : brokenLink
-              decos.push(link1.range(node.from, node.from + splitIndex + 1))  
+              const link1 = index.chapters.has(text1) ? workingLink : brokenLink
+              decos.push(link1.range(node.from, node.from + splitIndex + 1))
 
               const text2 = getChapterFromLink(rawText.substring(splitIndex + 1))
-              const link2 = $bookIndex.chapters.has(text2) ? workingLink : brokenLink
-              decos.push(link2.range(node.from  + splitIndex + 1, node.to))  
+              const link2 = index.chapters.has(text2) ? workingLink : brokenLink
+              decos.push(link2.range(node.from  + splitIndex + 1, node.to))
 
             }else{
               const text = getChapterFromLink(rawText)
-              const link = $bookIndex.chapters.has(text) ? workingLink : brokenLink
-              decos.push(link.range(node.from, node.to))  
+              const link = index.chapters.has(text) ? workingLink : brokenLink
+              decos.push(link.range(node.from, node.to))
             }
           }
         }else if(node.name == 'ATXHeading1'){
@@ -116,22 +118,24 @@ const magePlugin = ViewPlugin.fromClass(class {
   decorations: DecorationSet
   editor: EditorView
 
-  constructor(view: EditorView) {
-    this.decorations = getLinkDecorations(view)
-    this.editor = view
+  constructor(editor: EditorView) {
+    const text = editor.state.doc.toString()
+    const index = indexBook(text)
+    this.decorations = getLinkDecorations(editor, {text, index})
+    this.editor = editor
   }
 
   update(update: ViewUpdate) {
-    
-    if(String(get(s.singleChapterMode)) === "2"){    
+
+    if(String(get(s.singleChapterMode)) === "2"){
       console.log("preventing update")
       if(!update.transactions.map( t => t.effects).some(effects => effects.some( eff => eff.value === 'subviewUpdate'))){
         const $allowedRange = get(allowedRange)
         const { from, to} = update.view.state.selection.main
-        // Calculate 
+        // Calculate
         const allowedFrom = Math.min($allowedRange[1], Math.max(from, $allowedRange[0]))
         const allowedTo = Math.max($allowedRange[0], Math.min(to, $allowedRange[1]))
-    
+
         if(allowedFrom !== from || allowedTo !== to){
           setTimeout( () =>     this.editor.dispatch({
             selection: EditorSelection.create([
@@ -149,13 +153,15 @@ const magePlugin = ViewPlugin.fromClass(class {
       console.log("allowing ", get(s.singleChapterMode))
       cursorPosition.lazySet(update.view.state.selection.main)
     }
-    
-    
-    
-    if (update.docChanged || update.viewportChanged){
-      book.set(update.view.state.doc.toString())
 
-      this.decorations = getLinkDecorations(update.view)
+
+
+    if (update.docChanged || update.viewportChanged){
+
+
+      this.decorations = getLinkDecorations(update.view,
+        onChangeCallback(update.view.state.doc.toString())
+      )
     }
   }
 }, {
@@ -166,6 +172,11 @@ const magePlugin = ViewPlugin.fromClass(class {
       let target = e.target as HTMLElement
       if(target.classList.contains('tok-link')) target = target.parentElement
       if(target.classList.contains('cm-mage-workinglink') || target.classList.contains('cm-mage-brokenlink')){
+
+        // [sp] we get the closest cm-line ancestor, as the link could be split in multiple <div>s due to how
+        // firepad highlights text
+        target = target.closest('.cm-line');
+
         const text = getChapterFromLink(target.innerText.trim())
         goToChapter(text)
 
@@ -192,7 +203,7 @@ const getSubviewDecorations = () => {
   if(!$subviewChapter)   return builder.finish();
 
   for(let [from, to] of $subviewChapter){
-    
+
     builder.add(from, to, displayedLine)
 
   }
@@ -218,18 +229,18 @@ export const setupCodemirror = (text : string) => {
     ? [
       highlightSpecialChars(),
       history(),
-      drawSelection(),  
+      drawSelection(),
       highlightActiveLine(),
       markdown(),
       search(),
       EditorView.lineWrapping,
-      syntaxHighlighting(classHighlighter), 
+      syntaxHighlighting(classHighlighter),
       EditorView.contentAttributes.of({ spellcheck: 'true' }),
 
-      magePlugin, 
-      subviewPlugin,    
+      magePlugin,
+      subviewPlugin,
 
-      keymap.of([    
+      keymap.of([
         ...defaultKeymap,
         ...searchKeymap,
         indentWithTab,
@@ -237,18 +248,18 @@ export const setupCodemirror = (text : string) => {
     ] : [
       highlightSpecialChars(),
       history(),
-      drawSelection(),  
+      drawSelection(),
       highlightActiveLine(),
       markdown(),
       search(),
       EditorView.lineWrapping,
-      syntaxHighlighting(classHighlighter), 
+      syntaxHighlighting(classHighlighter),
       EditorView.contentAttributes.of({ spellcheck: 'true' }),
 
-      magePlugin, 
-      subviewPlugin,    
+      magePlugin,
+      subviewPlugin,
 
-      keymap.of([    
+      keymap.of([
         ...defaultKeymap,
         ...searchKeymap,
         ...historyKeymap,
@@ -270,16 +281,6 @@ export const setupCodemirror = (text : string) => {
 
 
   window['editor'] = editor
-
-  Object.defineProperty(window,'$bookIndex',{
-    get: function(){
-        return get(bookIndex)
-    },
-    set: function(val){
-        console.log('windowProperty is being set');
-    },
-    configurable: true,
-  });
 
   return [editor, extensions]
 }

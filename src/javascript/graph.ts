@@ -20,11 +20,7 @@ const generateGraph = (book) => {
 
   const indexedBook = extractIndexedBook(book)
 
-  let s = `digraph{
-    graph [fontname="arial", fontsize=10]; 
-    node  [fontname="arial", fontsize=12, style="rounded,filled", shape=box];
-    edge  [fontname="arial", fontsize=12];
-  `
+  let s = n
   
   const groups = Object.fromEntries([...indexedBook.groups].map(group => [group, []]))
 

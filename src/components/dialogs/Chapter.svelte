@@ -1,12 +1,16 @@
 <script lang="ts">
   import { _ } from 'svelte-i18n'
   import { onDestroy } from 'svelte'
-  import { bookIndex } from '../../javascript/new-book'
   import { sanitizeKey } from '../../javascript/book-utils'
+  import { store } from '../../javascript/store'
 
   import death from '../../assets/img/flags/death.png'
   import final from '../../assets/img/flags/final.png'
   import fixed from '../../assets/img/flags/fixed.png'
+
+  let book = null, currentChapterKey = null, currentChapterFullTitle = null, editor = null
+  store.then( r => ({book, currentChapterKey, currentChapterFullTitle, editor} = r))
+
 
   let flagImgs = { death, final, fixed }
 
@@ -54,7 +58,7 @@
   })
 
   onDestroy(unsubscribe)
-  $: keyDuplicate = (key !== originalKey) && $bookIndex.chapters.has(key)
+  $: keyDuplicate = (key !== originalKey) && book && $book.index.chapters.has(key)
   $: keyIsValid = key === sanitizeKey(key)
   $: groupIsValid = group === sanitizeKey(group)
 </script>
@@ -75,9 +79,11 @@
     <span>{$_('dialogs.chapter.group')}</span>
     <input class:error={!groupIsValid} bind:value={group} type="text" list="chapters-groups" />
     <datalist id="chapters-groups">
-      {#each [...($bookIndex.groups)] as group}
+      {#if book}
+      {#each [...($book.index.groups)] as group}
         <option value={group}>{group}</option>
       {/each}
+      {/if}
     </datalist>
 
   </div>
@@ -86,7 +92,7 @@
       <div
         class:selected={flags[flag]}
         on:click={() => (flags[flag] = !flags[flag])}>
-        <img alt={flag} src={flagImgs[flag]} />
+        <img alt={flag} src={flagImgs[flag]} class="mx-auto"/>
       </div>
     {/each}
   </div>

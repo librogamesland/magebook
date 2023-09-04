@@ -1,3 +1,6 @@
+# Plugins
+src/plugins
+
 # Developer tools' files
 .lite_workspace.lua
 

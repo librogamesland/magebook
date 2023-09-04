@@ -1,6 +1,6 @@
 <script lang="ts">
   import {_} from 'svelte-i18n'
-  import { book } from '../../javascript/new-book.js'
+  import { store } from '../../javascript/store'
   import { download } from '../../javascript/file.js'
 
 

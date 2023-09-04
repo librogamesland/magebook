@@ -8,8 +8,9 @@ import { _ } from 'svelte-i18n'
 
 import { randomString } from './utils.js'
 import {lockStore} from '../components/Dialogs.svelte'
-import {book, bookIndex, isLoaded } from './new-book.js'
-import {cursorPosition, initEditorLocal, initEditorFirebase} from './editor.js'
+import {store } from './store'
+import {initEditorLocal, initEditorFirebase} from './init-editor.js'
+import { cursorPosition } from './codemirror.js';
 
 
 
@@ -37,6 +38,9 @@ const previews = async() => (await db.sessions.orderBy('preview').keys()).revers
       id: key.substr(31, 20),
       name: key.substr(52, 30)
     }))
+
+
+
 
 
 // Session class
@@ -76,17 +80,14 @@ const session = new (function(){
       }, false);
   
       initEditorFirebase(JSON.parse(decode(decodeURIComponent(parsedHash.fsession))))
-      isLoaded.subscribe( $isLoaded =>{
-        if($isLoaded){
-          const $bookIndex = get(bookIndex)
+      store.then( ({book}) =>{
           const sessions = JSON.parse(localStorage[firebaseSessionsKey] || '{}')
           sessions[parsedHash.fsession as string] = {
-            name: $bookIndex.properties.title,
+            name: book.index.properties.title,
             time: new Date().getTime()
           } 
           localStorage[firebaseSessionsKey] = JSON.stringify(sessions)
-        }
-      })
+        })
       return
     }
 
@@ -116,7 +117,9 @@ const session = new (function(){
       }
       return lastSession ||  randomString(IDLength)
     })()
-    location.replace(`#msession=${sessionName}`) // Set dell'url
+
+    parsedHash.msession = sessionName
+    location.replace('#' + queryString.stringify(parsedHash)) // Set dell'url
     
     // Listen url change
     window.addEventListener('hashchange', () => {
@@ -144,49 +147,53 @@ const session = new (function(){
      
     initEditorLocal(info.data)
 
-    data = derived(
-      [book, cursorPosition, bookIndex],
-      ([$book, $cursorPosition, $bookIndex]) => ({
-        book: $book,
-        cursor: $cursorPosition,
-        title: $bookIndex.properties.title
-      })
-    )
+
 
     // Save book on changes
-    data.subscribe( async(bookData) => {
-      if(localStorage.getItem(`mage-lock-${sessionName}`) != lock ){
-        lockStore.set( {
-          lock: true,
-          session: this,
+    store.then( ({book}) => {
+      data = derived(
+        [book, cursorPosition],
+        ([$book, $cursorPosition]) => ({
+          book: $book.text,
+          cursor: $cursorPosition,
+          title: $book.index.properties.title
         })
-        return 
-      }
-
-      localStorage.setItem('mage-session-last', sessionName)
-      const sessionData = {
-        id: sessionName,
-        data: bookData,
-        time: new Date().getTime(),
-      }
-      localStorage.setItem('mage-session-last-data', JSON.stringify(sessionData))
-
-      try{
-      await db.sessions.put({
-        preview: preview(sessionData),
-        ...sessionData
-      })
-      }catch(e){console.log(e)}
-    })
+      )
     
-    window.onbeforeunload = (e) => {
-      book.flush()
-      delete e['returnValue'];
+      data.subscribe( async(bookData) => {
+        if(localStorage.getItem(`mage-lock-${sessionName}`) != lock ){
+          lockStore.set( {
+            lock: true,
+            session: this,
+          })
+          return 
+        }
 
-    }
-    setInterval( () => book.flush(), 10000)
+        localStorage.setItem('mage-session-last', sessionName)
+        const sessionData = {
+          id: sessionName,
+          data: bookData,
+          time: new Date().getTime(),
+        }
+        localStorage.setItem('mage-session-last-data', JSON.stringify(sessionData))
 
-    cleanOldSessions()
+        try{
+        await db.sessions.put({
+          preview: preview(sessionData),
+          ...sessionData
+        })
+        }catch(e){console.log(e)}
+      })
+      
+      window.onbeforeunload = (e) => {
+      //  book.flush()
+        delete e['returnValue'];
+
+      }
+      //setInterval( () => book.flush(), 10000)
+
+      cleanOldSessions()
+    })
   }
 
   const open = async(params) => {

@@ -3,66 +3,81 @@
   import { EditorView } from 'codemirror';
   import { undo, redo } from '../javascript/history'
   import { openSearchPanel } from '@codemirror/search'
-  import { cursorPosition, getEditor, currentChapterFullTitle, currentChapterKey, bookIndex } from '../javascript/editor.js'
+  import { store } from '../javascript/store.js'
   import { ctrlShortcuts } from '../javascript/shortcuts.js'
 
-  import { firstAvaiableKey, addChapter, getRightOrderKey} from '../javascript/actions'
   import { isVSCode } from '../javascript/vscode.js';
+  import { cursorPosition } from '../javascript/codemirror';
+  import { firstAvaiableKey, getRightOrderKey } from '../javascript/book-utils';
 
 
+  let book = null, currentChapterKey = null, currentChapterFullTitle = null, editor = null
+  store.then( r => ({book, currentChapterKey, currentChapterFullTitle, editor} = r))
+
+
+  const addChapter = (key, text) => {
+
+    const index = editor.state.doc.line(getRightOrderKey(book, key, currentChapterKey) + 1).to
+    editor.dispatch({
+      changes: { from: index, to: index, insert: '\n' + text },
+    })
+
+  }
 
   const addLink = () => {
+    
     const {from, to} = $cursorPosition
     
-    const short = $bookIndex.properties['disableShortLinks'] == 'true' 
-    getEditor().dispatch({ changes: { from: to, to, insert: short ? '[](#)' : '[]' }, })
+    const short = book.index.properties['disableShortLinks'] == 'true' 
+    editor.dispatch({ changes: { from: to, to, insert: short ? '[](#)' : '[]' }, })
 
-    getEditor().dispatch({
+    editor.dispatch({
       selection: {anchor: to +  (short ? 4: 1)},
       effects: [
       EditorView.scrollIntoView(to)
     ]})
 
-    getEditor().focus()
-
+    editor.focus()
 
   }
 
   
 
+
   const addQuickLink = () => {
     let { from, to} = $cursorPosition
 
-    const {contentStart, end, group } = $bookIndex.chapters.get($currentChapterKey)
+    const {contentStart, end, group } = book.index.chapters.get($currentChapterKey)
     
-    const key = firstAvaiableKey()
-    const link = $bookIndex.properties['disableShortLinks'] == 'true' 
-      ? `[](#${firstAvaiableKey()})`
-      : `[${firstAvaiableKey()}]`
+    const key = firstAvaiableKey(book)
+    const link = book.index.properties['disableShortLinks'] == 'true' 
+      ? `[](#${key})`
+      : `[${key}]`
 
 
 
-    if(contentStart != (getEditor().state.doc.lineAt(to).number -1) ){
-      getEditor().dispatch({ changes: { from: to, to, insert: link }, })
+    if(contentStart != (editor.state.doc.lineAt(to).number -1) ){
+      editor.dispatch({ changes: { from: to, to, insert: link }, })
       to += link.length
     }else{
       // Special case: if is on same line of heading, create a new line skip
-      getEditor().dispatch({ changes: { from: to, to, insert: '\n' + link }, })
+      editor.dispatch({ changes: { from: to, to, insert: '\n' + link }, })
       to += link.length + 1
       
     }
     const cText = group ? `\n\n### ${key}\n[group]:<> ("${group}")` : `\n\n### ${key}`
     addChapter(key, cText)
 
-    if(getRightOrderKey(key) <= contentStart) to += cText.length + 1
-    getEditor().dispatch({
+    if(getRightOrderKey(book, key, $currentChapterKey) <= contentStart) to += cText.length + 1
+    editor.dispatch({
       selection: {anchor: to},
       effects: [ EditorView.scrollIntoView(to)]
     })
 
 
 
-    getEditor().focus()
+    editor.focus()
+    
   }
 
   ctrlShortcuts({
@@ -73,16 +88,16 @@
 
 
 <div class="nav-element" on:click={async() => {
-  openSearchPanel(getEditor())
+  openSearchPanel(editor)
 }} title={$_('editor.buttons.find')}><span class="icon-search"/></div>
 
 {#if !isVSCode}
 <div class="nav-element" on:click={async() => {
-  undo(getEditor())
+  undo(editor)
 }} title={$_('editor.buttons.undo')}><span class="icon-ccw"/></div>
 
 <div class="nav-element" on:click={async() => {
-  redo(getEditor())
+  redo(editor)
 }} title={$_('editor.buttons.redo')}><span class="icon-cw"/></div>
 {/if}
 

@@ -1,25 +1,42 @@
 <script lang="ts">
   import { _ } from 'svelte-i18n'
-  import { sanitizeKey } from '../javascript/book-utils'
-  import { bookIndex, book} from '../javascript/new-book.js'
-  import { currentChapterKey, getEditor, showSidemenu } from '../javascript/editor.js'
-  import { firstAvaiableKey, addChapter, generateChapterText } from '../javascript/actions.js'
+  import { firstAvaiableKey, generateChapterFullText, getRightOrderKey, sanitizeKey } from '../javascript/book-utils'
   import { historyCanGoBack, goBack, goToChapter} from '../javascript/navigator.js'
   import { ctrlShortcuts } from '../javascript/shortcuts.js'
   // Dialogs
   import { dialog } from './Dialogs.svelte'
   import Chapter    from './dialogs/Chapter.svelte'
   import Confirm    from './dialogs/Confirm.svelte'
+  import { showSidemenu, store } from '../javascript/store';
+
+  export let windowW;
+  export let w;
+
+  $: console.log("sdfv" + w)
+
+
+  let book = null, currentChapterKey = null, currentChapterFullTitle = null, editor = null
+  store.then( r => ({book, currentChapterKey, currentChapterFullTitle, editor} = r))
+
+
+  const addChapter = (key, text) => {
+
+    const index = editor.state.doc.line(getRightOrderKey(book, key, currentChapterKey) + 1).to
+    editor.dispatch({
+      changes: { from: index, to: index, insert: '\n' + text },
+    })
+
+  }
 
  
   const add = async () => {
     const result = await dialog(
       Chapter,
       $_('dialogs.chapter.add'),
-      firstAvaiableKey(),
+      firstAvaiableKey(book),
       {
         title: "", 
-        group: $currentChapterKey == '' ? '' : $bookIndex.chapters.get($currentChapterKey).group || '', 
+        group: $currentChapterKey == '' ? '' : book.index.chapters.get($currentChapterKey).group || '', 
         flags:[], 
         text: ""
       }
@@ -29,15 +46,14 @@
     key = sanitizeKey(key)
     value.group = sanitizeKey(value.group || '')
     if (!key) return
-    addChapter(key, generateChapterText({
-      spacelines: 2,
+    addChapter(key, generateChapterFullText({
+      beforeSpaceLines: 2,
       key,
       title: value.title || '',
       group: value.group,
       flags: value.flags || [],
     }))
     $showSidemenu = false
-    book.flush()
     goToChapter(key)
   }
 
@@ -49,7 +65,7 @@
       Chapter,
       $_('dialogs.chapter.edit'),
       cKey,
-      $bookIndex.chapters.get(cKey)
+      book.index.chapters.get(cKey)
     )
     if(!result) return
     let { key, value } = result
@@ -62,45 +78,43 @@
         all[3] === cKey ? key  : all[3]
       })`)
 
-      if(!$bookIndex.properties['disableShortLinks'] || $bookIndex.properties['disableShortLinks'] !== 'true'){
+      if(!book.index.properties['disableShortLinks'] || book.index.properties['disableShortLinks'] !== 'true'){
         text = text.replace(/\[([^\[]*)\](?!\()/g, (...all) => `[${all[1] === cKey ? key  : all[1]}]`)
       }
 
-      getEditor().dispatch({
-        changes: {from: 0, to: getEditor().state.doc.length, insert: text}
+      editor.dispatch({
+        changes: {from: 0, to: editor.state.doc.length, insert: text}
       })
 
 
     }
 
     // Get old content
-    const chapter =  $bookIndex.chapters.get(cKey)
+    const chapter =  book.index.chapters.get(cKey)
 
-    const content = getEditor().state.sliceDoc(
-        getEditor().state.doc.line(chapter.contentStart + 2).from,
-        getEditor().state.doc.line(chapter.contentEnd + 2 ).to
+    const content = editor.state.sliceDoc(
+        editor.state.doc.line(chapter.contentStart + 2).from,
+        editor.state.doc.line(chapter.contentEnd + 2 ).to
       ).split('\n').filter( line => !(line.includes('[group]:<>') || line.includes('![flag-') || line.includes('![][flag-'))).join('\n').trim()
     
     // Delete chapter
-    const start = getEditor().state.doc.line(chapter.start ).to
-    const end = getEditor().state.doc.line(chapter.contentEnd + 1).to
-    getEditor().dispatch({
+    const start = editor.state.doc.line(chapter.start ).to
+    const end = editor.state.doc.line(chapter.contentEnd + 1).to
+    editor.dispatch({
       changes: { from: start, to: end, insert: '' },
     })
 
     
-    book.flush()
 
 
-    addChapter(key, generateChapterText({
-      spacelines: 2,
+    addChapter(key, generateChapterFullText({
+      beforeSpaceLines: 2,
       key,
       title: value.title || '',
       group: value.group,
       flags: value.flags || [],
-      content
+      text: content
     }))
-    book.flush()
     goToChapter(key)
 
     $showSidemenu = false
@@ -111,18 +125,18 @@
     const key = $currentChapterKey
     if(key == '') return
     if (await dialog(Confirm, $_('dialogs.confirm'), $_(`dialogs.chapter.delete`).replace("%1", key))) {
-      const chapter = $bookIndex.chapters.get(key)
-      const start = getEditor().state.doc.line(chapter.start ).to
-      const end = getEditor().state.doc.line(chapter.contentEnd + 1).to
+      const chapter = book.index.chapters.get(key)
+      const start = editor.state.doc.line(chapter.start ).to
+      const end = editor.state.doc.line(chapter.contentEnd + 1).to
 
 
-      getEditor().dispatch({
+      editor.dispatch({
         changes: { from: start, to: end, insert: '' },
       })
 
       $showSidemenu = false
 
-      getEditor().focus()
+      editor.focus()
     }
   }
 
@@ -134,12 +148,23 @@
   })
 </script>
 
+{#if w > 200 || windowW < 680}
 <div class="buttons">
   <div class="icon-back" on:click={goBack} title={$_('sidemenu.actions.goback')} disabled={!$historyCanGoBack} />
   <div class="icon-plus" on:click={add} title={$_('sidemenu.actions.add')} />
   <div class="icon-pencil" on:click={edit} title={$_('sidemenu.actions.edit')}  disabled={$currentChapterKey == ""} />
   <div class="icon-trash" on:click={del} title={$_('sidemenu.actions.delete')} disabled={$currentChapterKey == ""} />
 </div>
+{:else}
+<div class="buttons !border-b-0">
+  <div class="icon-back !py-2" on:click={goBack} title={$_('sidemenu.actions.goback')} disabled={!$historyCanGoBack} />
+  <div class="icon-plus !py-2" on:click={add} title={$_('sidemenu.actions.add')} />
+</div>
+<div class="buttons !border-t-0">
+  <div class="icon-pencil !pt-0 !pb-2" on:click={edit} title={$_('sidemenu.actions.edit')}  disabled={$currentChapterKey == ""} />
+  <div class="icon-trash  !pt-0 !pb-2" on:click={del} title={$_('sidemenu.actions.delete')} disabled={$currentChapterKey == ""} />
+</div>
+{/if}
 
 <style>
   .buttons {
