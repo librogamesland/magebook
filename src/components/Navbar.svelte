@@ -3,11 +3,10 @@
   import { ctrlShortcuts } from "../javascript/shortcuts.js";
   import { graphToImg } from "../javascript/graph.js";
   import { open, download } from "../javascript/file.js";
-  import { book, isLoaded } from "../javascript/new-book.js";
   import { sortBook, compactBook } from "../javascript/book-utils";
   import { s } from "../javascript/settings";
 
-  import { getEditor, showSidemenu } from "../javascript/editor.js";
+  import { store, showSidemenu } from "../javascript/store";
   import { isVSCode } from "../javascript/vscode.js";
 
   // Dialogs
@@ -25,12 +24,17 @@
 
   const { theme } = s;
 
+  let book = null
+  store.then( r => ({book} = r))
+
+  
   if (!isVSCode) {
     ctrlShortcuts({
-      S: () => download("md", book.flush()),
+      S: () => download("md", book),
       O: () => document.getElementById("open").click(),
     });
   }
+
 
   let fullscreen = window.document.fullscreenElement ? true : false;
 
@@ -41,6 +45,8 @@
 
 <nav class={`select-none flex flex-row box-border text-white bg-zinc-800 ${$showSidemenu ? "display" : "display"}`}
   style="grid-area: navbar;">
+    
+  
   {#if !isVSCode}
     <div>
       <h1 class="nav-element">{$_("navbar.file.title")}</h1>
@@ -57,20 +63,22 @@
           on:change={(e) => open(e.target)}
         />
         <label for="open">{$_("navbar.file.open")} </label>
+        {#if book}
         <!-- <p on:click={() => dialog(Import)}>{$_('navbar.file.import')}</p> -->
-        <p on:click={() => download("md", book.flush())}>
+        <p on:click={() => download("md", book)}>
           {$_("navbar.file.save")}
         </p>
+        {/if}
         <p on:click={() => dialog(Recover)}>{$_("navbar.file.recover")}</p>
       </div>
     </div>
   {/if}
 
-  {#if $isLoaded}
+    {#if book}
     <div>
       <h1 class="nav-element">{$_("navbar.book.title")}</h1>
       <div class="content">
-        <p on:click={() => dialog(Img, () => graphToImg(book.flush()))}>
+        <p on:click={() => dialog(Img, () => graphToImg(book.text))}>
           {$_("navbar.book.graph")}
         </p>
         <p on:click={() => dialog(Shuffle)}>{$_("navbar.book.shuffle")}</p>
@@ -83,14 +91,7 @@
                 $_("dialogs.chapter.sort"),
                 true
               )
-            )
-              getEditor().dispatch({
-                changes: {
-                  from: 0,
-                  to: getEditor().state.doc.length,
-                  insert: sortBook($book),
-                },
-              });
+            ) book.set(sortBook(book));       
           }}
         >
           {$_("navbar.book.sort")}
@@ -104,14 +105,7 @@
                 $_("dialogs.chapter.compact"),
                 true
               )
-            )
-              getEditor().dispatch({
-                changes: {
-                  from: 0,
-                  to: getEditor().state.doc.length,
-                  insert: compactBook($book),
-                },
-              });
+            ) book.set(compactBook(book))
           }}
         >
           {$_("navbar.book.compact")}
@@ -128,19 +122,19 @@
     <div>
       <h1 class="nav-element">{$_("navbar.export.title")}</h1>
       <div class="content">
-        <p on:click={() => download("docx", book.flush())}>
+        <p on:click={() => download("docx", book)}>
           {$_("navbar.export.docx")}
         </p>
-        <p on:click={() => download("fodt", book.flush())}>
+        <p on:click={() => download("fodt", book)}>
           {$_("navbar.export.fodt")}
         </p>
-        <p on:click={() => download("html", book.flush())}>
+        <p on:click={() => download("html", book)}>
           {$_("navbar.export.html")}
         </p>
-        <p on:click={() => download("advanced", book.flush())}>
+        <p on:click={() => download("advanced", book)}>
           {$_("navbar.export.advanced")}
         </p>
-        <p on:click={() => download("xlgc", book.flush())}>
+        <p on:click={() => download("xlgc", book)}>
           {$_("navbar.export.xlgc")}
         </p>
         <hr />
@@ -157,7 +151,7 @@
         >
       </div>
     </div>
-  {/if}
+    {/if}
 
   <!-- Help -->
   <div>
@@ -184,7 +178,6 @@
     </div>
   </div>
 
-  {#if $isLoaded}
     {#if isVSCode}
       <div class="margin" />
       <EditorButtons />
@@ -233,7 +226,7 @@
         on:click={() => ($showSidemenu = !$showSidemenu)}
       />
     </div>
-  {/if}
+
 </nav>
 
 <style lang="postcss">

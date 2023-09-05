@@ -3,20 +3,26 @@
   Importa gli altri componenti e li dispone a schermo
   @Luca Fabbian - v1.0 */
   import {_} from 'svelte-i18n'
+  import { SvelteToast } from '@zerodevx/svelte-toast'
+
   import Dialogs from './components/Dialogs.svelte'
   import { dialog } from './components/Dialogs.svelte'
   import Alert from './components/dialogs/Alert.svelte'
   import Navbar  from './components/Navbar.svelte'
   import Editor  from './components/Editor.svelte'
   import Sidebar from './components/Sidebar.svelte'
-  import { bookIndex, isLoaded } from './javascript/new-book'
   import { handleShortcuts } from './javascript/shortcuts'
-  import { initError }from './javascript/editor'
   import { s } from './javascript/settings' 
   import manifest from '../package.json'
   import { isVSCode } from './javascript/vscode';
+  import { store } from './javascript/store';
+  import PluginPanel from './components/PluginPanel.svelte';
 
   const { theme } = s
+
+  let book = null
+  store.then( r => ({book} = r))
+
   
   // Change theme from dark to light and vice versa
   $: {
@@ -39,10 +45,12 @@
   // Change page title if the page is visited by a real user 
   // keep "Magebook" title for web engines
   $: { if(!(/bot|google|baidu|bing|msn|duckduckbot|teoma|slurp|yandex/i.test(navigator.userAgent))){
-    if($bookIndex && $bookIndex.properties.title){
-      document.title = $bookIndex.properties.title + " - Magebook"
+    if(book && $book.index.properties.title){
+      document.title = $book.index.properties.title + " - Magebook"
     }
   } }
+
+
   // Version popup
   const key = 'mage-version'
   if(!localStorage[key]){
@@ -72,22 +80,34 @@
 
 <svelte:window on:keydown={handleShortcuts}/>
 
-{#if !$isLoaded}
+{#if !book}
   <div class="loading-mask">
     <div class="dialog" style="text-align: center; margin-top: 10vh">
       <div class="spinner-1"></div>
-      <p style="color:white">{$initError}</p>
+      <p style="color:white">{'initerror'}</p>
     </div>
     
   </div>
 {/if}
+
+
 <Dialogs />
 <Navbar />
 <Sidebar />
+<PluginPanel/>
 <Editor />
+<SvelteToast/>
+
 
 
 <style>
+
+  :global(:root) {
+    --toastContainerTop: auto;
+    --toastContainerBottom: 2rem;
+    --toastBarBackground: red;
+  }
+
 
   :global(body, html) {
     margin: 0;
@@ -105,10 +125,10 @@
     width: 100vw;
     
     grid-template-rows: minmax(min-content, max-content) 1fr;
-    grid-template-columns: 1fr calc(20vw + 140px);
+    grid-template-columns: 1fr minmax(min-content, max-content) minmax(min-content, max-content);
     grid-template-areas: 
-      "navbar navbar"
-      "editor sidebar"
+      "navbar navbar pluginpanel"
+      "editor sidebar pluginpanel"
   }
   @media only screen and (max-width: 680px) {
     :global(body){
@@ -116,6 +136,10 @@
       grid-template-areas: 
       "navbar"
       "editor"
+    }
+
+    :global(.plugin-panel){
+      display: none;
     }
   }
   .loading-mask {

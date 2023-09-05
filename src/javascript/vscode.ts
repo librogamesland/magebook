@@ -1,10 +1,8 @@
-import { writable, derived, get } from "svelte/store"
-import { book, bookIndex } from "./new-book.js"
-import { initEditorLocal, cursorPosition, getEditor } from './editor.js'
+import { get } from 'svelte/store'
+import { store } from './store'
+import { initEditorLocal } from './init-editor.js'
 import { time, _ } from 'svelte-i18n'
 
-import md   from './formats/md.js'
-import xlgc from './formats/xlgc.js'
 import { EditorView } from "codemirror"
 import {undo, redo, historyCallbacks } from "./history"
 
@@ -12,7 +10,7 @@ import {undo, redo, historyCallbacks } from "./history"
 
 
 // APP MODE
-export const isVSCode    = window.ISVSCODE
+export const isVSCode    = window['ISVSCODE']
 
 // @ts-ignore
 export const vscode = isVSCode ? acquireVsCodeApi() : null;

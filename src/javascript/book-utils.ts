@@ -1,6 +1,9 @@
 
 import {isNatNumber, shuffleArray} from './utils'
 
+
+// GENERIC UTILITIES
+
 /* Return version of the key without forbidden chapters */
 export const sanitizeKey = (key : string) => key.replace(/[^a-z0-9]/gi,'')
 
@@ -17,7 +20,9 @@ export const generateChapterFullText = ({key, title = '', flags = [], group= '',
 
 
 
-export const indexBook = (bookText) => {
+// INDEX FUNCTION
+
+export const indexBook = (bookText : string) => {
   const result = {
     properties: {},
     chapters: new Map(),
@@ -132,13 +137,14 @@ export const indexBook = (bookText) => {
 
 
 
-export const extractIndexedBook = (bookText) => {
+export const extractIndexedBook = (bookText: string) => {
 
   const result = {
     properties: {},
     chapters: new Map(),
     linksToChapter: new Map(),
     groups: new Set(),
+    titlePage: '',
 
     ...indexBook(bookText)
   }
@@ -165,10 +171,68 @@ export const extractIndexedBook = (bookText) => {
 }
 
 
+// BOOK OBJECT/CLASS
+
+interface Book {
+  text: string
+  index: ReturnType<typeof indexBook>,
+}
+
+interface EditableBook extends Book {
+  set: (newText: string) => void
+  replace: (from: number, to: number, newText: string) => void
+  apply: (transformation: (book: this) => void) => void
+}
 
 
-export const firstAvaiableKey = (bookText)  => {
-  const chapters = extractIndexedBook(bookText).chapters
+export const bookHeadless = (initialText = '') => new class implements EditableBook {
+  #cachedIndex = null
+  #cachedExtractedIndex = null
+  #text = initialText
+  steps : Array<QueueStep> = []
+
+  set(newText : string){
+      this.steps.push({type: 's', newText})
+      this.#text = newText
+      this.#cachedIndex = null
+  }
+
+  get text() { return this.#text}
+  get index() {
+    if(this.#cachedIndex === null) this.#cachedIndex = indexBook(this.#text)
+    return this.#cachedIndex
+  }
+
+  get extractedIndex() {
+    if(this.#cachedExtractedIndex === null) this.#cachedExtractedIndex = extractIndexedBook(this.#text)
+    return this.#cachedExtractedIndex
+  }
+
+  replace(from : number, to : number, newText: string){
+    this.steps.push({type: 'r', from, to, newText})
+    this.#text = this.#text.substring(0, from) + newText + this.#text.substring(to, this.#text.length)
+    this.#cachedIndex = null
+    this.#cachedExtractedIndex = null
+  }
+
+
+  apply(transformation : (book : this) => void ){
+    transformation(this)
+  }
+}
+
+
+export const bookify = (bookOrText : Book | string) : Book => {
+  if(typeof bookOrText !== 'string') return bookOrText
+  return bookHeadless(bookOrText)
+}
+
+
+// UTILIES FOR BOOK OBJECT
+
+export const firstAvaiableKey = (bookOrText : Book | string)  => {
+  const book = bookify(bookOrText)
+  const chapters = book.index.chapters
 
   for(let i = 1; i < 10000; i++){
     if(!chapters.has(String(i))) return String(i)
@@ -176,6 +240,26 @@ export const firstAvaiableKey = (bookText)  => {
 
   return String(10000)
 }
+
+
+export const getRightOrderKey = (bookOrText : Book | string, key, $currentChapterKey) => {
+  const $bookIndex = bookify(bookOrText).index
+
+  if(!isNatNumber(key)) return $bookIndex.chapters.get(String($currentChapterKey)).contentEnd
+
+  const n =  Math.floor(key)
+  for(let i = n; i >= 0; i--){
+    if($bookIndex.chapters.has(String(i))) return $bookIndex.chapters.get(String(i)).contentEnd
+  }
+
+  for(let i = n; i < 10000; i++){
+    if($bookIndex.chapters.has(String(i))) return $bookIndex.chapters.get(String(i)).start - 1
+  }
+  return $bookIndex.chapters.get(String($currentChapterKey))
+}
+
+
+
 
 
 export const remapBook = (indexedBook, chapterMap : Map<string, string>) => {
@@ -275,3 +359,7 @@ export const sortBook = (bookText) => {
 
   return remapBook(indexedBook,  new Map (toSort.map( key => [String(key), String(key)])))
 }
+
+
+type QueueStep = { type: string, newText: string, from?: number, to?: number }
+

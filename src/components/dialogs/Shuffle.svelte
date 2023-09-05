@@ -1,19 +1,21 @@
 <script lang="ts">
   import { _ } from "svelte-i18n";
   import { tick } from "svelte";
-  import { book, bookIndex } from '../../javascript/new-book.js'
+  import { store } from '../../javascript/store'
   import { shuffleBook } from '../../javascript/book-utils'
   import { session } from '../../javascript/database.js'
   import { download } from '../../javascript/file.js'
   import { isFirebase } from '../../javascript/database.js'
   import { isVSCode } from '../../javascript/vscode'
-  import { getEditor } from '../../javascript/editor.js'
 
   import death from '../../assets/img/flags/death.png'
   import final from '../../assets/img/flags/final.png'
   import fixed from '../../assets/img/flags/fixed.png'
 
   let flagImgs = { death, final, fixed }
+
+  let book = null, currentChapterKey = null, currentChapterFullTitle = null, editor = null
+  store.then( r => ({book, currentChapterKey, currentChapterFullTitle, editor} = r))
 
 
   export let params;
@@ -30,7 +32,7 @@
   }
 
   let selectedGroup = 'allgroupidtag'
-  $: groups = [...$bookIndex.groups]
+  $: groups = !book ? [] : [...$book.index.groups]
 
   $: {
     if(selectedGroup != 'allgroupidtag'){
@@ -45,13 +47,12 @@
     const selectedFlags = Object.keys(flags).filter((key) => flags[key]);
     const filter = groupFilter.split(',').map( s => s.trim()).filter(s => s)
 
-    book.flush()
 
     const shuffled = shuffleBook($book, {selectedFlags, filter})
 
     if($isFirebase || isVSCode){
-      getEditor().dispatch({
-        changes: {from: 0, to: getEditor().state.doc.length, insert: shuffled}
+      editor.dispatch({
+        changes: {from: 0, to: editor.state.doc.length, insert: shuffled}
       })
 
       callback(false)
@@ -61,7 +62,7 @@
       data: {
         book: shuffled,
         cursor: {row: 0, column: 0},
-        title: $bookIndex.properties.title
+        title: book.index.properties.title
       }
     })
   }
@@ -89,7 +90,7 @@
         class:selected={flags[flag]}
         on:click={() => (flags[flag] = !flags[flag])}
       >
-        <img alt={flag} src={flagImgs[flag]} />
+        <img alt={flag} src={flagImgs[flag]} class="mx-auto"/>
       </div>
     {/each}
   </div>

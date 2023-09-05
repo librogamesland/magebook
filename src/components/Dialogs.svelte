@@ -118,6 +118,10 @@
     }
   }
 
+  :global(.dialog-container h3) {
+    @apply text-2xl font-bold pt-4 pb-2;
+  }
+
   :global(.dialog-container button.ok, .dialog-container input[type=submit].ok, .dialog-container button.cancel, .dialog-container button.error) {
     border: 0;
     box-sizing: border-box;

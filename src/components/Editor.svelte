@@ -2,12 +2,9 @@
   import { _ } from 'svelte-i18n'
 	import { onMount } from 'svelte'
   import { session } from '../javascript/database.js'
-  import { currentChapterFullTitle, getEditor } from '../javascript/editor.js'
 
-  import { showSidemenu, isSynced } from '../javascript/editor'
+  import { showSidemenu, isSynced, store } from '../javascript/store.js'
   import { editorComponentID } from '../javascript/codemirror';
-  import { firstAvaiableKey, addChapter, getRightOrderKey} from '../javascript/actions'
-  import { book } from '../javascript/new-book.js'
 
   import { isVSCode, loadVSSession } from '../javascript/vscode.js';
 
@@ -15,6 +12,10 @@
   
   import {s} from '../javascript/settings'
   const {font, fontSize, pageWidth, pageZoom, titleHighlight, justifyText, lineMargin, lineSpacing, countChars} = s
+
+  let book = null, currentChapterFullTitle = null
+  store.then( r => ({book, currentChapterFullTitle} = r))
+
 
   onMount(() => {
     if(!isVSCode){
@@ -41,21 +42,24 @@
  }>
 
   {#if !isVSCode}
+
+      
   <div class="toolbar">
-    <h1 class="only-desktop" on:click={ () => $showSidemenu = !$showSidemenu} title={$currentChapterFullTitle}>
+    <h1 class="only-desktop" on:click={ () => $showSidemenu = !$showSidemenu} title={currentChapterFullTitle && $currentChapterFullTitle}>
       {$currentChapterFullTitle}
     </h1>
   
     <EditorButtons></EditorButtons>
   </div>
-  {/if}
+{/if}
+
 
   <div class="textarea" id={editorComponentID}>
     
   </div>
   <div class="margin">
-    {#if String($countChars) === '2'}
-    <span class="chars-count">{($book || "").length + ' ' + $_('editor.chars')}</span>
+    {#if book && String($countChars) === '2'}
+    <span class="chars-count">{($book.text || "").length + ' ' + $_('editor.chars')}</span>
     {/if}
     {#if $isSynced === true}
       <i class="icon-ok" style="color: green;"></i>

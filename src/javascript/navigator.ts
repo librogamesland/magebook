@@ -1,9 +1,8 @@
 import { get, writable } from 'svelte/store'
-import { getEditor, currentChapterKey, showSidemenu } from './editor.js'
-import { book, bookIndex, isLoaded } from './new-book.js'
-import { addChapter, generateChapterText } from './actions.js'
+import { store, showSidemenu } from './store'
 import { EditorView } from  'codemirror'
 import { StateEffect } from "@codemirror/state"
+import { generateChapterFullText, getRightOrderKey } from './book-utils';
 
 
 export const subviewUpdateEffect = StateEffect.define<string>();
@@ -11,17 +10,24 @@ export const subviewUpdateEffect = StateEffect.define<string>();
 const chapterHistory = []
 const historyCanGoBack = writable(false) 
 
-const goToChapter = (key, updateHistory = true) => {
-  const editor = getEditor()
-  const $bookIndex = get(bookIndex)
+const goToChapter = async(key, updateHistory = true) => {
+  const { book, currentChapterKey, editor } = await store
   const $currentChapterKey = get(currentChapterKey)
 
-  if(! $bookIndex.chapters.has(key)) {
-    addChapter(key, generateChapterText({
+
+  const addChapter = (key, text) => {
+    const index = editor.state.doc.line(getRightOrderKey(book, key, currentChapterKey) + 1).to
+    editor.dispatch({
+      changes: { from: index, to: index, insert: '\n' + text },
+    })
+  }
+
+  if(! book.index.chapters.has(key)) {
+
+    addChapter(key, generateChapterFullText({
       key,
-      group: $currentChapterKey ? $bookIndex.chapters.get($currentChapterKey).group : ''
+      group: $currentChapterKey ? book.index.chapters.get($currentChapterKey).group : ''
     }))
-    book.flush()
   }
   if(updateHistory){
     chapterHistory.push($currentChapterKey)
@@ -34,14 +40,14 @@ const goToChapter = (key, updateHistory = true) => {
 
   editor.dispatch({
     selection: {anchor: editor.state.doc.line(
-      $bookIndex.chapters.get(key).contentEnd + 1
+      book.index.chapters.get(key).contentEnd + 1
     ).to},
     effects: [
       subviewUpdateEffect.of("subviewUpdate"),
 
       EditorView.scrollIntoView(
         editor.state.doc.line(
-          $bookIndex.chapters.get(key).contentStart + 1
+          book.index.chapters.get(key).contentStart + 1
         ).to,
         { y: 'start', yMargin: 20, } 
       )

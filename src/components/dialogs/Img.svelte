@@ -4,7 +4,7 @@
   import { _ } from 'svelte-i18n'
   import { onDestroy } from 'svelte';
   import { tick } from 'svelte'
-  import { bookIndex } from '../../javascript/new-book';
+  import { store } from '../../javascript/store';
   import { isVSCode, vscode } from '../../javascript/vscode';
   import {s} from '../../javascript/settings'
 
@@ -12,6 +12,10 @@
 
   export let params
   export let callback
+
+
+  let book = null
+  store.then( r => ({book} = r))
 
   let loaded = false
   let waiting = false
@@ -72,7 +76,7 @@
             `data:image/svg+xml;base64,${encode(src)}`
           )
 
-          element.setAttribute('download', ($bookIndex.properties.title || 'graph') + '.svg')
+          element.setAttribute('download', (book.index.properties.title || 'graph') + '.svg')
           element.style.display = 'none'
           document.body.appendChild(element)
           element.click()

@@ -11,7 +11,7 @@ import html from './formats/html.js'
 import advanced from './formats/advanced.js'
 
 
-import { extractIndexedBook } from './book-utils.js'
+import { bookify, extractIndexedBook } from './book-utils.js'
 import {disableShortLinks} from './encoder.js'
 import {session} from './database.js'
 import {s} from './settings'
@@ -63,13 +63,14 @@ const open = (elem) => {
 
 // Download file
 const download = async(formatKey, book) => {
+  const {text, index} = bookify(book)
 
   const format = formats[formatKey]
-  const indexedBook = extractIndexedBook(book)
+  const indexedBook = index
  
 
   disableShortLinks(indexedBook.properties.disableShortLinks && indexedBook.properties.disableShortLinks.trim() == "true")
-  const { encodedBook, mimetype, extension, blob = null } = await Promise.resolve(format.encode(book))
+  const { encodedBook, mimetype, extension, blob = null } = await Promise.resolve(format.encode(text))
 
 
   const suffix = `-${dateFormat.asString(get(s.dateFormat), new Date())}.${extension}`

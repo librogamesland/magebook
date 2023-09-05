@@ -27,7 +27,7 @@ const generateGraph = (book) => {
   const indexedBook = extractIndexedBook(book)
 
   let s = `digraph{
-    graph [fontname="arial", fontsize=10]; 
+    graph [fontname="arial", fontsize=10];
     node  [fontname="arial", fontsize=12, style="rounded,filled", shape=box];
     edge  [fontname="arial", fontsize=12];
   `
@@ -52,9 +52,9 @@ const generateGraph = (book) => {
   let clusterNumber = 0
   for(let group of indexedBook.groups){
     s+= `
-    
+
     subgraph cluster${clusterNumber++}{
-      graph [fontname="arial", fontsize=10]; 
+      graph [fontname="arial", fontsize=10];
       node  [fontname="arial", fontsize=12, style="rounded,filled", shape=box];
       edge  [fontname="arial", fontsize=12];
       style=filled

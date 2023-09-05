@@ -1,7 +1,7 @@
 import { writable } from 'svelte/store';
 
 
-export const debounced = (millis, defaultValue = null)  => {
+export const debouncable = (millis, defaultValue = null)  => {
   let timer
 	let value = defaultValue
   const { subscribe, set, update } = writable(defaultValue); 
