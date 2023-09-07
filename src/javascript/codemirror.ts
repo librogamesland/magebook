@@ -35,12 +35,24 @@ const flag = Decoration.mark({class: "cm-mage-flag"})
 const HTMLi = Decoration.mark({class: "cm-mage-HTMLi"})
 const HTMLb = Decoration.mark({class: "cm-mage-HTMLb"})
 const HTMLu = Decoration.mark({class: "cm-mage-HTMLu"})
+const property = Decoration.mark({class: "cm-mage-property"})
 
 
 
 const getChapterFromLink = (rawText : string) => rawText.includes('(#')
     ? rawText.substring(rawText.indexOf('(#') + 2, rawText.lastIndexOf(')')).trim()
     : rawText.substring(rawText.indexOf('[') + 1, rawText.indexOf(']')).trim()
+
+
+const applyAll = (rawText: string, re: RegExp, deco: Decoration, decos, node) => {
+  let reMatch: RegExpExecArray;
+  do {
+      reMatch = re.exec(rawText);
+      if (reMatch) {
+        decos.push(deco.range(node.from + reMatch.index, node.from + reMatch.index + reMatch[1].length))
+      }
+  } while (reMatch);
+}
 
 
 /* Iterate through visible links and mark them as working/broken */
@@ -50,64 +62,71 @@ const getLinkDecorations = (view: EditorView) => {
 
   let decos = []
 
-
+  let insideHeader1 = false
   for (let {from, to} of view.visibleRanges) {
     syntaxTree(view.state).iterate({
       from, to,
       enter: (node) => {
-        if(node.name == 'Link'){
+        if (node.name == 'Link') {
           const rawText = view.state.doc.sliceString(node.from, node.to)
 
-          if(rawText === '[group]'){
+          if (rawText === '[group]') {
             decos.push(group.range(node.from, node.to))
-          }else if($bookIndex.properties['disableShortLinks'] == 'true' ){
-            if(rawText.includes('(#')){
+          } else if ($bookIndex.properties['disableShortLinks'] == 'true') {
+            if (rawText.includes('(#')) {
               const text = getChapterFromLink(rawText)
               const link = $bookIndex.chapters.has(text) ? workingLink : brokenLink
               decos.push(link.range(node.from, node.to))
             }
-          }else{
+          } else {
             const splitIndex = rawText.indexOf('][')
-            if(splitIndex != -1 ){
+            if (splitIndex != -1) {
               const text1 = getChapterFromLink(rawText.substring(0, splitIndex + 1))
               const link1 = $bookIndex.chapters.has(text1) ? workingLink : brokenLink
               decos.push(link1.range(node.from, node.from + splitIndex + 1))
 
               const text2 = getChapterFromLink(rawText.substring(splitIndex + 1))
               const link2 = $bookIndex.chapters.has(text2) ? workingLink : brokenLink
-              decos.push(link2.range(node.from  + splitIndex + 1, node.to))
+              decos.push(link2.range(node.from + splitIndex + 1, node.to))
 
-            }else{
+            } else {
               const text = getChapterFromLink(rawText)
               const link = $bookIndex.chapters.has(text) ? workingLink : brokenLink
               decos.push(link.range(node.from, node.to))
             }
           }
-        }else if(node.name == 'ATXHeading1'){
+        } else if (node.name == 'ATXHeading1') {
+          insideHeader1 = true;
           decos.push(bookTitle.range(node.from, node.to))
-        }else if(node.name == 'ATXHeading3'){
+        } else if (node.name == 'ATXHeading3') {
+          insideHeader1 = false;
           decos.push(heading.range(node.from, node.to))
-        }else if(node.name == 'InlineCode' || node.name == 'FencedCode'){
+        } else if (node.name == 'Paragraph') {
+          if (insideHeader1) {
+            const rawText = view.state.doc.sliceString(node.from, node.to)
+            applyAll(rawText, /([^:]+:).*(?:\n|$)/gm, property, decos, node)
+          }
+        } else if (node.name == 'InlineCode' || node.name == 'FencedCode') {
           decos.push(code.range(node.from, node.to))
-        }else if(node.name == 'Image'){
+        } else if (node.name == 'Image') {
           const rawText = view.state.doc.sliceString(node.from, node.to)
-          if(rawText.includes('][flag-')){
+          if (rawText.includes('][flag-')) {
             decos.push(flag.range(node.from, node.to))
           }
-        }else if(node.name == 'HTMLTag'){
+        } else if (node.name == 'HTMLTag') {
           const rawText = view.state.doc.sliceString(node.from, node.to)
-          if(rawText == '<i>' || rawText == '</i>'){
+          if (rawText == '<i>' || rawText == '</i>') {
             decos.push(HTMLi.range(node.from, node.to))
-          }else if(rawText == '<b>' || rawText == '</b>'){
+          } else if (rawText == '<b>' || rawText == '</b>') {
             decos.push(HTMLb.range(node.from, node.to))
-          }else if(rawText == '<u>' || rawText == '</u>'){
+          } else if (rawText == '<u>' || rawText == '</u>') {
             decos.push(HTMLu.range(node.from, node.to))
           }
         }
       }
     })
   }
-  return  Decoration.set(decos)
+  return Decoration.set(decos)
 }
 
 

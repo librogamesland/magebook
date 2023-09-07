@@ -12,7 +12,7 @@
   import { isVSCode, loadVSSession } from '../javascript/vscode.js';
 
   import EditorButtons from './EditorButtons.svelte';
-  
+
   import {s} from '../javascript/settings'
   const {font, fontSize, pageWidth, pageZoom, titleHighlight, justifyText, lineMargin, lineSpacing, countChars} = s
 
@@ -45,13 +45,13 @@
     <h1 class="only-desktop" on:click={ () => $showSidemenu = !$showSidemenu} title={$currentChapterFullTitle}>
       {$currentChapterFullTitle}
     </h1>
-  
+
     <EditorButtons></EditorButtons>
   </div>
   {/if}
 
   <div class="textarea" id={editorComponentID}>
-    
+
   </div>
   <div class="margin">
     {#if String($countChars) === '2'}
@@ -134,21 +134,21 @@
     display: grid;
     grid-template-columns: 100%;
     grid-template-rows: auto 1fr 16px;
-    grid-template-areas: 
+    grid-template-areas:
       "toolbar"
       "textarea"
       "margin";
   }
   :global(.vscode) main {
     grid-template-rows: 1fr;
-    grid-template-areas: 
+    grid-template-areas:
       "textarea";
   }
 
   .toolbar {
     @apply z-[50];
     background-color: #eee;
-    
+
     box-shadow: 0 4px 20px rgb(0 0 0 / 25%);
     display: flex;
     flex-direction: row;
@@ -193,7 +193,7 @@
     display: flex;
     align-items: flex-end;
     justify-content: right;
-    
+
     background-color: #fff;
     text-align: right;
     overflow: hidden;
@@ -221,7 +221,7 @@
       padding-right: 0 !important;
       text-align: center;
     }
-    
+
     .toolbar >  :global(div:first-of-type) {
       border: 0 !important;
     }
@@ -260,6 +260,10 @@
   :global(#main-editor .cm-mage-code *, #main-editor .cm-mage-code, #main-editor .cm-mage-group, #main-editor .cm-mage-flag){
     color: #00a64a !important;
     font-family: monospace !important;
+  }
+
+  :global(#main-editor .cm-mage-property){
+    color: #8B85C1 !important;
   }
 
   :global(#main-editor .tok-strong, #main-editor .cm-mage-HTMLb){
@@ -318,7 +322,7 @@
 :global(.mage-theme-dark .toolbar > div){
   color: rgb(213 107 255) !important;
   border-left: #292929 solid 1px !important;
-}  
+}
 
 
 :global(.mage-theme-dark #main-editor .cm-mage-heading){
@@ -329,7 +333,7 @@
 
 :global(.mage-theme-dark #main-editor .tok-heading){
     color: #fff !important;
-}  
+}
 
 
 
@@ -341,7 +345,7 @@
 :global(.mage-theme-dark #main-editor .cm-mage-brokenlink, .mage-theme-dark #main-editor .cm-mage-brokenlink *){
   color: rgb(254 10 10) !important;
   background-color: rgb(53 0 0) !important;
-  
+
 }
 
 :global(
@@ -521,7 +525,7 @@
   user-select: none;
   pointer-events:none;
 
-  
+
 }
 
 :global(.cm-subview.cm-line){
