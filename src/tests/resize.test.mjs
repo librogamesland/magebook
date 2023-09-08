@@ -39,7 +39,7 @@ describe('ui resizing', async () => {
     const text = await page.evaluate(() => document.body.textContent);
     await wait(1000)
     //expect(text).toBe('Hello World');
-  })  
+  })
 
 
   // Check if elements are on the page at given viewport size
@@ -104,7 +104,7 @@ describe('ui resizing', async () => {
     expect(await existsVisible(page, 'aside')).toBeTruthy();
     expect(await existsVisible(page, '.mask.foreground')).toBeTruthy();
 
-    await clickOn(page, 'aside ul.chapters li:nth-child(2)');
+    await clickOn(page, 'aside ul.chapters a:nth-child(2)');
     await wait(1000)
     expect(await existsVisible(page, 'nav .dropbtn.icon-resize-full')).toBeFalsy();
     expect(await existsVisible(page, 'nav .dropbtn.icon-moon')).toBeFalsy();
@@ -135,5 +135,5 @@ describe('ui resizing', async () => {
 
   }, 15000)
 
-  
+
 })

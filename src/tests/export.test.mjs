@@ -20,8 +20,8 @@ describe('export working', async () => {
     dirPath = path
     dirClean = cleanup
     server = await preview()
-    //browser = await puppeteer.launch({headless: 'new'});
-    browser = await puppeteer.launch({headless: false});
+    browser = await puppeteer.launch({headless: 'new'});
+    //browser = await puppeteer.launch({headless: false});
   });
 
   beforeEach(async () => {
@@ -34,7 +34,7 @@ describe('export working', async () => {
     });
 
 
-    await page.setViewport({ width: 1920, height: 1080 }); 
+    await page.setViewport({ width: 1920, height: 1080 });
     await page.goto(server.resolvedUrls.local[0]);
     //await page.goto('https://magebook.github.io');
     await wait(500)
@@ -85,9 +85,9 @@ describe('export working', async () => {
       'pdf': 0,
       'fodt': 1,
       'xlgc': 1,
-    })  
+    })
     await wait(2000)
   }, 30000)
 
-  
+
 })
