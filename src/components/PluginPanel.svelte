@@ -1,9 +1,9 @@
 <script lang="ts">
   import { store } from "../javascript/store";
+  import { plugins } from  'mage-plugins';
   import { portrait } from "../javascript/utils";
   import { showPluginPanel } from "../javascript/store";
-  if (!window.plugins) window.plugins = [];
-  const plugins = window.plugins.map((f) => f());
+
   if(plugins.length > 0) showPluginPanel.set(true)
 
 
@@ -37,7 +37,6 @@
 			h = Math.min(startH + y, 0)
 		}else{
 			const x = ("touches" in e) ? e.changedTouches[0].pageX : e.x
-      console.log(startW - x, window.innerWidth * 0.35)
 			newpreferredW = w = Math.min(Math.max(startW - x, 0), window.innerWidth * 0.45)
 		}
 	}
@@ -81,7 +80,9 @@
   </div>
   <div class="overflow-y-auto" style={`width: calc(${w}px)`}>
     {#each plugins as plugin}
-      <svelte:component this={plugin.widget} {store} {w} {tab}/>
+      {#if plugin.widget}
+        <svelte:component this={plugin.widget} {store} {w} {tab}/>
+      {/if}
     {/each}
   </div>
   <div class="bg-slate-500">
@@ -96,7 +97,7 @@
           }
           tab = pluginTab.id
           if(w < 10) w = preferredW
-        
+
         }}>
           <div class="text-slate-300 text-xs font-bold">{pluginTab.label}</div>
         </div>

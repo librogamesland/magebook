@@ -13,13 +13,12 @@
   import { dialog } from "./Dialogs.svelte";
   import About from "./dialogs/About.svelte";
   import Confirm from "./dialogs/Confirm.svelte";
-  import Img from "./dialogs/Img.svelte";
+  import Graph from "./dialogs/Graph.svelte";
   import Shuffle from "./dialogs/Shuffle.svelte";
   import NewBook from "./dialogs/NewBook.svelte";
   import NewFirebook from "./dialogs/NewFirebook.svelte";
   import Recover from "./dialogs/Recover.svelte";
   import Settings from "./dialogs/Settings.svelte";
-  import Import from "./dialogs/Import.svelte";
   import EditorButtons from "./EditorButtons.svelte";
 
   const { theme } = s;
@@ -27,7 +26,7 @@
   let book = null
   store.then( r => ({book} = r))
 
-  
+
   if (!isVSCode) {
     ctrlShortcuts({
       S: () => download("md", book),
@@ -45,8 +44,8 @@
 
 <nav class={`select-none flex flex-row box-border text-white bg-zinc-800 ${$showSidemenu ? "display" : "display"}`}
   style="grid-area: navbar;">
-    
-  
+
+
   {#if !isVSCode}
     <div>
       <h1 class="nav-element">{$_("navbar.file.title")}</h1>
@@ -78,7 +77,7 @@
     <div>
       <h1 class="nav-element">{$_("navbar.book.title")}</h1>
       <div class="content">
-        <p on:click={() => dialog(Img, () => graphToImg(book.text))}>
+        <p on:click={() => dialog(Graph, () => graphToImg(book))}>
           {$_("navbar.book.graph")}
         </p>
         <p on:click={() => dialog(Shuffle)}>{$_("navbar.book.shuffle")}</p>
@@ -91,7 +90,7 @@
                 $_("dialogs.chapter.sort"),
                 true
               )
-            ) book.set(sortBook(book));       
+            ) book.set(sortBook(book));
           }}
         >
           {$_("navbar.book.sort")}
@@ -113,7 +112,7 @@
 
         {#if isVSCode}
           <!--<hr>
-      <p on:click={() => dialog(NewFirebook)}>{$_('navbar.file.newFire')}</p>   
+      <p on:click={() => dialog(NewFirebook)}>{$_('navbar.file.newFire')}</p>
       -->
         {/if}
       </div>

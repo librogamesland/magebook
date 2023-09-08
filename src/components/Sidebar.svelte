@@ -8,13 +8,8 @@
 
 
   import ActionButtons from './ActionButtons.svelte'
+  import { flagURL, urlOfChapter } from '../javascript/urls';
 
-  import death from '../assets/img/flags/death.png'
-  import fixed from '../assets/img/flags/fixed.png'
-  import final from '../assets/img/flags/final.png'
-  import genericFlag from '../assets/img/flags/generic.png'
-
-  const flags = {death, final, fixed }
 
   let book = null, currentChapterKey = null, currentChapterFullTitle = null
   store.then( r => ({book, currentChapterKey, currentChapterFullTitle} = r))
@@ -140,6 +135,14 @@
   // Regex per matchare i link in markdown
   $: linksHere = book === null ? [] : [... ($book.index.linksToChapter.get($currentChapterKey) || new Set())]
 
+
+  let currentURL = location.href
+  window.addEventListener('hashchange', () => {
+    currentURL = location.href
+  }, false);
+
+
+
 </script>
 
 <svelte:window bind:innerWidth={windowW} />
@@ -152,7 +155,7 @@
 
 
 <aside class={($showSidemenu ? 'foreground' : '') + ' flex flex-row'} style={`width: ${w}px`}>
-  <div class="sidebar-resizer bg-[#ccc] hover:bg-zinc-500 border-l-2 flex-initial w-[6px] min-w-[6px] flex-shrink-0 h-full cursor-col-resize"
+  <div class="sidebar-resizer bg-[#ccc] dark:!bg-[#272727] hover:bg-zinc-500 border-l-2 flex-initial w-[6px] min-w-[6px] flex-shrink-0 h-full cursor-col-resize"
   on:touchstart|preventDefault|stopPropagation={handleResize} on:mousedown|preventDefault|stopPropagation={handleResize}>
   </div>
   <div class={"max-w-[400px] pb-5 mx-auto h-full flex flex-col w-full overflow-hidden " + (( w > 150 || windowW < 680) ? 'px-8' : 'px-3')} >
@@ -172,42 +175,44 @@
     <ActionButtons {windowW} {w}/>
     <ul class="chapters">
       {#each filterChapters as [key, chapter]}
-      <li
+      <a
+        href={currentURL + '&c=' + encodeURIComponent(key)}
         class:selected={key === $currentChapterKey}
-        on:click={() => goToChapter(key)}>
+        on:click|preventDefault={() => goToChapter(key)}>
         {#if w > 200 || windowW < 680}
 
         {key}
 
         <b>{chapter.title || ''}</b>
         {#each chapter.flags || [] as flag}
-          <img src={flags[flag] ?? genericFlag} alt={flag}/>
+          <img class="inline-block w-6 h-6" src={flagURL(flag, book)} alt={flag}/>
         {/each}
         <span class="errors">{@html chapterErrors(key, chapter)} </span>
         <span class="errors">{@html brokenLinks(key, chapter)} </span>
         {:else}
           <div class="text-center w-full mx-auto">{key}</div>
         {/if}
-      </li>
+      </a>
       {/each}
     </ul>
     <h1>{$_("sidemenu.linkshere")} {$currentChapterKey}:</h1>
     <ul class="links-here">
       {#each linksHere as key}
-      <li
+      <a
+        href={currentURL + '&c=' + encodeURIComponent(key)}
         class:selected={key === $currentChapterKey}
-        on:click={() => goToChapter(key)}>
+        on:click|preventDefault={() => goToChapter(key)}>
         {#if w > 200 || windowW < 680}
 
         {key}
         <b>{$book.index.chapters.get(key).title || ''}</b>
         {#each $book.index.chapters.get(key).flags || [] as flag}
-          <img src={flags[flag] ?? ?? genericFlag} alt={flag}/>
+        <img class="inline-block w-6 h-6" src={flagURL(flag, book)} alt={flag}/>
         {/each}
         {:else}
           <div class="text-center w-full mx-auto">{key}</div>
         {/if}
-      </li>
+      </a>
       {/each}
     </ul>
     {/if}
@@ -284,26 +289,27 @@
     flex-grow: 1;
   }
 
-  li {
+  a {
     cursor: pointer;
     box-sizing: border-box;
     padding: 0.5rem 1rem;
     margin: 0;
     clear:both;
     overflow: auto;
+    display: block;
   }
 
 
 
-  li:nth-child(even) {
+  a:nth-child(even) {
     background-color: rgb(245, 245, 245);
   }
 
-  li:hover {
+  a:hover {
     background-color: #ddd;
   }
 
-  li.selected {
+  a.selected {
     background-color: #64b3e1;
   }
 
@@ -370,42 +376,45 @@
   }
 
   @media (any-pointer: coarse) {
-    li {
+    a {
       padding: 1.1rem 0.6rem;
     }
   }
 
 
-  :global(.mage-theme-dark aside){
+  :global(.mage-theme-dark) aside{
     background-color: #272727 !important;
     color: #bbb !important;
   }
 
-  :global(.mage-theme-dark aside h1){
+  :global(.mage-theme-dark) aside h1{
     background-color: #272727 !important;
     color: #bbb !important;
   }
 
-  :global(.mage-theme-dark aside ul){
+  :global(.mage-theme-dark) aside ul{
     background-color: #161616 !important;
   }
 
-  :global(.mage-theme-dark aside ul li:nth-child(even) ){
+  :global(.mage-theme-dark) aside ul a:nth-child(even) {
     background-color: #000 !important;
   }
 
-  :global(.mage-theme-dark aside ul li b){
+  :global(.mage-theme-dark) aside ul a b{
     color: #fff !important;
   }
 
-  :global(.mage-theme-dark aside ul li:hover ){
+  :global(.mage-theme-dark) aside ul a:hover {
     background-color: #444 !important;
   }
 
-  :global(.mage-theme-dark aside ul li.selected ){
+  :global(.mage-theme-dark) aside ul a.selected{
     background-color: #2b356b !important;
   }
 
 
+  :global(.mage-theme-dark) .sidebar-resizer{
+
+  }
 
 </style>

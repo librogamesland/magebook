@@ -14,7 +14,10 @@ import it from './localizations/it.toml'
 const locale = getLocaleFromNavigator().split('-')[0];
 addMessages('en', en)
 addMessages('it', it)
-init({ fallbackLocale: 'en', initialLocale: locale })  
+
+addMessages('en', { ciao: 'hello'})
+
+init({ fallbackLocale: 'en', initialLocale: locale })
 
 
 

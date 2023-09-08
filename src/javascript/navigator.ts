@@ -8,7 +8,7 @@ import { generateChapterFullText, getRightOrderKey } from './book-utils';
 export const subviewUpdateEffect = StateEffect.define<string>();
 
 const chapterHistory = []
-const historyCanGoBack = writable(false) 
+const historyCanGoBack = writable(false)
 
 const goToChapter = async(key, updateHistory = true) => {
   const { book, currentChapterKey, editor } = await store
@@ -16,7 +16,7 @@ const goToChapter = async(key, updateHistory = true) => {
 
 
   const addChapter = (key, text) => {
-    const index = editor.state.doc.line(getRightOrderKey(book, key, currentChapterKey) + 1).to
+    const index = editor.state.doc.line(getRightOrderKey(book, key, $currentChapterKey) + 1).to
     editor.dispatch({
       changes: { from: index, to: index, insert: '\n' + text },
     })
@@ -33,10 +33,10 @@ const goToChapter = async(key, updateHistory = true) => {
     chapterHistory.push($currentChapterKey)
     historyCanGoBack.set(true)
   }
-  
+
   showSidemenu.set(false)
 
-  
+
 
   editor.dispatch({
     selection: {anchor: editor.state.doc.line(
@@ -49,11 +49,10 @@ const goToChapter = async(key, updateHistory = true) => {
         editor.state.doc.line(
           book.index.chapters.get(key).contentStart + 1
         ).to,
-        { y: 'start', yMargin: 20, } 
+        { y: 'start', yMargin: 20, }
       )
     ]
   })
-
 
 
 

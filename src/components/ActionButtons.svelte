@@ -73,7 +73,7 @@
     if (!key) return
 
     if(key !== cKey){
-      let text = $book.replace(/\[([^\[]*)\](\(\s*#(\w+)\s*\))/g, (...all) => `[${all[1]}](#${
+      let text = $book.text.replace(/\[([^\[]*)\](\(\s*#(\w+)\s*\))/g, (...all) => `[${all[1]}](#${
         all[3] === cKey ? key  : all[3]
       })`)
 
@@ -118,7 +118,6 @@
       changes: { from: start, to: end, insert: newContent },
     })
 
-    book.flush()
     goToChapter(key)
 
     $showSidemenu = false

@@ -7,6 +7,7 @@ import 'firebase/compat/database'
 import Firepad from '@lucafabbian/firepad'
 import { get } from 'svelte/store';
 import { _ } from 'svelte-i18n';
+import { toast } from '@zerodevx/svelte-toast';
 
 
 
@@ -32,7 +33,7 @@ const initEditorFirebase = (config) => {
 
     window['db'] = database
 
-  
+
 
     //// Create Firepad.
     let firepad = Firepad.fromCodeMirror6(database.ref(config.book), editor, {
@@ -41,12 +42,15 @@ const initEditorFirebase = (config) => {
     });
 
     firepad.on('ready', function() {
-      
+      resolveInitData({editor})
     });
 
     firepad.on('synced', (newValue) => isSynced.set(newValue ? true : false));
-    
+
   }catch(e){
+    toast.push('Error: ' + e.toString())
+
+    console.log(e)
       // TODO THROW EXCEPTION
   }
 

@@ -2,8 +2,8 @@
   import { writable } from 'svelte/store'
 
   /* Dialogs params & state
-  
-  
+
+
   */
   const dialogStore = writable({})
   const lockStore   = writable(false)
@@ -37,7 +37,7 @@
 
 
     await tick();
-    
+
     const button = document.querySelector('button.ok')
     if(button) button.focus()
   })
@@ -99,7 +99,7 @@
     max-width: calc(100vw - 30px);
     background-color: #fff;
     opacity: 1;
-    margin-bottom: 80px;
+    margin-bottom: 3vh;
     margin-left: 12px;
     margin-right: 12px;
   }

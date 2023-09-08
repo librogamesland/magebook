@@ -7,6 +7,9 @@
   export let params
   export let callback
 
+  let book = null
+  store.then( r => ({book} = r))
+
   let title, text
   $: [title, text, saveCopy] = $params
 </script>
@@ -16,7 +19,7 @@
   <p>{text}</p>
   <button class="ok" on:click={() => callback(true)}>{$_('dialogs.ok')}</button>
   {#if saveCopy}
-  <button class="cancel" on:click={() => download('md', book.flush())}>{$_('dialogs.shuffle.savecopy')}</button>
+  <button class="cancel" on:click={() => download('md', book)}>{$_('dialogs.shuffle.savecopy')}</button>
 
   {/if}
   <button class="cancel" on:click={() => callback(false)}>{$_('dialogs.cancel')}</button>

@@ -1,8 +1,23 @@
 import {extractIndexedBook}   from './book-utils'
+import { flagURL } from './urls';
 
 
-const hpccWasm = window["@hpcc-js/wasm"];
 
+const Viz = window["Viz"];
+
+
+const allowedChars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!\#$%&'()*+,-./:;<=>?@[\\]^_`{|}~àèéìòù\n ";
+
+const whitelist = (text) => {
+  let result = '';
+  for (const char of text) {
+    if (allowedChars.includes(char)) {
+      result += char;
+    }
+  }
+  return result;
+
+}
 
 const sanitizeLabel = (text) => text.replace(/\//g, "\\").replace(/\"/g, '\"')
 const sanitizeLink = (text) => text.replace(/[\]\[\#\)\(]/g, "")
@@ -24,7 +39,7 @@ const nodeStyle  = (key, flags, indexBook) => {
 
 const generateGraph = (book) => {
 
-  const indexedBook = extractIndexedBook(book)
+  const indexedBook = extractIndexedBook(book.text)
 
   let s = `digraph{
     graph [fontname="arial", fontsize=10];
@@ -35,13 +50,27 @@ const generateGraph = (book) => {
   const groups = Object.fromEntries([...indexedBook.groups].map(group => [group, []]))
 
 
+  const flagRes = new Set()
+  const addFlag = (flag) => {
+    flagRes.add(flag)
+    return flag
+  }
+
+
   for(let [key, {title, group, links, flags, text}] of indexedBook.chapters){
+
+    key = whitelist(key)
+
     s += `
-      "${key}" [label="${sanitizeLabel(title ? `${key} - ${title}` : key)}", tooltip="${text.replaceAll(/[^0-9a-z \`\<\>\.\'\[\]\(\)]/gi, '')}"${nodeStyle(key, flags, indexedBook)}]`
+      "${key}" [label=<<table border="0"><tr><td align="center">${whitelist(title ? `${key} - ${title}` : key)}</td></tr>${
+          flags.length == 0 ? '' : `<tr><td align="center"><table border="0"><tr>${
+              flags.map( flag => `<td align="center"><img src="${addFlag(new URL(flagURL(flag, book), document.baseURI))}"/></td>`).join('')
+          }</tr></table></td></tr>`
+      }</table>>, tooltip="${whitelist(text)}"${nodeStyle(key, flags, indexedBook)}, href="http://localhost:5173/#msession=WS8NEWal6qUixYhcOPZH&c=125"]`
 
     for(const link of links){
       if(indexedBook.chapters.has(link)) s += `
-        "${key}" -> "${sanitizeLink(link)}"`
+        "${key}" -> "${sanitizeLink(whitelist(link))}"`
 
     }
     if(group) groups[group].push(key)
@@ -69,13 +98,20 @@ const generateGraph = (book) => {
   }
   s +='\n}'
   console.log(s)
-  return s
+  return [s, {
+    images: Array.from(flagRes).map( url =>
+      ({path:url, width: 30, height: 30})
+    )
+  }]
 }
 
 
 // Return the src attribute of an img tag
-const graphToImg = (book) => {
-  return hpccWasm.graphviz.layout(generateGraph(book), "svg", "dot")
+const graphToImg = async(book) => {
+  const viz = await Viz.instance()
+  return viz.renderSVGElement(...generateGraph(book))
+
+  //return hpccWasm.graphviz.layout(generateGraph(book), "svg", "dot")
 }
 
 export {generateGraph, graphToImg}

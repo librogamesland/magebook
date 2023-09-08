@@ -25,12 +25,13 @@
     waiting = true
     await tick();
     setTimeout(async() => {
-      src = await Promise.resolve(values[0]())
+      src = (await Promise.resolve(values[0]())).outerHTML
+
       loaded = true
 
     }, 100);
   })
-  
+
   onDestroy(unsubscribe)
 
   // IN THE PAST I CHANGED SVG WIDTH TO FIT WITH:
@@ -43,7 +44,7 @@
   await tick();
   callback(false)
 }}>
-  
+
   <div on:click|stopPropagation={() => {}} style="max-width:90vw; max-height: 80vh; overflow: auto;">
   {@html src}
   </div>
@@ -57,7 +58,7 @@
             suffix,
             blob: `data:image/svg+xml;base64,${encode(src)}`,
           });
-      
+
       }}>{$_('dialogs.graph.download')}</button>
     {:else}
     <button class="ok" on:click={ () => {
@@ -81,10 +82,10 @@
           document.body.appendChild(element)
           element.click()
           document.body.removeChild(element)
-      
+
       }}>{$_('dialogs.graph.download')}</button>
     {/if}
-  </div> 
+  </div>
 </div>
 {:else if waiting}
 <div class="dialog" style="text-align: center">

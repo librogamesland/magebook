@@ -12,7 +12,7 @@
   import Editor  from './components/Editor.svelte'
   import Sidebar from './components/Sidebar.svelte'
   import { handleShortcuts } from './javascript/shortcuts'
-  import { s } from './javascript/settings' 
+  import { s } from './javascript/settings'
   import manifest from '../package.json'
   import { isVSCode } from './javascript/vscode';
   import { store } from './javascript/store';
@@ -23,7 +23,7 @@
   let book = null
   store.then( r => ({book} = r))
 
-  
+
   // Change theme from dark to light and vice versa
   $: {
     const b = window.document.body
@@ -42,7 +42,7 @@
 
 
 
-  // Change page title if the page is visited by a real user 
+  // Change page title if the page is visited by a real user
   // keep "Magebook" title for web engines
   $: { if(!(/bot|google|baidu|bing|msn|duckduckbot|teoma|slurp|yandex/i.test(navigator.userAgent))){
     if(book && $book.index.properties.title){
@@ -55,7 +55,7 @@
   const key = 'mage-version'
   if(!localStorage[key]){
     localStorage[key] = manifest.version
-  } 
+  }
   const version = localStorage[key]
   try {
     const [savedMajor, minor, savedPatch] = version.split('.')
@@ -65,7 +65,7 @@
     if(savedMajor !== currentMajor || minor !== currentMinor){
       dialog(
           Alert,
-          $_('dialogs.version.title') + manifest.version, 
+          $_('dialogs.version.title') + manifest.version,
           $_('dialogs.version.' + currentMajor + '.' + currentMinor) + '<br><br>' + $_('dialogs.version.text')
         ).then( () => localStorage[key] = manifest.version)
     }else{
@@ -84,9 +84,8 @@
   <div class="loading-mask">
     <div class="dialog" style="text-align: center; margin-top: 10vh">
       <div class="spinner-1"></div>
-      <p style="color:white">{'initerror'}</p>
     </div>
-    
+
   </div>
 {/if}
 
@@ -119,21 +118,21 @@
     overscroll-behavior-y: contain;
     overflow-x: hidden !important;
   }
-  
+
   :global(body){
     display: grid;
     width: 100vw;
-    
+
     grid-template-rows: minmax(min-content, max-content) 1fr;
     grid-template-columns: 1fr minmax(min-content, max-content) minmax(min-content, max-content);
-    grid-template-areas: 
+    grid-template-areas:
       "navbar navbar pluginpanel"
       "editor sidebar pluginpanel"
   }
   @media only screen and (max-width: 680px) {
     :global(body){
       grid-template-columns: 1fr;
-      grid-template-areas: 
+      grid-template-areas:
       "navbar"
       "editor"
     }
@@ -152,8 +151,8 @@
     z-index: 100;
   }
   :global(main, aside, nav){
-    min-width: 0; 
-    min-height: 0; 
+    min-width: 0;
+    min-height: 0;
     overflow: auto;
     overscroll-behavior: contain;
   }

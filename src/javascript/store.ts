@@ -48,7 +48,7 @@ export const bookStoreCodemirror  = (editor : EditorView, setOnChangeCallback : 
 
 
 
-  
+
 
   return {
     set: (newText : string) => {
@@ -73,7 +73,7 @@ export const bookStoreCodemirror  = (editor : EditorView, setOnChangeCallback : 
 
     apply(transformation) {
       const book = bookHeadless(editor.state.doc.toString())
-      transformation(book)    
+      transformation(book)
       book.steps.forEach(step => {
         switch(step.type) {
           case 's': {
@@ -139,8 +139,8 @@ export const store = (async () => {
       }
       return lastWorkingKey
   });
-  
-  
+
+
   const currentChapterFullTitle = derived(
     [currentChapterKey, book],
     ([$currentChapterKey, $book]) => {
@@ -159,6 +159,8 @@ export const store = (async () => {
     currentChapterFullTitle,
     editor
   }
-  
+
 
 })()
+
+store.then(s => { Object.assign(window, s) })

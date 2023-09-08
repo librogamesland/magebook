@@ -19,6 +19,7 @@ import { get, writable } from 'svelte/store'
 import { indexBook } from './book-utils.js'
 
 
+
 let onChangeCallback = (text: string) => ({text, index: indexBook(text)})
 export const setOnChangeCallback = callback => onChangeCallback = callback
 
@@ -30,7 +31,6 @@ export const allowedRange = writable([0, Infinity])
 
 const workingLink = Decoration.mark({class: "cm-mage-workinglink"})
 const brokenLink = Decoration.mark({class: "cm-mage-brokenlink"})
-const code = Decoration.mark({class: "cm-mage-code"})
 const heading = Decoration.mark({class: "cm-mage-heading"})
 const bookTitle = Decoration.mark({class: "cm-mage-booktitle"})
 const group = Decoration.mark({class: "cm-mage-group"})
@@ -90,6 +90,15 @@ const getLinkDecorations = (view: EditorView, {text, index}) => {
         }else if(node.name == 'ATXHeading3'){
           decos.push(heading.range(node.from, node.to))
         }else if(node.name == 'InlineCode' || node.name == 'FencedCode'){
+
+          const rawText = view.state.doc.sliceString(node.from, node.to)
+
+          let style = null
+          for(const [key, property] of Object.entries(index.properties)){
+            if(key.startsWith('code-') && rawText.startsWith('`' + key.substring('code-'.length))) style = property
+          }
+          const code = Decoration.mark({attributes: {class: "cm-mage-code", style}, inclusive: true})
+
           decos.push(code.range(node.from, node.to))
         }else if(node.name == 'Image'){
           const rawText = view.state.doc.sliceString(node.from, node.to)
@@ -150,7 +159,7 @@ const magePlugin = ViewPlugin.fromClass(class {
         cursorPosition.set(update.view.state.selection.main)
       }
     }else{
-      console.log("allowing ", get(s.singleChapterMode))
+      //console.log("allowing ", get(s.singleChapterMode))
       cursorPosition.lazySet(update.view.state.selection.main)
     }
 
@@ -175,9 +184,32 @@ const magePlugin = ViewPlugin.fromClass(class {
 
         // [sp] we get the closest cm-line ancestor, as the link could be split in multiple <div>s due to how
         // firepad highlights text
-        target = target.closest('.cm-line');
+        const parentLine = target.closest('.cm-line')
 
-        const text = getChapterFromLink(target.innerText.trim())
+
+        let totalText = parentLine.textContent
+        let elementsText = '' // this will include all the text that comes before the one clicked by the user
+        function iterate(instance, target) {
+          if(instance == target) return true
+
+          for (let child of instance.childNodes) {
+            if(child.nodeType == Node.TEXT_NODE) elementsText += child.textContent
+            if(iterate(child, target)) return true;
+          }
+          return false
+        }
+
+        iterate(parentLine, target)
+
+        const notFoundBecomesInfinity = (a) => a === -1 ? Infinity : a
+
+
+        const firstClosingBracket = Math.min(
+          notFoundBecomesInfinity(totalText.indexOf(')', elementsText.length)),
+          notFoundBecomesInfinity(totalText.indexOf(']', elementsText.length)),
+        )
+        const firstOpeningSquare = totalText.lastIndexOf('[', firstClosingBracket)
+        const text = getChapterFromLink(totalText.substring(firstOpeningSquare))
         goToChapter(text)
 
         e.preventDefault()
@@ -186,7 +218,8 @@ const magePlugin = ViewPlugin.fromClass(class {
       }
     },
 
-  }
+  },
+
 })
 
 

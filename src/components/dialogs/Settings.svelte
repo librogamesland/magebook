@@ -1,11 +1,18 @@
 <script lang="ts">
   import { _ } from 'svelte-i18n'
   import { s } from '../../javascript/settings'
+  import { plugins } from 'mage-plugins';
+  import { store } from '../../javascript/store';
 
   const {font, fontSize, pageWidth, pageZoom, titleHighlight, justifyText, lineMargin, lineSpacing, dateFormat, singleChapterMode, countChars} = s
 
   export let params : null
   export let callback : (value: any) => void
+
+
+  const pluginCallbacks = {}
+  const registerCallback = (key, pluginCallback) => pluginCallbacks[key] = pluginCallback
+
 
   const fontCheck = new Set([
     // Others
@@ -15,6 +22,8 @@
     // macOS
     'American Typewriter', 'Andale Mono', 'Arial', 'Arial Black', 'Arial Narrow', 'Arial Rounded MT Bold', 'Arial Unicode MS', 'Avenir', 'Avenir Next', 'Avenir Next Condensed', 'Baskerville', 'Big Caslon', 'Bodoni 72', 'Bodoni 72 Oldstyle', 'Bodoni 72 Smallcaps', 'Bradley Hand', 'Brush Script MT', 'Chalkboard', 'Chalkboard SE', 'Chalkduster', 'Charter', 'Cochin', 'Comic Sans MS', 'Copperplate', 'Courier', 'Courier New', 'Didot', 'DIN Alternate', 'DIN Condensed', 'Futura', 'Geneva', 'Georgia', 'Gill Sans', 'Helvetica', 'Helvetica Neue', 'Herculanum', 'Hoefler Text', 'Impact', 'Lucida Grande', 'Luminari', 'Marker Felt', 'Menlo', 'Microsoft Sans Serif', 'Monaco', 'Noteworthy', 'Optima', 'Palatino', 'Papyrus', 'Phosphate', 'Rockwell', 'Savoye LET', 'SignPainter', 'Skia', 'Snell Roundhand', 'Tahoma', 'Times', 'Times New Roman', 'Trattatello', 'Trebuchet MS', 'Verdana', 'Zapfino',
   ].sort());
+
+
 
   const listFonts = new Promise( (resolve) => setTimeout( () => {
     const fontAvailable = new Set();
@@ -28,76 +37,92 @@
     resolve([...fontAvailable.values()]);
   }))
 
+
+
+
+
   !params;
 </script>
 
-<div class="dialog">
+<div class="dialog w-[600px] h-[600px] max-h-[90vh] flex flex-col">
   <h3>Settings</h3>
-  <div class="settings">
-  <table>
-    <tr>
-      <th>single-chapter-mode:</th>
-      <td><input type="range" bind:value={$singleChapterMode} min="1" max="2"></td>
-    </tr> 
-    <tr>
-      <th>count-chars:</th>
-      <td><input type="range" bind:value={$countChars} min="1" max="2"></td>
-    </tr>  
-    <tr>
-      <th>font-family:</th>
-      <td>
-        <input type="text" bind:value={$font} list="fonts">
-        <datalist id="fonts">
-          {#await listFonts}
-            <!-- nothing -->
-          {:then fonts} 
-          {#each fonts as font}
-            <option value={font}>
-          {/each}
-          {/await}
-        </datalist>
-    
-      </td>
-    </tr>
-    <tr>
-      <th>font-size (pt):</th>
-      <td><input type="number" bind:value={$fontSize}  min="2" max="50"></td>
-    </tr>
-    <tr style="height: 15px;"></tr> 
-    <tr>
-      <th>page-width (mm):</th>
-      <td><input type="number" bind:value={$pageWidth} min="1" max="400"></td>
-    </tr> 
-    <tr>
-      <th>page-zoom (%):</th>
-      <td><input type="number" bind:value={$pageZoom} min="10" max="400"></td>
-    </tr>
-    <tr style="height: 15px;"></tr> 
-    <tr>
-      <th>line-spacing:</th>
-      <td><input type="text"  bind:value={$lineSpacing} ></td>
-    </tr> 
-    <tr>
-      <th>line-margin:</th>
-      <td><input type="number" bind:value={$lineMargin} min="0" max="15"></td>
-    </tr> 
-    <tr>
-      <th>title-highlight:</th>
-      <td><input type="range" bind:value={$titleHighlight} min="1" max="2"></td>
-    </tr>  
-    <tr>
-      <th>justify-text:</th>
-      <td><input type="range" bind:value={$justifyText}  min="1" max="2"></td>
-    </tr>
-    <tr>
-      <th>date-format:</th>
-      <td><input type="text"  bind:value={$dateFormat} ></td>
-    </tr> 
-    <tr style="height: 15px;"></tr> 
+  <div class="settings flex-1">
+    <table class="min-w-[300px] overflow-x-auto">
+      <tr>
+        <th>single-chapter-mode:</th>
+        <td><input type="range" bind:value={$singleChapterMode} min="1" max="2"></td>
+      </tr>
+      <tr>
+        <th>count-chars:</th>
+        <td><input type="range" bind:value={$countChars} min="1" max="2"></td>
+      </tr>
+      <tr>
+        <th>font-family:</th>
+        <td>
+          <input type="text" bind:value={$font} list="fonts">
+          <datalist id="fonts">
+            {#await listFonts}
+              <!-- nothing -->
+            {:then fonts}
+            {#each fonts as font}
+              <option value={font}>
+            {/each}
+            {/await}
+          </datalist>
 
-  </table>
-</div>
-  <button class="ok" on:click={() => callback(true)}>{$_('dialogs.ok')}</button>
+        </td>
+      </tr>
+      <tr>
+        <th>font-size (pt):</th>
+        <td><input type="number" bind:value={$fontSize}  min="2" max="50"></td>
+      </tr>
+      <tr style="height: 15px;"></tr>
+      <tr>
+        <th>page-width (mm):</th>
+        <td><input type="number" bind:value={$pageWidth} min="1" max="400"></td>
+      </tr>
+      <tr>
+        <th>page-zoom (%):</th>
+        <td><input type="number" bind:value={$pageZoom} min="10" max="400"></td>
+      </tr>
+      <tr style="height: 15px;"></tr>
+      <tr>
+        <th>line-spacing:</th>
+        <td><input type="text"  bind:value={$lineSpacing} ></td>
+      </tr>
+      <tr>
+        <th>line-margin:</th>
+        <td><input type="number" bind:value={$lineMargin} min="0" max="15"></td>
+      </tr>
+      <tr>
+        <th>title-highlight:</th>
+        <td><input type="range" bind:value={$titleHighlight} min="1" max="2"></td>
+      </tr>
+      <tr>
+        <th>justify-text:</th>
+        <td><input type="range" bind:value={$justifyText}  min="1" max="2"></td>
+      </tr>
+      <tr>
+        <th>date-format:</th>
+        <td><input type="text"  bind:value={$dateFormat} ></td>
+      </tr>
+      <tr style="height: 15px;"></tr>
+
+      {#each plugins as plugin}
+        {#if plugin.settings}
+          <svelte:component this={plugin.settings} onCallback={ (call) => registerCallback(plugin.id, call)}/>
+          <tr style="height: 15px;"></tr>
+        {/if}
+      {/each}
+    </table>
+  </div>
+  <div>
+    <button class="ok" on:click={() => {
+      Object.values(pluginCallbacks).forEach( call => call(true))
+      callback(true)
+
+    }}>{$_('dialogs.ok')}</button>
+  </div>
 </div>
 
 <style>
@@ -110,21 +135,18 @@
     margin-right: 0;
   }
   .settings {
-    max-height: 50vh;
-    display: flex;
-    flex-direction: column;
     overflow-y: auto;
   }
 
   table {
     text-align: left;
-    flex: 1 1 auto;
+    width: 100%;
   }
-  td > *{
+  table :global(td > *){
     width: 100%;
   }
 
-  td > input[type="range"]{
+  table :global(td > input[type="range"]){
     width: 40px;
   }
 </style>

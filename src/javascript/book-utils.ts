@@ -22,6 +22,196 @@ export const generateChapterFullText = ({key, title = '', flags = [], group= '',
 
 // INDEX FUNCTION
 
+type BookIndex = {
+  title: string;
+  properties: {
+    [property: string]: string;
+  };
+  chapters: {
+    key: string;
+    title: string;
+    group: string;
+    flags: string[];
+    start: number;
+    textStart: number;
+    textEnd: number;
+    end: number;
+    links: string[];
+    linkedFrom: number[];
+  }[];
+  keys: {
+    [key: string]: number;
+  };
+  chaptersWith: {
+    key: {
+      [key: string]: number[];
+    };
+    group: {
+      [group: string]: number[];
+    };
+    flag: {
+      [flag: string]: number[];
+    };
+  }
+
+};
+
+export const newIndex = (bookText : string) => {
+  const index : BookIndex = {
+    title: '',
+    properties: {},
+    chapters: [],
+    keys: {},
+    chaptersWith: {
+      key: {},
+      group: {},
+      flag: {},
+    }
+  }
+
+
+  let key :string = null
+  let chapter : typeof index.chapters[0]
+
+  let lastLineHadContent = false
+  let lastContentLinePlusOne = 1
+
+  const lines = bookText.split('\n')
+  lines.forEach( (originalLine, i) => {
+
+    const line = originalLine.trim()
+    if(lastLineHadContent) lastContentLinePlusOne = i
+    lastLineHadContent = (line !== '')
+
+    // header parsing
+    if(key === null && !line.startsWith('### ')) {
+      if(line.startsWith('# ')) { // title
+        index.title = line.replaceAll('#', '').trim()
+        return
+      }
+      // properties
+      const semicolon = line.indexOf(':')
+      if(semicolon !== -1){
+        index.properties[line.substring(0, semicolon).trim()] = line.substring(semicolon + 1).trim()
+      }
+      return
+    }
+
+    // chapters parsing
+    if(line.startsWith('### ')){
+      if(key !== null){
+        chapter.textEnd = lastContentLinePlusOne - 1
+        chapter.end = i - 1
+
+        if(chapter.group){
+          if(!index.chaptersWith.group[chapter.group]) index.chaptersWith.group[chapter.group] = []
+          index.chaptersWith.group[chapter.group].push(index.chapters.length)
+        }
+
+        index.chapters.push(chapter)
+      }
+      // crea nuova entità
+      key = line.substring(4).trim()
+      let title = ''
+      const indexOfKey = key.indexOf('{#')
+      if(indexOfKey != -1){
+        title = key.substring(0, indexOfKey - 1).trim()
+        key = key.substring(indexOfKey + 2,  key.lastIndexOf('}')).trim()
+      }
+      chapter = {
+        key,
+        title,
+        group: '',
+        flags: [],
+        start: lastContentLinePlusOne,
+        textStart: i,
+        textEnd: i,
+        end: i,
+        links: [], // keys of chapter a user could go from this one
+        linkedFrom: [], // index of chapters who are referring the key of this one
+      }
+
+
+      if(!index.chaptersWith.key[key]) index.chaptersWith.key[key] = []
+      index.chaptersWith.key[key].push(index.chapters.length)
+
+      return
+    }
+    let flagStarts = [ '![flag-', '![][flag-' ]
+    if(flagStarts.some( flagStart => line.includes(flagStart))){
+
+      for(const flagStart of flagStarts){
+        let i = 0;
+        while((i = line.indexOf(flagStart, i)) != -1){
+          i += flagStart.length
+          const endBracket = line.indexOf(']', i)
+          if(endBracket == -1) break
+          const flag = line.substring(i, endBracket).trim()
+          if(!chapter.flags.includes(flag)) chapter.flags.push(flag)
+        }
+      }
+      return
+    }
+    const groupIndex = line.indexOf('[group]:<> ("')
+    if(groupIndex != -1){
+      chapter.group = line.substring(groupIndex + '[group]:<> ("'.length, line.lastIndexOf('")'))
+      return
+    }
+
+
+    // short links
+    let myRegexp = new RegExp(`\\[([^\\[]*)\\]\\(\\s*\\#([^\\)]+)\\s*\\)`, "g");
+    let match = myRegexp.exec(originalLine);
+    while (match != null) {
+      const linkTarget = match[2].trim()
+      if(!chapter.links.includes(linkTarget)) chapter.links.push(linkTarget)
+      match = myRegexp.exec(originalLine);
+    }
+    if(index.properties['disableShortLinks'] === 'true') return
+
+    // long links
+    let shortRegexp = new RegExp(`\\[([^\\[]*)\\](?!\\()`, "g");
+    match = shortRegexp.exec(originalLine);
+    while (match != null) {
+      const linkTarget = match[1].trim()
+      if(!chapter.links.includes(linkTarget)) chapter.links.push(linkTarget)
+      match = shortRegexp.exec(originalLine);
+    }
+
+  })
+
+  if(key !== null){
+    chapter.end = lines.length - 1
+    chapter.textEnd = lastLineHadContent ? chapter.end : lastContentLinePlusOne - 1
+
+    if(chapter.group){
+      if(!index.chaptersWith.group[chapter.group]) index.chaptersWith.group[chapter.group] = []
+      index.chaptersWith.group[chapter.group].push(index.chapters.length)
+    }
+
+    index.chapters.push(chapter)
+  }
+
+
+  for(const key of Object.keys(index.chaptersWith.key)){
+    index.keys[key] = index.chaptersWith.key[key][0]
+  }
+
+  for (const [i, chapter] of index.chapters.entries()) {
+    for (const link of chapter.links) {
+      for(const chapterIndex of index.chaptersWith.key[link] ?? []){
+        index.chapters[chapterIndex].linkedFrom.push(i)
+      }
+    }
+  }
+
+  return index
+
+
+}
+
+window['newIndex'] = newIndex
+
 export const indexBook = (bookText : string) => {
   const result = {
     properties: {},
@@ -85,16 +275,24 @@ export const indexBook = (bookText : string) => {
       return
     }
 
-    if(line.includes('![flag-') || line.includes('![][flag-')){
-      const maybeMatch = /!(?:\[\])?\[flag-(.*)\]/g.exec(line);
-      if (maybeMatch) {
-        chapter.flags.push(maybeMatch[1])
+    let flagStarts = [ '![flag-', '![][flag-' ]
+    if(flagStarts.some( flagStart => line.includes(flagStart))){
+
+      for(const flagStart of flagStarts){
+        let i = 0;
+        while((i = line.indexOf(flagStart, i)) != -1){
+          i += flagStart.length
+          const endBracket = line.indexOf(']', i)
+          if(endBracket == -1) break
+          const flag = line.substring(i, endBracket).trim()
+          chapter.flags.push(flag)
+        }
       }
       return
     }
     const groupIndex = line.indexOf('[group]:<> ("')
     if(groupIndex != -1){
-      chapter.group = line.substr(groupIndex + 13, line.lastIndexOf('")') - groupIndex - 13)
+      chapter.group = line.substring(groupIndex + 13, line.lastIndexOf('")'))
       result.groups.add(chapter.group)
       return
     }
@@ -243,9 +441,13 @@ export const firstAvaiableKey = (bookOrText : Book | string)  => {
 
 
 export const getRightOrderKey = (bookOrText : Book | string, key, $currentChapterKey) => {
-  const $bookIndex = bookify(bookOrText).index
+  const book = bookify(bookOrText)
+  const $bookIndex = book.index
 
-  if(!isNatNumber(key)) return $bookIndex.chapters.get(String($currentChapterKey)).contentEnd
+  if(!isNatNumber(key)){
+    const currentChapter = $bookIndex.chapters.get(String($currentChapterKey))
+    return currentChapter ? currentChapter.contentEnd : book.text.split('\n').length - 1
+  }
 
   const n =  Math.floor(key)
   for(let i = n; i >= 0; i--){
