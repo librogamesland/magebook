@@ -48,7 +48,7 @@ Same as Svelte Stores, but result is updated only if result is stable since mill
 export const debounced = <T>(millis : number, defaultValue: T = null)  => {
   let timer : ReturnType<typeof setTimeout>
 	let value = defaultValue
-  const { subscribe, set } = writable(defaultValue); 
+  const { subscribe, set } = writable(defaultValue);
 
   const flush = () => {
     clearTimeout(timer)
@@ -80,7 +80,7 @@ export const debounced = <T>(millis : number, defaultValue: T = null)  => {
 
 /** Completely absorb and prevent click propagation */
 export const preventClickPropagation = (node : HTMLElement) => {
-  // Helper function 
+  // Helper function
   const absorbEvent_ = (event : Event) => {
     var e = event || window.event;
     e.stopPropagation && e.stopPropagation();
@@ -133,10 +133,10 @@ export const scaleVector = ([x0, y0], length) => {
     y0 / vectorLength * length,
   ]
 }
-  
+
 /** Check if a string may be parsed as number */
 export const isNumeric = (str : string) : boolean => {
-  if (typeof str != "string") return false // we only process strings!  
+  if (typeof str != "string") return false // we only process strings!
   // @ts-expect-error
   return !isNaN(str) && // use type coercion to parse the _entirety_ of the string (`parseFloat` alone does not do this)...
           !isNaN(parseFloat(str)) // ...and ensure strings of whitespace fail
@@ -184,7 +184,7 @@ export const mod = (n : number, m : number) => ((n % m) + m) % m
 export const inRange = (n: number, min: number, max: number) => n < min ? min : n > max ? max : n
 
 // https://www.w3resource.com/javascript-exercises/fundamental/javascript-fundamental-exercise-253.php
-export const UUIDGeneratorBrowser = () : string =>
+export const UUIDGeneratorBrowser = () : string =>// @ts-ignore
 ([1e7] + -1e3 + -4e3 + -8e3 + -1e11).replace(/[018]/g, c =>
   (c ^ (crypto.getRandomValues(new Uint8Array(1))[0] & (15 >> (c / 4)))).toString(16)
 );

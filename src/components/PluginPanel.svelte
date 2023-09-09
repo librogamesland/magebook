@@ -1,6 +1,7 @@
 <script lang="ts">
   import { _ } from 'svelte-i18n'
   import { store } from "../javascript/store";
+  //@ts-ignore
   import { plugins } from  'mage-plugins';
   import { portrait } from "../javascript/utils";
   import { showPluginPanel } from "../javascript/store";

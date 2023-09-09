@@ -67,15 +67,15 @@
     display: flex;
     align-items: center;
   }
-  
+
   .input > input {
     height: 1rem;
     margin: 0.5rem 0;
     flex-grow: 1;
     flex-shrink: 1;
     min-width: 0;
-  } 
+  }
   .input > span {
     min-width: calc(75px + 4vw);
-  } 
+  }
 </style>

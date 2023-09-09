@@ -1,4 +1,5 @@
 <script lang="ts">
+  //@ts-nocheck
   import { _ } from 'svelte-i18n'
   import {previews, firebaseSessionsKey} from '../../javascript/database.js'
 

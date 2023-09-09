@@ -1,3 +1,4 @@
+//@ts-nocheck
 import {combineConfig, EditorState, Transaction, StateField, StateEffect,
     Facet, Annotation, ChangeSet, ChangeDesc, EditorSelection} from "@codemirror/state"
 import {EditorView} from "@codemirror/view"

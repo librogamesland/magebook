@@ -47,7 +47,7 @@
     const filter = groupFilter.split(',').map( s => s.trim()).filter(s => s)
 
 
-    const shuffled = shuffleBook($book, {selectedFlags, filter})
+    const shuffled = shuffleBook($book, {selectedFlags, groupsFilter: filter})
 
     if($isFirebase || isVSCode){
       editor.dispatch({

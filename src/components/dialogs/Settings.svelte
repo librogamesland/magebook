@@ -1,8 +1,8 @@
 <script lang="ts">
   import { _ } from 'svelte-i18n'
   import { s } from '../../javascript/settings'
+  //@ts-ignore
   import { plugins } from 'mage-plugins';
-  import { store } from '../../javascript/store';
 
   const {font, fontSize, pageWidth, pageZoom, titleHighlight, justifyText, lineMargin, lineSpacing, dateFormat, singleChapterMode, countChars} = s
 
@@ -10,8 +10,10 @@
   export let callback : (value: any) => void
 
 
-  const pluginCallbacks = {}
-  const registerCallback = (key, pluginCallback) => pluginCallbacks[key] = pluginCallback
+  type PluginCallback = (bool : boolean) => void
+
+  const pluginCallbacks : { [key : string]: PluginCallback }= {}
+  const registerCallback = (key : string, pluginCallback : PluginCallback) => pluginCallbacks[key] = pluginCallback
 
 
   const fontCheck = new Set([
@@ -25,12 +27,12 @@
 
 
 
-  const listFonts = new Promise( (resolve) => setTimeout( () => {
-    const fontAvailable = new Set();
+  const listFonts : Promise<string[]> = new Promise( (resolve) => setTimeout( () => {
+    const fontAvailable = new Set<string>();
 
-    for (const font of fontCheck.values()) {
-      if (window.document.fonts.check(`12px "${font}"`)) {
-        fontAvailable.add(font);
+    for (let thisFont of fontCheck.values()){
+      if (window.document.fonts.check(`12px "${thisFont}"`)) {
+        fontAvailable.add(thisFont);
       }
     }
 

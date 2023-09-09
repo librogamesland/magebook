@@ -2,7 +2,7 @@ import { writable,derived, type Writable } from "svelte/store"
 import { isVSCode, updateHandlers, vscode } from "./vscode"
 
 const key = "mage-settings"
-const lastSettings = window.VSCODESettings || JSON.parse(localStorage.getItem(key) || '{}')
+const lastSettings = window['VSCODESettings'] || JSON.parse(localStorage.getItem(key) || '{}')
 
 
 const defaultValues = {
@@ -46,7 +46,7 @@ updateHandlers.push( (message) => {
   if(message.settings !== undefined){
     try{
       const updatedSettings = JSON.parse(message.settings)
-      Object.keys(defaultValues).forEach(key => 
+      Object.keys(defaultValues).forEach(key =>
         s[key].set(updatedSettings[key] ?? defaultValues[key])
       )
     }catch(e){}

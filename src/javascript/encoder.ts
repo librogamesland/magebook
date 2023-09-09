@@ -13,7 +13,7 @@ const raw    = t => (a.innerHTML = t, a.textContent)
 const mangle = t => (a.textContent = t, a.innerHTML)
 export {raw, mangle}
 
-window.marked = marked
+window['marked'] = marked
 const tokenizer = {
   heading(src){},
   nptable(src){},
@@ -65,12 +65,13 @@ const defaultHTMLRenderer = {
 }
 
 export const encodeToHTML = (text, renderer = defaultHTMLRenderer, linkToGenerate = []) => {
-  return marked(text.replace(/\n/g, ' \\\n').replaceAll(' \\\n```', '\n\n```'), { 
+  return marked(text.replace(/\n/g, ' \\\n').replaceAll(' \\\n```', '\n\n```'), {
     renderer: Object.assign(
       new marked.Renderer(),
       renderer,
       {
         code: (text, infostring, ...all) => {
+          //@ts-ignore
           return renderer.code(text.replaceAll(' \\\n', '\n'), infostring.replace(' \\', ''), ...all)
         }
       },
@@ -90,7 +91,7 @@ export const sanitizeProperties = (p) => {
   const properties = {
       disableShortLinks: false,
       page: {
-        width:'14.8', height:'21', 
+        width:'14.8', height:'21',
         margins: ['2.5', '2', '2', '2'],
       },
       textFont: {
@@ -104,7 +105,7 @@ export const sanitizeProperties = (p) => {
         size: '12pt',
       },
       titleStyle: 'default',
-      
+
       renameTitle: ({book, chapter, key, title}) => '<b>' + (title == '' ? key : title) + '</b>',
       renameLink: ({book, chapter, text, title, key, currentChapter}) => text == '' ? (chapter == null ? 'ERROR' : (title == '' ? key : title)) : text,
       renameAnchor: ({book, key}) => key,
@@ -115,7 +116,7 @@ export const sanitizeProperties = (p) => {
   if(p['disableShortLinks'] && p['disableShortLinks'].trim().toLowerCase() == 'true'){
     properties.disableShortLinks = true
   }
-  
+
   if(p['page']){
     const page = p['page'].split(',')
     if(page[0]){
@@ -130,7 +131,7 @@ export const sanitizeProperties = (p) => {
         B6: '12.50 17.60',
         Letter: '21.59 27.94',
       }
-      const dimensions = (pages[page[0].trim()] 
+      const dimensions = (pages[page[0].trim()]
         ? pages[page[0].trim()]
         : page[0].trim()).split(/\s+/)
 
@@ -155,7 +156,7 @@ export const sanitizeProperties = (p) => {
     if(textFont[1]){
       let size = textFont[1].trim()
       if(!size.endsWith('pt')) size += 'pt'
-      properties.textFont.size = size 
+      properties.textFont.size = size
     }
     if(textFont[2]){
       properties.textFont.spacing = textFont[2].trim()
@@ -170,7 +171,7 @@ export const sanitizeProperties = (p) => {
     if(titleFont[1]){
       let size = titleFont[1].trim()
       if(!size.endsWith('pt')) size += 'pt'
-      properties.titleFont.size = size 
+      properties.titleFont.size = size
     }
     if(titleFont[2]){
       properties.titleFont.spacing = titleFont[2].trim()
@@ -183,10 +184,13 @@ export const sanitizeProperties = (p) => {
     if(indexStyle != -1) properties.titleStyle = styles[indexStyle]
   }
 
-  if(p['renameTitle'])  properties.renameTitle  = new Function('{book, chapter, key, title}', 'return ' + p['renameTitle'].trim()) 
-  if(p['renameLink'])   properties.renameLink   = new Function('{book, text, chapter, title, key, currentChapter}', 'return ' + p['renameLink'].trim()) 
+  // @ts-ignore
+  if(p['renameTitle'])  properties.renameTitle  = new Function('{book, chapter, key, title}', 'return ' + p['renameTitle'].trim())
+  // @ts-ignore
+  if(p['renameLink'])   properties.renameLink   = new Function('{book, text, chapter, title, key, currentChapter}', 'return ' + p['renameLink'].trim())
+    // @ts-ignore
   if(p['renameAnchor']) properties.renameAnchor = new Function('{book, key}', 'return ' + p['renameAnchor'].trim())
-  
+
 
   if(p['advancedFormat']){
     const formatInfos = p['advancedFormat'].split(',')

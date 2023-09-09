@@ -47,7 +47,7 @@ const open = (elem) => {
     const encodedBook = await Promise.resolve(decodedMd)
 
 
-    
+
     session.open({
       data: {
         book: encodedBook,
@@ -67,7 +67,7 @@ const download = async(formatKey, book) => {
 
   const format = formats[formatKey]
   const indexedBook = index
- 
+
 
   disableShortLinks(indexedBook.properties.disableShortLinks && indexedBook.properties.disableShortLinks.trim() == "true")
   const { encodedBook, mimetype, extension, blob = null } = await Promise.resolve(format.encode(text))

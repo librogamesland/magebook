@@ -5,6 +5,7 @@ import { time, _ } from 'svelte-i18n'
 
 import { EditorView } from "codemirror"
 import {undo, redo, historyCallbacks } from "./history"
+import { cursorPosition } from './codemirror'
 
 
 
@@ -17,13 +18,14 @@ export const vscode = isVSCode ? acquireVsCodeApi() : null;
 
 
 export const updateHandlers = []
-  
+
 let firstTime = true
 let lastDocument = undefined
 
 
-const update = (message) : void => {
+const update = async(message) : Promise<void> => {
 
+  const {editor} = await store
   updateHandlers.forEach(fn => fn(message))
 
   if(message.text === '' || message.text != null){
@@ -36,18 +38,18 @@ const update = (message) : void => {
       })
 
       firstTime = false
-      
+
     }else{
       // Skip update if we have unmerged text.
       if(lastDocument && lastDocument == message.text) return;
-      const anchor  = Math.min(get(cursorPosition).to + getEditor().state.doc.length - message.text.length, message.text.length)
+      const anchor  = Math.min(get(cursorPosition).to + editor.state.doc.length - message.text.length, message.text.length)
 
       lastDocument = message.text
-      getEditor().dispatch({
+      editor.dispatch({
         selection: {anchor},
         effects: [ EditorView.scrollIntoView(anchor)],
-        changes: {from: 0, to: getEditor().state.doc.length, insert: message.text},
-      }) 
+        changes: {from: 0, to: editor.state.doc.length, insert: message.text},
+      })
     }
 
     vscode.setState({
@@ -57,7 +59,7 @@ const update = (message) : void => {
   }
 }
 
-  
+
 
 if(isVSCode){
 
@@ -74,24 +76,26 @@ if(isVSCode){
   })
 
 	// Handle messages sent from the extension to the webview
-	window.addEventListener('message', event => {
+	window.addEventListener('message', async(event) => {
+    const {editor} = await store
+
 		const message = event.data; // The json data that the extension sent
 		switch (message.type) {
-			case 'update':  
+			case 'update':
         update(message)
 				return;
 
       case 'undo':
         undo({
-          state: getEditor().state,
-          dispatch: getEditor().dispatch,
+          state: editor.state,
+          dispatch: editor.dispatch,
         })
         return;
 
       case 'redo':
         redo({
-          state: getEditor().state,
-          dispatch: getEditor().dispatch,
+          state: editor.state,
+          dispatch: editor.dispatch,
         })
         return;
 
@@ -101,14 +105,15 @@ if(isVSCode){
 
 
 
-  
 
-  book.subscribe( $book => {
-    if(!firstTime){
-      if(lastDocument && $book === lastDocument) return;
+  store.then ( ({book})=> {
+    book.subscribe( $book => {
+      if(!firstTime){
+        if(lastDocument && $book === lastDocument) return;
 
-      vscode.postMessage({ type: 'updateBook', book: get(book) });
-    }
+        vscode.postMessage({ type: 'updateBook', book: get(book) });
+      }
+    })
   })
 
 

@@ -40,7 +40,7 @@
       }
     )
     if(!result) return
-    let { key, value } = result
+    let { key, value } = result as any
     key = sanitizeKey(key)
     value.group = sanitizeKey(value.group || '')
     if (!key) return
@@ -66,7 +66,7 @@
       book.index.chapters.get(cKey)
     )
     if(!result) return
-    let { key, value } = result
+    let { key, value } = result as any
     key = sanitizeKey(key)
     value.group = sanitizeKey(value.group || '')
     if (!key) return
@@ -152,19 +152,19 @@
 
 {#if w > 200 || windowW < 680}
 <div class="buttons">
-  <div class="icon-back" on:click={goBack} title={$_('sidemenu.actions.goback')} disabled={!$historyCanGoBack} />
-  <div class="icon-plus" on:click={add} title={$_('sidemenu.actions.add')} />
-  <div class="icon-pencil" on:click={edit} title={$_('sidemenu.actions.edit')}  disabled={$currentChapterKey == ""} />
-  <div class="icon-trash" on:click={del} title={$_('sidemenu.actions.delete')} disabled={$currentChapterKey == ""} />
+  <button class="icon-back" on:click={goBack} title={$_('sidemenu.actions.goback')} disabled={!$historyCanGoBack} />
+  <button class="icon-plus" on:click={add} title={$_('sidemenu.actions.add')} />
+  <button class="icon-pencil" on:click={edit} title={$_('sidemenu.actions.edit')}  disabled={$currentChapterKey == ""} />
+  <button class="icon-trash" on:click={del} title={$_('sidemenu.actions.delete')} disabled={$currentChapterKey == ""} />
 </div>
 {:else}
 <div class="buttons !border-b-0">
-  <div class="icon-back !py-2" on:click={goBack} title={$_('sidemenu.actions.goback')} disabled={!$historyCanGoBack} />
-  <div class="icon-plus !py-2" on:click={add} title={$_('sidemenu.actions.add')} />
+  <button class="icon-back !py-2" on:click={goBack} title={$_('sidemenu.actions.goback')} disabled={!$historyCanGoBack} />
+  <button class="icon-plus !py-2" on:click={add} title={$_('sidemenu.actions.add')} />
 </div>
 <div class="buttons !border-t-0">
-  <div class="icon-pencil !pt-0 !pb-2" on:click={edit} title={$_('sidemenu.actions.edit')}  disabled={$currentChapterKey == ""} />
-  <div class="icon-trash  !pt-0 !pb-2" on:click={del} title={$_('sidemenu.actions.delete')} disabled={$currentChapterKey == ""} />
+  <button class="icon-pencil !pt-0 !pb-2" on:click={edit} title={$_('sidemenu.actions.edit')}  disabled={$currentChapterKey == ""} />
+  <button class="icon-trash  !pt-0 !pb-2" on:click={del} title={$_('sidemenu.actions.delete')} disabled={$currentChapterKey == ""} />
 </div>
 {/if}
 
@@ -177,12 +177,12 @@
     border-bottom: none;
     background-color: #f1f1f1;
   }
-  .buttons > div[disabled=true] {
+  .buttons > button[disabled=true] {
     opacity: 0.3;
     pointer-events:none;
     cursor: not-allowed; /* nota: dovrei usare un wrapper, perché cursor not allowed non funziona quando pointer-events = none*/
   }
-  .buttons > div {
+  .buttons > button {
     cursor: pointer;
     display: block;
     flex-grow: 1;
@@ -192,14 +192,14 @@
     content: ' ';
     font-size: 1.3rem;
   }
-  .buttons > div:hover {
+  .buttons > button:hover {
     background-color: #ddd;
   }
 
-  :global(.mage-theme-dark .buttons){
+  :global(.mage-theme-dark) .buttons{
     background-color: #121423 !important;
   }
-  :global(.mage-theme-dark aside .buttons > div:hover ){
+  :global(.mage-theme-dark aside) .buttons > button:hover {
     background-color: #444 !important;
   }
 </style>

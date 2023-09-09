@@ -1,10 +1,10 @@
 import { writable } from 'svelte/store';
 
 
-export const debouncable = (millis, defaultValue = null)  => {
-  let timer
+export const debouncable = (millis: number, defaultValue = null)  => {
+  let timer : any
 	let value = defaultValue
-  const { subscribe, set, update } = writable(defaultValue); 
+  const { subscribe, set } = writable(defaultValue);
 
   const flush = () => {
     clearTimeout(timer)
