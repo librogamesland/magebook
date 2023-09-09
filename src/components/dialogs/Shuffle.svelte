@@ -1,7 +1,7 @@
 <script lang="ts">
   import { _ } from "svelte-i18n";
   import { tick } from "svelte";
-  import { store } from '../../javascript/store'
+  import { nullUntilLoaded } from '../../javascript/store'
   import { shuffleBook } from '../../javascript/book-utils'
   import { session } from '../../javascript/database.js'
   import { download } from '../../javascript/file.js'
@@ -14,8 +14,7 @@
 
   let flagImgs = { death, final, fixed }
 
-  let book = null, currentChapterKey = null, currentChapterFullTitle = null, editor = null
-  store.then( r => ({book, currentChapterKey, currentChapterFullTitle, editor} = r))
+  $: ({book, editor} = $nullUntilLoaded)
 
 
   export let params;
@@ -70,7 +69,7 @@
 
 <div class="dialog">
   <h3>{$_("dialogs.shuffle.title")}</h3>
-  <p>{$_("dialogs.shuffle.hint")}</p>  
+  <p>{$_("dialogs.shuffle.hint")}</p>
   <h4>{$_("dialogs.shuffle.group")}:</h4>
   <div class="input">
     <input bind:value={groupFilter} type="text" />
@@ -81,7 +80,7 @@
           <option value={group}>{group}</option>
         {/each}
       </select>
-    </span>  
+    </span>
   </div>
   <h4>{$_("dialogs.shuffle.flags")}:</h4>
   <div class="flags">

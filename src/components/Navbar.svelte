@@ -6,7 +6,7 @@
   import { sortBook, compactBook } from "../javascript/book-utils";
   import { s } from "../javascript/settings";
 
-  import { store, showSidemenu } from "../javascript/store";
+  import { store, showSidemenu, nullUntilLoaded } from "../javascript/store";
   import { isVSCode } from "../javascript/vscode.js";
 
   // Dialogs
@@ -23,9 +23,7 @@
 
   const { theme } = s;
 
-  let book = null
-  store.then( r => ({book} = r))
-
+  $: ({book} = $nullUntilLoaded)
 
   if (!isVSCode) {
     ctrlShortcuts({

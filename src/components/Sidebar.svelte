@@ -4,15 +4,14 @@
   import { goToChapter } from '../javascript/navigator.js'
   import scrollIntoView from 'smooth-scroll-into-view-if-needed';
 
-  import { showSidemenu, store } from '../javascript/store.js'
+  import { nullUntilLoaded, showSidemenu } from '../javascript/store.js'
 
 
   import ActionButtons from './ActionButtons.svelte'
   import { flagURL, urlOfChapter } from '../javascript/urls';
 
 
-  let book = null, currentChapterKey = null, currentChapterFullTitle = null
-  store.then( r => ({book, currentChapterKey, currentChapterFullTitle} = r))
+  $: ({book, currentChapterKey } = $nullUntilLoaded)
 
   let windowW = 0
   let w = localStorage['mage-sidebar-width'] ? parseInt(localStorage['mage-sidebar-width']) : 250
@@ -413,8 +412,5 @@
   }
 
 
-  :global(.mage-theme-dark) .sidebar-resizer{
-
-  }
 
 </style>

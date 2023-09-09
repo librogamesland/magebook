@@ -1,20 +1,15 @@
 import Dexie from 'dexie'
-import queryString from 'query-string'
 import { decode } from 'js-base64';
-
 
 import { get, derived, writable } from 'svelte/store'
 import { _ } from 'svelte-i18n'
 
+import { urlParams, urlParam } from './urls'
 import { randomString } from './utils.js'
 import {lockStore} from '../components/Dialogs.svelte'
 import {store } from './store'
 import {initEditorLocal, initEditorFirebase} from './init-editor.js'
 import { cursorPosition } from './codemirror.js';
-
-
-
-export const parsedHash = queryString.parse(location.hash);
 
 export const firebaseSessionsKey = 'mage-firebase-lastsessions'
 
@@ -33,7 +28,7 @@ export const isFirebase = writable(false)
 
 
 // Session previews
-const previews = async() => (await db.sessions.orderBy('preview').keys()).reverse().map( key => ({
+const previews = async() => (await db['sessions'].orderBy('preview').keys()).reverse().map( key => ({
       time: new Date(Number(key.substr(0, 30))),
       id: key.substr(31, 20),
       name: key.substr(52, 30)
@@ -47,7 +42,7 @@ const previews = async() => (await db.sessions.orderBy('preview').keys()).revers
 const session = new (function(){
   // Generate unique identifier for this session
   let data
-  const IDLength = 20 
+  const IDLength = 20
   const lock = randomString(IDLength)
 
   // Session hash preview
@@ -60,91 +55,88 @@ const session = new (function(){
   const maxSessions = 50
   const cleanOldSessions = async() => {
     const key = 'time'
-    const times = (await db.sessions.orderBy(key).keys()).reverse()
+    const times = (await db['sessions'].orderBy(key).keys()).reverse()
     if(times.length > maxSessions){
       const lastTime = times[maxSessions]
-      await db.sessions.where("time").below(lastTime).modify(function() {
+      await db['sessions'].where("time").below(lastTime).modify(function() {
           delete this.value;
       });
     }
   }
 
   // Session loader
-  let sessionName
+  let loadedSession = false
   const load = async() => {
 
-    if(parsedHash.fsession){
+
+    if(urlParams.get('fsession')){
       isFirebase.set(true)
-      window.addEventListener('hashchange', () => {
-        window.location.reload()
-      }, false);
-  
-      initEditorFirebase(JSON.parse(decode(decodeURIComponent(parsedHash.fsession))))
+      const fsession = urlParam('fsession')
+      fsession.change( () => location.reload() )
+
+      initEditorFirebase(JSON.parse(decode(decodeURIComponent(fsession.value))))
       store.then( ({book}) =>{
           const sessions = JSON.parse(localStorage[firebaseSessionsKey] || '{}')
-          sessions[parsedHash.fsession as string] = {
+          sessions[fsession.value] = {
             name: book.index.properties.title,
             time: new Date().getTime()
-          } 
+          }
           localStorage[firebaseSessionsKey] = JSON.stringify(sessions)
         })
       return
     }
 
 
-    if(sessionName){
+    // this is to prevent hmr from reloading the session
+    if(loadedSession) {
       console.error("Session loaded twice!")
       return
     }
-    // Trova il nome della sessione o creane una nuova
-    const lastSession = localStorage.getItem('mage-session-last')
+    loadedSession = true
 
-    sessionName = await (async() => {
-      const prefix = 'msession='
+    // find the session name or make a new one
+    const lastSession = localStorage.getItem('mage-session-last')
+    const msession = urlParam('msession')
+
+    console.log(msession.value)
+
+
+    msession.set(await (async() => {
       if(!lastSession) return randomString(IDLength)
 
-      if(window.location.hash && window.location.hash.includes(prefix)){
-        const pos = window.location.hash.indexOf(prefix) + prefix.length
-        if(!((pos + IDLength) > window.location.hash.length)){
-          const candidate = window.location.hash.substr(pos, IDLength)
-          if(candidate == lastSession) return candidate
-          try {
-            if(await db.sessions.get(candidate)){
-              return candidate
-            }
-          }catch(e){}
-        }
+      if(msession.value){
+        if(msession.value == lastSession) return msession.value
+        try {
+          if(await db['sessions'].get(msession.value)) return msession.value
+        }catch(e){}
+
       }
       return lastSession ||  randomString(IDLength)
-    })()
+    })())
 
-    parsedHash.msession = sessionName
-    location.replace('#' + queryString.stringify(parsedHash)) // Set dell'url
-    
-    // Listen url change
-    window.addEventListener('hashchange', () => {
-      if(!window.location.hash.includes(`#msession=${sessionName}`)){
-        window.location.reload()
-      }
-    }, false);
+    msession.change( () => window.location.reload() )
 
     // Acquire lock
-    localStorage.setItem('mage-session-last', sessionName)
-    localStorage.setItem(`mage-lock-${sessionName}`, lock)
+    localStorage.setItem('mage-session-last', msession.value)
+    localStorage.setItem(`mage-lock-${msession.value}`, lock)
 
+    console.log("somethinggg")
     // Load book in session
     let info
-    if(lastSession == sessionName){
+    if(lastSession == msession.value){
       info = JSON.parse(localStorage.getItem('mage-session-last-data'))
+
     }else {
       try{
-        info =  (await db.sessions.get(sessionName)) 
-      }catch(e){}
+        console.log('session', msession.value)
+        info =  await db['sessions'].get(msession.value)
+        console.log(info)
+      }catch(e){console.error(e)}
     }
-    info = info || {
-      data:{book: get(_)('books.local'), cursor: {row: 0, column: 0}} 
+    info = info ?? {
+      data:{book: get(_)('books.local'), cursor: {row: 0, column: 0}}
     }
-     
+
     initEditorLocal(info.data)
 
 
@@ -159,33 +151,33 @@ const session = new (function(){
           title: $book.index.properties.title
         })
       )
-    
+
       data.subscribe( async(bookData) => {
-        if(localStorage.getItem(`mage-lock-${sessionName}`) != lock ){
+        if(localStorage.getItem(`mage-lock-${msession.value}`) != lock ){
           lockStore.set( {
             lock: true,
             session: this,
           })
-          return 
+          return
         }
 
-        localStorage.setItem('mage-session-last', sessionName)
+        localStorage.setItem('mage-session-last', msession.value)
         const sessionData = {
-          id: sessionName,
+          id: msession.value,
           data: bookData,
           time: new Date().getTime(),
         }
         localStorage.setItem('mage-session-last-data', JSON.stringify(sessionData))
 
         try{
-        await db.sessions.put({
+        await db['sessions'].put({
           preview: preview(sessionData),
           ...sessionData
         })
         }catch(e){console.log(e)}
       })
-      
-      window.onbeforeunload = (e) => {
+
+      window.onbeforeunload = (e : Event) => {
       //  book.flush()
         delete e['returnValue'];
 
@@ -210,13 +202,13 @@ const session = new (function(){
     }
     localStorage.setItem('mage-session-last-data', JSON.stringify(sessionData))
     try {
-      await db.sessions.put(sessionData)
+      await db['sessions'].put(sessionData)
     }catch(e){}
     location.assign(`#msession=${sessionData.id}`)
   }
 
   this.duplicate = async(params) => {
-    
+
     open({
       data: get(data),
       ...params,
@@ -224,13 +216,14 @@ const session = new (function(){
   }
 
   this.lock = () => {
-    localStorage.setItem(`mage-lock-${sessionName}`, lock)
-    lockStore.set({ lock: false })
+    const msession = urlParam('msession')
+    localStorage.setItem(`mage-lock-${msession.value}`, lock)
+    lockStore.set({ lock: false, session: null })
   }
 
 
   // Session exports
-  Object.assign(this, {sessionName, load, open})
+  Object.assign(this, {load, open})
 })()
 
 export { db, session, previews}

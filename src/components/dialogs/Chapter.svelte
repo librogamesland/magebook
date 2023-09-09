@@ -2,45 +2,23 @@
   import { _ } from 'svelte-i18n'
   import { onDestroy } from 'svelte'
   import { sanitizeKey } from '../../javascript/book-utils'
-  import { store } from '../../javascript/store'
+  import { nullUntilLoaded } from '../../javascript/store'
 
   import death from '../../assets/img/flags/death.png'
   import final from '../../assets/img/flags/final.png'
   import fixed from '../../assets/img/flags/fixed.png'
 
-  let book = null, currentChapterKey = null, currentChapterFullTitle = null, editor = null
-  store.then( r => ({book, currentChapterKey, currentChapterFullTitle, editor} = r))
+  $: ({book} = $nullUntilLoaded)
 
 
   let flagImgs = { death, final, fixed }
 
-  export let params
-  export let callback
+  export let params : any
+  export let callback : any
 
 
 
-/*
-  function urlContentToDataUri(url){
-    return  fetch(url)
-            .then( response => response.blob() )
-            .then( blob => new Promise( callback =>{
-                let reader = new FileReader() ;
-                reader.onload = function(){ callback(this.result) } ;
-                reader.readAsDataURL(blob) ;
-            }) ) ;
-}
 
-  const fetchImage = urlContentToDataUri('https://api.codetabs.com/v1/proxy/?quest=https://avatars.githubusercontent.com/u/1365071?v=4')
-
-  {#await fetchImage}
-	<p>...waiting</p>
-{:then data}
-	<img src={data} alt="Dog image" />
-{:catch error}
-	<p>An error occurred!</p>
-{/await}
-
-*/
   // Entity input bindings
   let dialogTitle, key, value, title, flags, group, originalKey, genericFlags
   const filterFlags = () =>  Object.keys(flags).filter(key => flags[key]).concat(genericFlags.split('\n').map(el => el.trim()).filter(el => el.length > 0))

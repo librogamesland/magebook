@@ -163,4 +163,16 @@ export const store = (async () => {
 
 })()
 
-store.then(s => { Object.assign(window, s) })
+export const nullUntilLoaded = writable({
+  book: null,
+  currentChapterKey: null,
+  currentChapterFullTitle: null,
+  editor: null,
+
+})
+
+
+store.then(s => {
+  Object.assign(window, s)
+  nullUntilLoaded.set(s)
+})

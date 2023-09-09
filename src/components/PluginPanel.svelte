@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { _ } from 'svelte-i18n'
   import { store } from "../javascript/store";
   import { plugins } from  'mage-plugins';
   import { portrait } from "../javascript/utils";
@@ -99,7 +100,7 @@
           if(w < 10) w = preferredW
 
         }}>
-          <div class="text-slate-300 text-xs font-bold">{pluginTab.label}</div>
+          <div class="text-slate-300 text-xs font-bold text-center">{@html $_(pluginTab.id)}</div>
         </div>
       {/each}
     {/each}

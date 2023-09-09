@@ -1,18 +1,19 @@
 <script context="module" lang="ts">
   import { writable } from 'svelte/store'
 
-  /* Dialogs params & state
 
-
-  */
   const dialogStore = writable({})
-  const lockStore   = writable(false)
+  const lockStore   = writable({
+    lock: false,
+    session: null,
+  })
   const dialog = (component, ...params) =>
     new Promise((resolve) =>
       dialogStore.set({
         component,
-        callback(...args) {
+        callback(...args : any[]) {
           dialogStore.set({})
+          // @ts-ignore
           resolve(...args)
         },
         params: writable(params),
@@ -31,14 +32,14 @@
 
   lockStore.subscribe (data => ({lock, session} = data) )
 
-  dialogStore.subscribe( async(data) => {
+  dialogStore.subscribe( async(data : any) => {
     // Retrieve basic info
     ;({ component, callback, params } = data)
 
 
     await tick();
 
-    const button = document.querySelector('button.ok')
+    const button = document.querySelector('button.ok') as HTMLButtonElement | null
     if(button) button.focus()
   })
 </script>
@@ -63,7 +64,7 @@
 {/if}
 
 
-<style>
+<style type="postcss">
 
 
   :global(.dialog-mask) {

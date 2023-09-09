@@ -1,10 +1,10 @@
 <script lang="ts">
   import { _ } from 'svelte-i18n'
 
-  export let params
-  export let callback
+  export let params : any
+  export let callback : any
 
-  let title, text
+  let title : string, text : string
   $: [title, text] = $params
 </script>
 

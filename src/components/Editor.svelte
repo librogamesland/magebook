@@ -3,7 +3,7 @@
 	import { onMount } from 'svelte'
   import { session } from '../javascript/database.js'
 
-  import { showSidemenu, isSynced, store } from '../javascript/store.js'
+  import { showSidemenu, isSynced, store, nullUntilLoaded } from '../javascript/store.js'
   import { editorComponentID } from '../javascript/codemirror';
 
   import { isVSCode, loadVSSession } from '../javascript/vscode.js';
@@ -13,8 +13,7 @@
   import {s} from '../javascript/settings'
   const {font, fontSize, pageWidth, pageZoom, titleHighlight, justifyText, lineMargin, lineSpacing, countChars} = s
 
-  let book = null, currentChapterFullTitle = null
-  store.then( r => ({book, currentChapterFullTitle} = r))
+  $: ({book, currentChapterFullTitle} = $nullUntilLoaded)
 
 
   onMount(() => {
@@ -33,8 +32,8 @@
 
 <main class="editor" style={
 `--mage-settings-font: ${$font.trim()};
- --mage-settings-fontsize: ${Number(String($fontSize).trim()) * $pageZoom / 100}pt;
- --mage-settings-pagewidth: ${Number(String($pageWidth).trim()) * 2.85 * $pageZoom / 100}pt;
+ --mage-settings-fontsize: ${Number(String($fontSize).trim()) * Number($pageZoom) / 100}pt;
+ --mage-settings-pagewidth: ${Number(String($pageWidth).trim()) * 2.85 * Number($pageZoom) / 100}pt;
  --mage-settings-linemargin: ${String($lineMargin).trim()}px;
  --mage-settings-linespacing: ${String($lineSpacing).trim()};
  --mage-settings-textalign: ${$justifyText == '1' ? 'left' : 'justify'};
@@ -46,7 +45,7 @@
 
   <div class="toolbar">
     <h1 class="only-desktop" on:click={ () => $showSidemenu = !$showSidemenu} title={currentChapterFullTitle && $currentChapterFullTitle}>
-      {$currentChapterFullTitle}
+      {$currentChapterFullTitle ?? ''}
     </h1>
 
     <EditorButtons></EditorButtons>
@@ -71,7 +70,7 @@
   </div>
 </main>
 
-<style>
+<style type="postcss">
 
   .chars-count {
     color: #555;

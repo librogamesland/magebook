@@ -7,15 +7,14 @@
   import { dialog } from './Dialogs.svelte'
   import Chapter    from './dialogs/Chapter.svelte'
   import Confirm    from './dialogs/Confirm.svelte'
-  import { showSidemenu, store } from '../javascript/store';
+  import { nullUntilLoaded, showSidemenu } from '../javascript/store';
 
-  export let windowW;
-  export let w;
+  export let windowW: number;
+  export let w : number;
 
 
+  $: ({book, currentChapterKey, editor} = $nullUntilLoaded)
 
-  let book = null, currentChapterKey = null, currentChapterFullTitle = null, editor = null
-  store.then( r => ({book, currentChapterKey, currentChapterFullTitle, editor} = r))
 
 
   const addChapter = (key, text) => {

@@ -11,12 +11,10 @@ import { addMessages, init, getLocaleFromNavigator } from 'svelte-i18n'
 import en from './localizations/en.toml'
 import it from './localizations/it.toml'
 
-const locale = getLocaleFromNavigator().split('-')[0];
 addMessages('en', en)
 addMessages('it', it)
 
-addMessages('en', { ciao: 'hello'})
-
+const locale = getLocaleFromNavigator().split('-')[0];
 init({ fallbackLocale: 'en', initialLocale: locale })
 
 

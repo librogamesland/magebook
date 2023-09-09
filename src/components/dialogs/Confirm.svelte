@@ -1,16 +1,15 @@
 <script lang="ts">
   import {_} from 'svelte-i18n'
-  import { store } from '../../javascript/store'
+  import { nullUntilLoaded } from '../../javascript/store'
   import { download } from '../../javascript/file.js'
 
 
-  export let params
-  export let callback
+  export let params: any
+  export let callback: any
 
-  let book = null
-  store.then( r => ({book} = r))
+  $: ({ book } =  $nullUntilLoaded)
 
-  let title, text
+
   $: [title, text, saveCopy] = $params
 </script>
 

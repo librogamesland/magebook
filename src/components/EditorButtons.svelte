@@ -3,7 +3,7 @@
   import { EditorView } from 'codemirror';
   import { undo, redo } from '../javascript/history'
   import { openSearchPanel } from '@codemirror/search'
-  import { store } from '../javascript/store.js'
+  import { nullUntilLoaded } from '../javascript/store.js'
   import { ctrlShortcuts } from '../javascript/shortcuts.js'
 
   import { isVSCode } from '../javascript/vscode.js';
@@ -11,8 +11,7 @@
   import { firstAvaiableKey, getRightOrderKey } from '../javascript/book-utils';
 
 
-  let book = null, currentChapterKey = null, currentChapterFullTitle = null, editor = null
-  store.then( r => ({book, currentChapterKey, currentChapterFullTitle, editor} = r))
+  $: ({book, currentChapterKey, editor} = $nullUntilLoaded)
 
 
   const addChapter = (key, text) => {
@@ -25,10 +24,10 @@
   }
 
   const addLink = () => {
-    
+
     const {from, to} = $cursorPosition
-    
-    const short = book.index.properties['disableShortLinks'] == 'true' 
+
+    const short = book.index.properties['disableShortLinks'] == 'true'
     editor.dispatch({ changes: { from: to, to, insert: short ? '[](#)' : '[]' }, })
 
     editor.dispatch({
@@ -41,16 +40,16 @@
 
   }
 
-  
+
 
 
   const addQuickLink = () => {
     let { from, to} = $cursorPosition
 
     const {contentStart, end, group } = book.index.chapters.get($currentChapterKey)
-    
+
     const key = firstAvaiableKey(book)
-    const link = book.index.properties['disableShortLinks'] == 'true' 
+    const link = book.index.properties['disableShortLinks'] == 'true'
       ? `[](#${key})`
       : `[${key}]`
 
@@ -63,7 +62,7 @@
       // Special case: if is on same line of heading, create a new line skip
       editor.dispatch({ changes: { from: to, to, insert: '\n' + link }, })
       to += link.length + 1
-      
+
     }
     const cText = group ? `\n\n### ${key}\n[group]:<> ("${group}")` : `\n\n### ${key}`
     addChapter(key, cText)
@@ -77,7 +76,7 @@
 
 
     editor.focus()
-    
+
   }
 
   ctrlShortcuts({
@@ -120,7 +119,7 @@
     text-decoration: underline;
     border-left: rgb(192, 192, 192) solid 1px;
     padding: 7px 22px 6px;
-  }  
+  }
 
   div {
     cursor: pointer;

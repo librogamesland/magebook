@@ -4,7 +4,7 @@
   import { _ } from 'svelte-i18n'
   import { onDestroy } from 'svelte';
   import { tick } from 'svelte'
-  import { store } from '../../javascript/store';
+  import { nullUntilLoaded } from '../../javascript/store';
   import { isVSCode, vscode } from '../../javascript/vscode';
   import {s} from '../../javascript/settings'
 
@@ -14,13 +14,12 @@
   export let callback
 
 
-  let book = null
-  store.then( r => ({book} = r))
+  $: ({book } = $nullUntilLoaded)
 
   let loaded = false
   let waiting = false
-  let src
-  const unsubscribe = params.subscribe( async(values) => {
+  let src : string = ''
+  const unsubscribe = params.subscribe( async(values : any[]) => {
     loaded = false
     waiting = true
     await tick();
@@ -111,7 +110,7 @@
     border-radius:50%;
     padding:1px;
     background:conic-gradient(#0000 10%,#004cff) content-box;
-    -webkit-mask:
+    mask:
       repeating-conic-gradient(#0000 0deg,#000 1deg 20deg,#0000 21deg 36deg),
       radial-gradient(farthest-side,#0000 calc(100% - 9px),#000 calc(100% - 8px));
     -webkit-mask-composite: destination-in;

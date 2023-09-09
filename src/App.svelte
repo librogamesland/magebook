@@ -15,13 +15,12 @@
   import { s } from './javascript/settings'
   import manifest from '../package.json'
   import { isVSCode } from './javascript/vscode';
-  import { store } from './javascript/store';
+  import { nullUntilLoaded, store } from './javascript/store';
   import PluginPanel from './components/PluginPanel.svelte';
 
   const { theme } = s
 
-  let book = null
-  store.then( r => ({book} = r))
+  $: ({book} = $nullUntilLoaded)
 
 
   // Change theme from dark to light and vice versa
@@ -143,7 +142,7 @@
   }
   .loading-mask {
     grid-column-start: 1;
-    grid-column-end: -1;
+    grid-column-end: 3;
     grid-row-start: 2;
     grid-row-end: 2;
     background-color: #252525;
