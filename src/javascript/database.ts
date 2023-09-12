@@ -78,7 +78,7 @@ const session = new (function(){
       store.then( ({book}) =>{
           const sessions = JSON.parse(localStorage[firebaseSessionsKey] || '{}')
           sessions[fsession.value] = {
-            name: book.index.properties.title,
+            name: book.index.title,
             time: new Date().getTime()
           }
           localStorage[firebaseSessionsKey] = JSON.stringify(sessions)
@@ -148,7 +148,7 @@ const session = new (function(){
         ([$book, $cursorPosition]) => ({
           book: $book.text,
           cursor: $cursorPosition,
-          title: $book.index.properties.title
+          title: $book.index.title
         })
       )
 

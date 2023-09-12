@@ -1,141 +1,18 @@
 import {isNatNumber} from '../utils.js'
-import {trimHTML, encodeToHTML, raw, mangle} from '../encoder.js'
-import {extractIndexedBook } from '../book-utils'
 
-const isNumber = isNatNumber
+import { js2xml, xml2js } from 'xml-js'
+import {trimHTML, encodeToHTML, raw, mangle} from '../encoder.js'
+import {bookify, type Book, chaptersOf, type ChapterData, chapterText} from '../book-utils'
+
 
 const mimetype = 'application/xml'
 const extension = 'xlgc'
 
 
-
-const sortedKeys = (chapters) => Object.keys(chapters).sort( (a, b) => {
-  const aIsNumber = isNumber(a)
-  const bIsNumber = isNumber(b)
-
-  if(!aIsNumber && bIsNumber) return -1
-  if(aIsNumber && !bIsNumber) return +1
-  if(!aIsNumber && !bIsNumber) return a.localeCompare(b)
-  if(aIsNumber && bIsNumber) return  parseInt(a, 10) - parseInt(b, 10)
-})
-
-
-const decode = xlgc => {
-  const properties = {}, chapters = {}
-  let key = ''
-
-  const attributesWhitelist = [
-    'lgc_version',
-    'title',
-    'author',
-    'version',
-    'revision',
-    'table_of_contents',
-    'editing_action',
-    'editing_chapter',
-  ]
-  // Usa un DOMParser per interpretare il file xml
-  const xmlDoc = new DOMParser().parseFromString(xlgc, 'text/xml')
-  ;[...(xmlDoc.documentElement.children ||xmlDoc.documentElement.childNodes) ].forEach(entity => {
-    const id = entity.getAttribute('name')
-    const type = entity.getAttribute('type')
-    const group = entity.getAttribute('group')
-
-    // L'entità game è quella contenente i metadati come autore, revisioni, ...
-    // Queste informazioni vengono memorizzate all'interno di info con la stessa chiave
-    if (type === 'entity' && id === 'game') {
-      ;[...entity.children].forEach(node => {
-        const nodeName = node.getAttribute('name')
-        const nodeValue = node.innerHTML.substring(9, node.innerHTML.length - 3)
-        if(nodeName == 'editing_chapter') {
-          key = nodeValue
-        } else if (attributesWhitelist.includes(nodeName)){
-          properties[nodeName] = nodeValue
-        }
-      })
-      return // Termina qui, non aggiunge questa entità a section
-    }
-
-    if (type === 'entity' && id === 'map_data') {
-      ;[...entity.children].forEach(node => {
-        const nodeName = node.getAttribute('name')
-        const nodeValue = node.innerHTML.substring(9, node.innerHTML.length - 3)
-        if (nodeName === 'map_file') properties.map = nodeValue
-      })
-      return // Termina qui, non aggiunge questa entità a section
-    }
-
-    let chapter = {
-      title: '',
-      text: '',
-      flags: []
-    }
-    if (group) chapter.group = group
-      // Itera i nodi figli dell'entity alla ricerca di flag, titolo e contenuto
-    ;[...entity.children].forEach(node => {
-      const nodeName = node.getAttribute('name')
-      const nodeValue = node.innerHTML.substring(9, node.innerHTML.length - 3)
-      if (nodeName === 'chapter_title' && nodeValue) chapter.title = nodeValue
-      if (nodeName === 'description') chapter.text = nodeValue
-      if (nodeName === 'map_position') chapter.map = nodeValue
-      if (nodeName.startsWith('flag_') && nodeValue === 'true') {
-        chapter.flags.push(nodeName.substring(5)) // Aggiunge la flag
-      }
-    })
-    // Inserisce nel jlgc l'oggetto section appena creato
-    chapter.text =  raw(chapter.text.replace(/\<\/\p\>/g,'\n').replace(/\<\p\>/g,'').replaceAll('<br>', '\n')
-      .replace(/\<i\>/g, '&lt;i&gt;').replace(/\<\/i\>/g, '&lt;/i&gt;')
-      .replace(/\<b\>/g, '&lt;b&gt;').replace(/\<\/b\>/g, '&lt;/b&gt;')
-      .replace(/\<u\>/g, '&lt;b&gt;').replace(/\<\/u\>/g, '&lt;/b&gt;')
-      .replace(/{link (\w+):([^\}\{]+)}/g, (...all) => all[2].trim() == '@T' ? `[${all[1]}]` : `[${all[2]}](#${all[1]})` )
-      .replace(/[\n\s]+$/, ""))
-    chapters[id] = chapter
-  })
-
-
-    let s = `# ${properties.title}\n`
-    Object.entries(properties).forEach(([key, value]) => {
-      if(key !== 'title')  s+=`${key}: ${value.trim()}\n`
-    })
-    s+='\n\n\n'
-  
-    sortedKeys(chapters).forEach( key => {
-      const chapter = chapters[key]
-      s+= chapter.title ? `### ${chapter.title} {#${key}}\n` : `### ${key}\n`
-      if(chapter.flags && chapter.flags.length){
-        const flags = {
-          'death': '![][flag-death]',
-          'final': '![][flag-final]',
-          'fixed': '![][flag-fixed]',
-        }
-        s+= chapter.flags.map( key => flags[key]).join(' ') + '\n'
-      }
-      if(chapter.group){
-        s+=`[group]:<> ("${chapter.group}")\n`
-      }
-      s+= chapter.text.replace(/\n+$/, "") + '\n\n\n'
-    })
-  
-  return s
-    
-}
-
-
-
+const lgcVersion = "3.4.3.447"
 
 const whitelist = ['<b>', '</b>', '<i>', '</i>', '<u>', '</u>']
 
-/* ENCODING */
-const renderer = {
-  html:      text => whitelist.includes(text.trim().toLowerCase()) ? text.trim().toLowerCase() : mangle(text),
-  paragraph: text => `<p>${text}</p>`,
-  strong:    text => `<b>${text}</b>`,
-  em:        text => `<i>${text}</i>`,
-  codespan:  text => '`' + text + '`',
-  code: (code, lang) => '<p>```' + lang + mangle(code).replace(/\n/g, '</p><p>') + '```</p>',
-  link: (href,i, text) => `{link ${href.replace('#', '')}:${text || '@T'}}`,
-  br: () => '</p><p>'
-}
 
 const sanitizeHTML = (text: string) => {
   const t = document.createElement("p")
@@ -144,57 +21,213 @@ const sanitizeHTML = (text: string) => {
 
 }
 
-// Crea la sezione "game" con i metadati in info
-const encodeProperties = (properties, key) =>
-  `<entity group="setup" name="game" type="entity">` +
-    `<attribute name="description" type="string"><![CDATA[<p></p>]]></attribute>` +
-    `<attribute name="chapter_title" type="string"/>` +
-    `<attribute name="lgc_version" type="string"><![CDATA[${properties.lgc_version || ''}]]></attribute>` +
-    `<attribute name="title" type="string"><![CDATA[${properties.title     || ''}]]></attribute>` +
-    `<attribute name="author" type="string"><![CDATA[${properties.author   || ''}]]></attribute>` +
-    `<attribute name="version" type="string"><![CDATA[${properties.version || ''}]]></attribute>` +
-    `<attribute name="revision" type="integer"><![CDATA[${properties.revision || '1'}]]></attribute>` +
-    `<attribute name="editing_action" type="string"><![CDATA[${properties.editing_action ||  'WRITING'}]]></attribute>` +
-    `<attribute name="table_of_contents" type="string"><![CDATA[${properties.table_of_contents || 'P(ALL)'}]]></attribute>` +
-    `<attribute name="editing_chapter" type="string"><![CDATA[${key || '1'}]]></attribute>` +
-  `</entity>`
 
-const encodeMap = properties => !properties.map ? '' : 
-  `<entity group="setup" name="map_data" type="entity">` +
-    `<attribute name="description" type="string"><![CDATA[<p></p>]]></attribute>` +
-    `<attribute name="chapter_title" type="string"/>` +
-    `<attribute name="map_file" type="string"><![CDATA[${properties.map}]]></attribute>` +
-  `</entity>`
 
-// Crea una sezione/paragrafo
-const encodeEntity = (key, entity) =>
-  `<entity group="${entity.group || ''}" name="${key}" type="${isNumber(key) ? 'chapter' : 'section'}">` +
-  `<attribute name="description" type="string"><![CDATA[${trimHTML(sanitizeHTML(encodeToHTML(entity.text,renderer)) || '<p></p>')}]]></attribute>` +
-  `<attribute name="chapter_title" type="string"><![CDATA[${entity.title ||  ''}]]></attribute>` +
-  `${ entity.type && entity.type !== 'chapter'  ? '' : 
-    `<attribute name="flag_final" type="boolean"><![CDATA[${ entity.flags && entity.flags.includes('final') ? 'true' : 'false'}]]></attribute>` +
-    `<attribute name="flag_fixed" type="boolean"><![CDATA[${ entity.flags && entity.flags.includes('fixed') ? 'true' : 'false'}]]></attribute>` +
-    `<attribute name="flag_death" type="boolean"><![CDATA[${ entity.flags && entity.flags.includes('death') ? 'true' : 'false'}]]></attribute>`
-  }` + (!entity.map ? '' : 
-    `<attribute name="map_position" type="string"><![CDATA[${entity.map || ''}]]></attribute>`) +
-  `</entity>`
-
-// Codifica il libro
-const encode = book => {
-
-  const indexedBook = extractIndexedBook(book)
-
-  const { chapters, properties} = indexedBook
-  let r =`<?xml version="1.0" encoding="UTF-8"?><entities>${
-      encodeProperties(properties) +
-      encodeMap(properties)}`
-
-  for( const [key, chapter] of chapters){
-    r += encodeEntity(key, chapter)
-  }
-
-  return {encodedBook: r + `</entities>`, mimetype, extension }
+/* ENCODING */
+const renderer = {
+  html:      (text : string) => whitelist.includes(text.trim().toLowerCase()) ? text.trim().toLowerCase() : mangle(text),
+  paragraph: (text : string) => `<p>${text}</p>`,
+  strong:    (text : string) => `<b>${text}</b>`,
+  em:        (text : string) => `<i>${text}</i>`,
+  codespan:  (text : string) => '`' + text + '`',
+  code: (code : string, lang : string) => '<p>```' + lang + mangle(code).replace(/\n/g, '</p><p>') + '```</p>',
+  link: (href : string,i : string, text : string) => `{link ${href.replace('#', '')}:${text || '@T'}}`,
+  br: () => '</p><p>'
 }
 
 
-export default { decode, encode, mimetype }
+const arrayfy = <T>(obj : T | T[]) : T[] => (Array.isArray(obj)) ? obj : [obj]
+
+type LGCHashtag = { _attributes: { color: string, count: string, label: string }}
+type LGCValue = { _cdata?: any; _attributes: { name: string; type: string; }}
+type LGCEntity = {
+"_attributes": { group: string,    type: string, name?: string}
+  attribute: LGCValue | LGCValue[]
+}
+
+
+type LGCSchema = {
+  _declaration: { _attributes: { version: string,  encoding: string, } }
+  book : {
+    _attributes: { producer: string, producer_version: string,  schema_version: string,},
+    entities: { entity: LGCEntity | LGCEntity[], },
+    hashtags: { hashtag: LGCHashtag | LGCHashtag[],}
+  }
+}
+
+const parseContent = (content : string) : string => {
+  let r = content.replaceAll('\n', '').replaceAll('<br>', '\n').replaceAll('<br/>', '\n')
+            .replaceAll('</p>', '\n').replaceAll('<p>', '').split('\n')
+            .map(s => s + (s.includes('<p ') ? '</p>':'')).join('\n')
+
+  return r
+}
+
+
+const decode = (text: string) : string => {
+  let r = ""
+  const xlgc = xml2js(text, {compact: true}) as LGCSchema
+
+  let title = ""
+  const properties : Record<string, string> = {}
+  const chapters : ChapterData[] = []
+
+
+  for (const entity of arrayfy(xlgc.book.entities.entity)) {
+    if(entity._attributes.group === "setup") {
+      if(entity._attributes.type === "game"){
+        for(const attr of arrayfy(entity.attribute)){
+          let value = attr._cdata
+          if(!(typeof value === "string") || value.trim().length === 0) continue
+          const name = (attr._attributes.name as string).trim()
+          value = value.trim()
+
+          if(name === 'title') title = value
+          if(['author', 'version', 'lgc_version', 'revision'].includes(name)){
+            properties.name = value
+          }
+        }
+      }else if(entity._attributes.type === "global_attributes") {
+        for(const attr of arrayfy(entity.attribute)){
+          let value = attr._cdata
+          if(!(typeof value === "string") || value.trim().length === 0) continue
+          const name = (attr._attributes.name as string).trim()
+          value = value.trim()
+          if(['description','chapter_title'].includes(name)) continue
+          properties[`@${name}`] = value
+        }
+      }
+
+    }else {
+
+/*     "_attributes": {
+        "group": chapter.group,
+        "type": isNatNumber(chapter.key) ? "chapter" : "section",
+        "name": chapter.key
+      },
+      "attribute": [
+        ["description", "string", encodeToHTML(content, renderer).trim() ]
+        // @ts-ignore
+        ["chapter_title", "string", chapter.title],
+        ["hashtags", "array", filterFlags(chapter.flags)],
+        ["flag_export", "boolean", !chapter.flags.includes("noexport")],
+        ["flag_fixed", "boolean", chapter.flags.includes("fixed")],`*/
+
+
+      const attrs : Record<string, string>= {}
+      for(const attr of arrayfy(entity.attribute)){
+        let value = attr._cdata
+        if(!(typeof value === "string") || value.trim().length === 0) continue
+        const name = (attr._attributes.name as string).trim()
+        attrs[name] = value
+      }
+
+      chapters.push({
+        key: entity._attributes.name as string,
+        title: attrs['chapter_title'] ?? '',
+        flags: [],
+        group: entity._attributes.group ?? '',
+        content: parseContent(attrs['description']?? ''),
+      })
+    }
+  }
+
+  if(title !== "") r+= `# ${title}` + '\n'
+  Object.entries(properties).forEach(([key, value]) => { r+= `${key}: ${value}` + '\n' })
+  if(r.length > 0) r += '\n'
+  r += chapters.map(chapter => chapterText(chapter)).join('\n')
+
+  return r
+}
+
+
+const filterFlags = (flags: string[]) : string => {
+  const result : string[] = []
+  return result.join(';')
+}
+
+// Codifica il libro
+const encode = (bookOrText : Book | string) => {
+  const book = bookify(bookOrText)
+
+  const schema : LGCSchema = {
+    "_declaration": {
+      "_attributes": { "version": "1.0", "encoding": "UTF-8" }
+    },
+    "book": {
+      "_attributes": { "producer": "LGC", "producer_version": lgcVersion, "schema_version": "1.0" },
+      "entities": { "entity": [], },
+      "hashtags": { "hashtag": [], }
+    }
+  }
+
+  const hashtag =  {
+    "_attributes": {
+      "color": "#000000",
+      "count": "1",
+      "label": "badending"
+    }
+  }
+
+  const xmlValue = (name: string, type: string, cdata: any) => ({
+    "_attributes": { name, type },
+    ...(type === "boolean"
+      ? { "_cdata": (cdata == true) ? "true" : "false" }
+      : cdata === null
+        ? {}
+        : {"_cdata":cdata}),
+  })
+
+  for(const [chapter, {content} ] of chaptersOf(book)){
+
+    (schema.book.entities.entity as LGCEntity[]).push({
+      "_attributes": {
+        "group": chapter.group,
+        "type": isNatNumber(chapter.key) ? "chapter" : "section",
+        "name": chapter.key
+      },
+      "attribute": [
+        ["description", "string", encodeToHTML(content, renderer).trim() ]
+        // @ts-ignore
+        ["chapter_title", "string", chapter.title],
+        ["hashtags", "array", filterFlags(chapter.flags)],
+        ["flag_export", "boolean", !chapter.flags.includes("noexport")],
+        ["flag_fixed", "boolean", chapter.flags.includes("fixed")],
+      ].map(([name, type, cdata]) => xmlValue(name, type, cdata)),
+    })
+  }
+
+  (schema.book.entities.entity as LGCEntity[]).push({
+    "_attributes": { "group": "setup", "name": "game", "type": "entity" },
+    "attribute": [
+      ["description", "string", "<p></p>" ],
+      ["chapter_title", "string", null],
+      ["hashtags", "array", null],
+      ["lgc_version", "string", lgcVersion],
+      ["title", "string", book.index.title.trim()],
+      ["author", "string", book.index.properties['author'] ?? ''],
+      ["version", "string", book.index.properties['version'] ?? ''],
+      ["revision", "integer", "1"],
+      ["editing_action", "string", "WRITING"],
+      ["table_of_contents", "string", "P(ALL)"],
+      ["editing_chapter", "string", book.index.chapters[0].key],
+      // @ts-ignore
+    ].map(([name, type, cdata]) => xmlValue(name, type, cdata)),
+  },{
+    "_attributes": { "group": "setup", "name": "global_attributes", "type": "entity" },
+    "attribute": [
+      ["description", "string", "<p></p>" ],
+      ["chapter_title", "string", null],
+      // ["protagonista", "string", "Autolico"] TODO: aggiungere le sostituzioni automatiche
+      // @ts-ignore
+    ].map(([name, type, cdata]) => xmlValue(name, type, cdata)),
+  })
+
+
+
+  console.log(js2xml(schema, {compact: true, spaces: 2}))
+  return {encodedBook: js2xml(schema, {compact: true, spaces: 2}), mimetype, extension }
+}
+
+
+export default { encode, decode, mimetype, extension }

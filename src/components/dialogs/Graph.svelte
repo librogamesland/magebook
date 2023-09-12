@@ -11,7 +11,8 @@
   import {get} from 'svelte/store'
 
   export let params
-  export let callback
+  export let callback : Function
+
 
 
   $: ({book } = $nullUntilLoaded)
@@ -44,7 +45,7 @@
   callback(false)
 }}>
 
-  <div on:click|stopPropagation={() => {}} style="max-width:90vw; max-height: 80vh; overflow: auto;">
+  <div role="button" on:click|stopPropagation={() => {}} style="max-width:90vw; max-height: 80vh; overflow: auto;">
   {@html src}
   </div>
   <div>
@@ -66,7 +67,7 @@
       const url = URL.createObjectURL(blob);
       const win = window.open(url);
       // so the Garbage Collector can collect the blob
-      win.onload = () => URL.revokeObjectURL(url);
+      if(win != null) win.onload = () => URL.revokeObjectURL(url);
 
       }}>{$_('dialogs.graph.open')}</button>
       <button class="error" on:click={ () => {
@@ -76,7 +77,7 @@
             `data:image/svg+xml;base64,${encode(src)}`
           )
 
-          element.setAttribute('download', (book.index.properties.title || 'graph') + '.svg')
+          element.setAttribute('download', (book.index.title || 'graph') + '.svg')
           element.style.display = 'none'
           document.body.appendChild(element)
           element.click()

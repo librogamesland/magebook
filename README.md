@@ -95,15 +95,23 @@ const book = {
         title: '',
         group: 'groupname',
         flags: ['death'],
-        start: 4,
-        textStart: 5,
-        textEnd: 8,
-        end: 10,
-        linksTo: ['1'], // keys of chapter a user could go from this one
+        lines: {
+          start: 4,
+          textStart: 5,
+          textEnd: 8,
+          end: 10,
+        }
+        links: ['1'], // keys of chapter a user could go from this one
         linkedFrom: [0], // index of chapters who are referring the key of this one
       }
     ],
 
+    lineStarts: [ 0, 10, ...], // position of starting character of each line
+
+    lines: {
+      titlePageEnd: 3, // last line of the title page
+      end: 10, // last line of the book
+    }
 
     // default mapping for links
     keys: {
@@ -124,7 +132,7 @@ const book = {
     }
   },
 
-  contentIndex: {
+  content: {
     titlePage,
     chapters: [
       {

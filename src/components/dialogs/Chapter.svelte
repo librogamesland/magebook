@@ -37,7 +37,7 @@
   })
 
   onDestroy(unsubscribe)
-  $: keyDuplicate = (key !== originalKey) && book && $book.index.chapters.has(key)
+  $: keyDuplicate = ((key !== originalKey) && book && $book.index.keys[key]) ? true : false
   $: keyIsValid = key === sanitizeKey(key)
   $: groupIsValid = group === sanitizeKey(group)
 </script>
@@ -59,7 +59,7 @@
     <input class:error={!groupIsValid} bind:value={group} type="text" list="chapters-groups" />
     <datalist id="chapters-groups">
       {#if book}
-      {#each [...($book.index.groups)] as group}
+      {#each Object.keys($book.index.chaptersWith.group) as group}
         <option value={group}>{group}</option>
       {/each}
       {/if}
@@ -83,7 +83,7 @@
   <p style="font-size: 85%" class:hide={groupIsValid}><i class="icon-warning"></i>{$_('dialogs.chapter.warnings.invalidgroup')}</p>
 
   <button
-    disabled={keyDuplicate || !keyIsValid || !groupIsValid}
+    disabled={(keyDuplicate || !keyIsValid || !groupIsValid) ? true : false}
     class="ok"
     on:click={() => callback({
         key,

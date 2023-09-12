@@ -1,4 +1,5 @@
 import {marked} from 'marked'
+import type { Book, BookChapter } from './book-utils';
 
 export {marked}
 
@@ -9,32 +10,33 @@ if(typeof DOMParser === 'undefined'){
 }
 
 const a = document.createElement('p')
-const raw    = t => (a.innerHTML = t, a.textContent)
-const mangle = t => (a.textContent = t, a.innerHTML)
+const raw    = (t : string) => (a.innerHTML = t, a.textContent)
+const mangle = (t : string) => (a.textContent = t, a.innerHTML)
 export {raw, mangle}
 
 window['marked'] = marked
 const tokenizer = {
-  heading(src){},
-  nptable(src){},
-  hr(src){},
-  blockquote(src){},
-  code(src){},
-  def(src){},
-  list(src){},
-  table(src){},
-  lheading(src){},
+  heading(){},
+  nptable(){},
+  hr(){},
+  blockquote(){},
+  code(){},
+  def(){},
+  list(){},
+  table(){},
+  lheading(){},
 
 };
 
+// @ts-ignore
 marked.use({ tokenizer });
 
 
 
-export const disableShortLinks = (disabled)  =>  {
+export const disableShortLinks = (disabled : boolean)  =>  {
   marked.use({
     tokenizer: {
-      reflink(src){
+      reflink(src : string){
         if(disabled) return
         const rule = /^\[(.*?)\]/;  // Regex for the complete token, anchor to string start
         const match = rule.exec(src);
@@ -54,32 +56,32 @@ export const disableShortLinks = (disabled)  =>  {
 }
 
 const defaultHTMLRenderer = {
-  html:      text => mangle(text),
-  paragraph: text => `${text.trim()}<br>`,
-  strong:    text => `<b>${text}</b>`,
-  em:        text => `<i>${text}</i>`,
-  codespan:  text => '',
-  code:      text => '',
-  reflink:   (...e)  => JSON.stringify(e),
-  br:        (...e) => '</p><p>',
+  html:      (text: string) => mangle(text),
+  paragraph: (text: string) => `${text.trim()}<br>`,
+  strong:    (text: string) => `<b>${text}</b>`,
+  em:        (text: string) => `<i>${text}</i>`,
+  codespan:  (_text: string) => '',
+  code:      (_text: string) => '',
+  reflink:   (...e :any[])  => JSON.stringify(e),
+  br:        (..._e : any[]) => '</p><p>',
 }
 
-export const encodeToHTML = (text, renderer = defaultHTMLRenderer, linkToGenerate = []) => {
+export const encodeToHTML = (text : string, renderer : any = defaultHTMLRenderer ) : string => {
   return marked(text.replace(/\n/g, ' \\\n').replaceAll(' \\\n```', '\n\n```'), {
     renderer: Object.assign(
       new marked.Renderer(),
       renderer,
       {
-        code: (text, infostring, ...all) => {
+        code: (text : string, infostring : string, ...all : any[]) => {
           //@ts-ignore
           return renderer.code(text.replaceAll(' \\\n', '\n'), infostring.replace(' \\', ''), ...all)
         }
       },
-  )})
+  )}) || ''
 }
 
 
-export const trimHTML = (htmlText) => {
+export const trimHTML = (htmlText : string) => {
   return htmlText
     .replaceAll(/( )*\<p\>( )*/g, '<p>')
     .replaceAll(/( )*\<\/p\>( )*/g, '</p>')
@@ -87,7 +89,8 @@ export const trimHTML = (htmlText) => {
 }
 
 
-export const sanitizeProperties = (p) => {
+export const sanitizeProperties = (p : Record<string, string> = {}) => {
+
   const properties = {
       disableShortLinks: false,
       page: {
@@ -105,10 +108,12 @@ export const sanitizeProperties = (p) => {
         size: '12pt',
       },
       titleStyle: 'default',
-
-      renameTitle: ({book, chapter, key, title}) => '<b>' + (title == '' ? key : title) + '</b>',
-      renameLink: ({book, chapter, text, title, key, currentChapter}) => text == '' ? (chapter == null ? 'ERROR' : (title == '' ? key : title)) : text,
-      renameAnchor: ({book, key}) => key,
+      //@ts-ignore
+      renameTitle: (({book, chapter, key, title}) => '<b>' + (title == '' ? key : title) + '</b>') as Function,
+      //@ts-ignore
+      renameLink: (({book, chapter, text, key, title }) => text == '' ? (chapter == null ? 'ERROR' : (title == '' ? key : title)) : text) as Function,
+      //@ts-ignore
+      renameAnchor: (({book, key}) => key) as Function,
 
       advancedFormat: ['text/html', 'html'],
     }
@@ -117,11 +122,11 @@ export const sanitizeProperties = (p) => {
     properties.disableShortLinks = true
   }
 
-  if(p['page']){
+  if(typeof p['page'] === 'string'){
     const page = p['page'].split(',')
     if(page[0]){
       //A3, A4, A5, A6, B4, B5, B6 or Letter.
-      const pages = {
+      const pages : Record<string, string> = {
         A3: '29.70 42.00',
         A4: '21.00 29.70',
         A5: '14.80 21.00',
@@ -184,11 +189,8 @@ export const sanitizeProperties = (p) => {
     if(indexStyle != -1) properties.titleStyle = styles[indexStyle]
   }
 
-  // @ts-ignore
   if(p['renameTitle'])  properties.renameTitle  = new Function('{book, chapter, key, title}', 'return ' + p['renameTitle'].trim())
-  // @ts-ignore
-  if(p['renameLink'])   properties.renameLink   = new Function('{book, text, chapter, title, key, currentChapter}', 'return ' + p['renameLink'].trim())
-    // @ts-ignore
+  if(p['renameLink'])   properties.renameLink   = new Function('{book, text, chapter, title, key }', 'return ' + p['renameLink'].trim())
   if(p['renameAnchor']) properties.renameAnchor = new Function('{book, key}', 'return ' + p['renameAnchor'].trim())
 
 
@@ -201,3 +203,12 @@ export const sanitizeProperties = (p) => {
   return properties
 }
 
+export type ExportProperties = ReturnType<typeof sanitizeProperties>
+
+
+export const renameKeyAndTitle = (properties : ExportProperties, book : Book, chapter : BookChapter) => {
+  const renamedKey = properties.renameAnchor({ key: chapter.key, book, })
+  const renamedTitle = properties.renameTitle({ book, chapter, key: chapter.key, title: chapter.title })
+
+  return {renamedKey, renamedTitle}
+}

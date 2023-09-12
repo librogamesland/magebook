@@ -1,10 +1,9 @@
 
-import { derived, get, writable } from 'svelte/store'
+import { derived, writable, type Writable } from 'svelte/store'
 import { debouncable } from './debounced-store'
-import { extractIndexedBook, indexBook } from './book-utils'
+import { indexBook, type BookIndex, contentBook, stringBook } from './book-utils'
 import { cursorPosition, setOnChangeCallback } from './codemirror'
 import type { EditorView } from 'codemirror'
-import { bookHeadless } from './book-utils'
 
 
 export const showSidemenu = writable(false)
@@ -17,9 +16,9 @@ export const isSynced = debouncable(500, null)
 
 
 // main interface from writing/reading text from the store
-export const bookStoreCodemirror  = (editor : EditorView, setOnChangeCallback : any) => {
+export const bookStoreCodemirror = (editor : EditorView, setOnChangeCallback : any) => {
 
-  let text = '', index = null
+  let text = '', index : BookIndex = null
   const getState = (newText : string) => {
     text = newText
     index = indexBook(text)
@@ -62,7 +61,7 @@ export const bookStoreCodemirror  = (editor : EditorView, setOnChangeCallback : 
 
     get text() { return text },
     get index() { return index },
-    get extractedIndex() { return extractIndexedBook(text) },
+    get content() { return contentBook(text, index) },
 
 
     replace(from : number, to : number, newText : string) {
@@ -72,7 +71,7 @@ export const bookStoreCodemirror  = (editor : EditorView, setOnChangeCallback : 
     },
 
     apply(transformation) {
-      const book = bookHeadless(editor.state.doc.toString())
+      const book = stringBook(editor.state.doc.toString())
       transformation(book)
       book.steps.forEach(step => {
         switch(step.type) {
@@ -121,32 +120,36 @@ export const store = (async () => {
 
 
 
-  const currentChapterKey = derived(
+  const selectedChapterIndex = derived(
     [cursorPosition, book],
     ([$cursorPosition, $book]) => {
 
       const lastPos = editor.state.doc.toString().length
       let cursorRow = editor.state.doc.lineAt(Math.min($cursorPosition.from, Math.max(0, lastPos - 1))).number - 1
-      let lastWorkingKey = ''
-      let lastWorkingChapter = null
-      for(const [key, chapter] of $book.index.chapters.entries()) {
-        if(chapter.contentStart <= cursorRow){
-          lastWorkingKey = key
-          lastWorkingChapter = chapter
+      let lastWorkingIndex : number = -1
+      for(const [chapterIndex, chapter] of $book.index.chapters.entries()) {
+        if(chapter.lines.textStart <= cursorRow){
+          lastWorkingIndex = chapterIndex
         } else {
-          return lastWorkingKey
+          return lastWorkingIndex
         }
       }
-      return lastWorkingKey
+      return lastWorkingIndex
   });
 
+  const selectedChapter = derived(
+    [selectedChapterIndex, book],
+    ([$selectedChapterIndex, $book]) => {
+      return $book.index.chapters[$selectedChapterIndex]
+    }
+  )
 
-  const currentChapterFullTitle = derived(
-    [currentChapterKey, book],
-    ([$currentChapterKey, $book]) => {
-      if($currentChapterKey == '') return ' '
-      const chapter = $book.index.chapters.get($currentChapterKey)
-      return $currentChapterKey + (chapter.title ? ' - ' + chapter.title : '')
+  const selectedChapterFullTitle = derived(
+    [selectedChapterIndex, book],
+    ([$selectedChapterIndex, $book]) => {
+      if($selectedChapterIndex == -1) return ''
+      const chapter = $book.index.chapters[$selectedChapterIndex]
+      return chapter.key + (chapter.title ? ' - ' + chapter.title : '')
     }
   )
 
@@ -155,20 +158,21 @@ export const store = (async () => {
 
   return {
     book,
-    currentChapterKey,
-    currentChapterFullTitle,
+    selectedChapter,
+    selectedChapterIndex,
+    selectedChapterFullTitle,
     editor
   }
 
 
 })()
 
-export const nullUntilLoaded = writable({
+export const nullUntilLoaded : Writable<Awaited<typeof store>> = writable({
   book: null,
-  currentChapterKey: null,
-  currentChapterFullTitle: null,
+  selectedChapter: null,
+  selectedChapterIndex: null,
+  selectedChapterFullTitle: null,
   editor: null,
-
 })
 
 

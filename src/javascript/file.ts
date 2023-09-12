@@ -8,10 +8,10 @@ import xlgc from './formats/xlgc.js'
 import fodt from './formats/fodt.js'
 import docx from './formats/docx.js'
 import html from './formats/html.js'
-import advanced from './formats/advanced.js'
+import json from './formats/json.js'
 
 
-import { bookify, extractIndexedBook } from './book-utils.js'
+import { bookify, type Book } from './book-utils.js'
 import {disableShortLinks} from './encoder.js'
 import {session} from './database.js'
 import {s} from './settings'
@@ -20,13 +20,25 @@ import {get} from 'svelte/store'
 import { isVSCode, vscode } from './vscode'
 
 
+type FormatModule = {
+  mimetype : Readonly<string>,
+  extension : Readonly<string>,
+  encode? : (book : Book | string) => {
+    encodedBook?: string,
+    mimetype : string,
+    extension : string,
+    blob? : any,
+  },
+  decode? : (text : string) => Promise<string> | string,
+}
 
-const formats = { md, xlgc, fodt, docx, html, advanced }
+const formats : Record<string, FormatModule> = { md, fodt, html, json, docx, xlgc }
 
 
 
 // Read file from fileinput
-const open = (elem) => {
+const open = (elem : HTMLInputElement) => {
+  if(elem.files === null) return
   // Crea una copia delle info del file
   const file = elem.files[0]
   const name = file.name
@@ -34,15 +46,16 @@ const open = (elem) => {
   // Usa un fileReader per leggere il file come testo
   const reader = new FileReader()
   reader.onload = async() => {
-    let extension = name.substr(name.lastIndexOf('.') + 1)
+    let extension = name.substring(name.lastIndexOf('.') + 1)
     if(extension == 'magebook') extension = 'md' // treat magebook files as md
 
-    if(!['md', 'xlgc'].includes(extension)){
+    if(formats[extension]  === undefined || formats[extension].decode === undefined){
       console.error("Unsupported format")
       return
     }
 
     const book = reader.result
+    // @ts-ignore
     const decodedMd = formats[extension].decode(book)
     const encodedBook = await Promise.resolve(decodedMd)
 
@@ -62,19 +75,21 @@ const open = (elem) => {
 
 
 // Download file
-const download = async(formatKey, book) => {
-  const {text, index} = bookify(book)
+const download = async(formatKey : string, bookOrString : Book | string) => {
+  const book = bookify(bookOrString)
 
   const format = formats[formatKey]
-  const indexedBook = index
 
+  if(format === undefined || format.encode === undefined){
+    throw "Unsopported format"
+  }
 
-  disableShortLinks(indexedBook.properties.disableShortLinks && indexedBook.properties.disableShortLinks.trim() == "true")
-  const { encodedBook, mimetype, extension, blob = null } = await Promise.resolve(format.encode(text))
+  disableShortLinks(book.index.properties?.disableShortLinks?.trim() == "true")
+  const { encodedBook, mimetype, extension, blob = null } = await Promise.resolve(format.encode(book))
 
 
   const suffix = `-${dateFormat.asString(get(s.dateFormat), new Date())}.${extension}`
-  const fileName = `${indexedBook.properties.title || 'magebook'}${suffix}`
+  const fileName = `${book.index.title || 'magebook'}${suffix}`
 
 
 
@@ -108,7 +123,7 @@ const download = async(formatKey, book) => {
 
 
   if(blob){
-    blob.then(blobResult => {
+    blob.then((blobResult :any) => {
       if(isVSCode){
         let reader = new FileReader();
         reader.onload = function() {

@@ -1,13 +1,14 @@
-import {trimHTML, mangle, encodeToHTML, sanitizeProperties} from '../encoder.js'
-import {extractIndexedBook} from '../book-utils'
+import {trimHTML, mangle, encodeToHTML, sanitizeProperties, renameKeyAndTitle, type ExportProperties} from '../encoder.js'
+import {bookify, type Book, chaptersOf} from '../book-utils'
 
-import docx, { UnderlineType } from 'docx'
+import * as docx from '../../../node_modules/docx/build/index.js'
 
+console.log(docx)
 const mimetype = 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
 const extension = 'docx'
 
 
-const textNodesUnder = (el) => {
+const textNodesUnder = (el : Element) => {
   var n, a=[], walk=document.createTreeWalker(el,NodeFilter.SHOW_TEXT);
   while(n=walk.nextNode()) a.push(n);
   return a;
@@ -17,85 +18,75 @@ const textNodesUnder = (el) => {
 const whitelist = ['<b>', '</b>', '<i>', '</i>', '<u>', '</u>']
 
 const inlineRenderer = () => ({
-  html:      text => whitelist.includes(text.trim().toLowerCase()) ? text.trim().toLowerCase() : mangle(text),
-  paragraph: text => `${text}`,
-  strong:    text => `<b>${text}</b>`,
-  em:        text => `<i>${text}</i>`,
+  html:      (text : string) => whitelist.includes(text.trim().toLowerCase()) ? text.trim().toLowerCase() : mangle(text),
+  paragraph: (text : string) => `${text}`,
+  strong:    (text : string) => `<b>${text}</b>`,
+  em:        (text : string) => `<i>${text}</i>`,
   codespan:  () => '',
   code: () => '',
   link: () => '',
 })
 
-const renderer = (indexedBook, properties, currentChapter) => ({
-  html:      text => whitelist.includes(text.trim().toLowerCase()) ? text.trim().toLowerCase() : mangle(text),
-  paragraph: text => `<p>${text}</p>`,
-  strong:    text => `<b>${text}</b>`,
-  em:        text => `<i>${text}</i>`,
-  codespan:  text => '',
-  code: (code, lang) => '',
-  link: (fullKey, i, text) => {
-    
+const renderer = (book : Book, properties : ExportProperties) => ({
+  html:      (text : string) => whitelist.includes(text.trim().toLowerCase()) ? text.trim().toLowerCase() : mangle(text),
+  paragraph: (text : string) => `<p>${text}</p>`,
+  strong:    (text : string) => `<b>${text}</b>`,
+  em:        (text : string) => `<i>${text}</i>`,
+  br:        () => '</p><p>',
+  codespan:  (_text : string) => '',
+  code: (_code : string, _lang : string) => '',
+  link: (fullKey : string, _i : string, text : string) => {
+
     const key = fullKey.replace('#', '').trim()
     const renamedKey = properties.renameAnchor({
       key,
-      book: indexedBook
+      book,
     })
-    const chapter = indexedBook.chapters.has(key) ? indexedBook.chapters.get(key) : null
+
+    const chapterIndex = book.index.keys[key]
+    const chapter = (chapterIndex === undefined) ? undefined : book.index.chapters[chapterIndex]
 
     return `<mage-link to="${renamedKey}">${encodeToHTML(properties.renameLink({
-      book: indexedBook,
-      text: text.trim(), 
+      book,
+      text: text.trim(),
       chapter,
-      title: chapter ? chapter.title : null,
-      key,
-      currentChapter,
-
+      title: chapter?.title,
+      key: chapter?.key,
     }), inlineRenderer())}</mage-link>`
   },
 })
 
 
-/* Strategy: 
+/* Strategy:
 convert markdown to html. Then process each text node of html.
 For each text node, go up in the html tree. If a parent is '<b>', mark the
 node as bold text (and so on)*/
 
-const encode = (bookText) => {
-  const indexedBook = extractIndexedBook(bookText)
-  const properties = sanitizeProperties(indexedBook.properties)
+const encode = (bookOrText : Book | string) => {
+  const book = bookify(bookOrText)
+  const properties = sanitizeProperties(book.index.properties)
+  const inlineStyle = properties.titleStyle == 'inline'
+  const breakAfter =  false
+
   const children = []
-  
-  const name = indexedBook.properties.title || 'magebook'
-  for(let [key, chapter] of indexedBook.chapters){
-    const inlineStyle = properties.titleStyle == 'inline' // isNumber(key)
-    const breakAfter =  false //!isNumber(key)
 
-    const {text} = chapter
-    const renamedKey = properties.renameAnchor({
-      key: key,
-      book: indexedBook
-    })
+  const name = book.index.title || 'magebook'
+  for(const [chapter, {content}] of chaptersOf(book)){
 
-    const renamedTitle = properties.renameTitle({
-      book: indexedBook,
-      chapter,
-      key: key,
-      title: chapter.title ? chapter.title.trim() : '',
-
-    })
+    const {renamedKey, renamedTitle} = renameKeyAndTitle(properties, book, chapter)
 
 
 
-    // GET HEADING 
+    // GET HEADING
     const t = document.createElement("p")
     t.innerHTML = encodeToHTML(renamedTitle, inlineRenderer()) || ''
-    const tChildren = []
+    const tChildren : any[] = []
     textNodesUnder(t).forEach( (node) => {
       let bold      = false
       let italics   = false
       let underline = false
 
-      let domElement = node.parentNode
+      let domElement = node.parentNode as Element
       while(domElement.tagName !== 'P'){
         const tag = domElement.tagName
 
@@ -103,50 +94,53 @@ const encode = (bookText) => {
         if(tag === 'B') bold      = true
         if(tag === 'I') italics   = true
         if(tag === 'U') underline = true
-        domElement = domElement.parentNode
+        domElement = domElement.parentNode as Element
       }
 
       tChildren.push(new docx.TextRun({
-        bold, italics, underline,
-        text: node.nodeValue
+        bold, italics,
+        underline: underline ? {
+          color: '#000000',
+        } : undefined,
+        text: node.nodeValue ?? ''
       }))
     })
 
-  
+
     // Create Bookmark
     const bookMark = new docx.Bookmark({
       id: `${renamedKey}`,
       children: tChildren,
     })
 
-  
+
     const l = document.createElement("div")
-    l.innerHTML = trimHTML(encodeToHTML(text, renderer(indexedBook,properties, chapter)).replaceAll('<br>', '</p><p>') || '<p></p>')
-  
+    l.innerHTML = trimHTML(encodeToHTML(content, renderer(book,properties)).replaceAll('<br>', '</p><p>') || '<p></p>')
+
     // Create paragraphs
     const paragraphs = []
-  
+
     if(!inlineStyle){
       paragraphs.push(new docx.Paragraph({
           children: [bookMark],
-          alignment: 'center',
+          alignment: docx.AlignmentType.CENTER,
           heading: docx.HeadingLevel.HEADING_3
       }))
     }
-  
+
     const childNodes = l.childNodes
     childNodes.forEach( (p, i) =>{
-      const children = []
-  
-      textNodesUnder(p).forEach( (node) => {
+      const children :any[] = []
+
+      textNodesUnder(p as Element).forEach( (node) => {
         let bold      = false
         let italics   = false
         let underline = false
-  
-        let domElement = node.parentNode
+
+        let domElement = node.parentNode as Element
         while(domElement.tagName !== 'P'){
           const tag = domElement.tagName
-  
+
           if(tag === 'MAGE-LINK'){
             const href= domElement.getAttribute('to')
             children.push(
@@ -154,33 +148,37 @@ const encode = (bookText) => {
                 children: [
                     new docx.TextRun({
                         bold, italics,
-                        text: node.nodeValue,
+                        text: node.nodeValue ?? undefined,
                         style: "Hyperlink",
-                        underline: underline ? null : {
+                        //@ts-ignore
+                        underline: !underline ? {
                           type: null,
                           color: '#000000'
-                        },
+                        } : undefined,
                     }),
                 ],
                 anchor: `${href}`,
               }))
             return
           }
-  
+
           if(tag === 'B') bold      = true
           if(tag === 'I') italics   = true
           if(tag === 'U') underline = true
-          domElement = domElement.parentNode
+          domElement = domElement.parentNode as Element
         }
-  
+
         children.push(new docx.TextRun({
-          bold, italics, underline,
-          text: node.nodeValue
+          bold, italics,
+          underline: underline ? {
+            color: '#000000'
+          } : undefined,
+          text: node.nodeValue ?? undefined
         }))
       })
-  
+
       // Get alignment
-      let alignment = 'both'
+      let alignment = docx.AlignmentType.BOTH
       // Create paragraph
       paragraphs.push(new docx.Paragraph({
           children: [
@@ -190,14 +188,14 @@ const encode = (bookText) => {
           alignment,
       }))
     })
-  
+
     paragraphs.push(new docx.Paragraph({
         children: [
           new docx.TextRun(''),
           ...(breakAfter ? [new docx.PageBreak()] : []),
         ]
     }))
-  
+
 
     children.push(...paragraphs)
   }
@@ -221,7 +219,7 @@ const encode = (bookText) => {
                       Number(properties.textFont.spacing.replace('%', '')) * 2.4),
                 },
             },
-        },  
+        },
         {
           id: "Heading3",
           name: "Heading 3",
@@ -244,18 +242,18 @@ const encode = (bookText) => {
       ],
     },
     sections: [{
-      headers: { default: null, },
+      headers: { default: undefined, },
       properties: {
         page: {
           size: {
-            width:  properties.page.width + 'cm',
-            height: properties.page.height + 'cm',
+            width:  `${parseFloat(properties.page.width)}cm`,
+            height: `${parseFloat(properties.page.height)}cm`,
           },
           margin: {
-              top: properties.page.margins[0] + 'cm',
-              right: properties.page.margins[1] + 'cm',
-              bottom: properties.page.margins[2] + 'cm',
-              left: properties.page.margins[3] + 'cm',
+              top:    `${parseFloat(properties.page.margins[0])}cm`,
+              right:  `${parseFloat(properties.page.margins[1])}cm`,
+              bottom: `${parseFloat(properties.page.margins[2])}cm`,
+              left:   `${parseFloat(properties.page.margins[3])}cm`,
           },
         },
       },
@@ -269,4 +267,4 @@ const encode = (bookText) => {
 }
 
 
-export default {encode}
+export default {encode, mimetype, extension}

@@ -28,7 +28,7 @@
   if (!isVSCode) {
     ctrlShortcuts({
       S: () => download("md", book),
-      O: () => document.getElementById("open").click(),
+      O: () => document.getElementById("open")?.click(),
     });
   }
 
@@ -128,8 +128,8 @@
         <p on:click={() => download("html", book)}>
           {$_("navbar.export.html")}
         </p>
-        <p on:click={() => download("advanced", book)}>
-          {$_("navbar.export.advanced")}
+        <p on:click={() => download("json", book)}>
+          {$_("navbar.export.json")}
         </p>
         <p on:click={() => download("xlgc", book)}>
           {$_("navbar.export.xlgc")}

@@ -1,5 +1,8 @@
+/
+
+
 import {encodeToHTML, sanitizeProperties, raw} from '../encoder.js'
-import {extractIndexedBook } from '../book-utils'
+import {bookify, type Book } from '../book-utils'
 
 
 
@@ -10,7 +13,7 @@ const defaultTemplate = `<!DOCTYPE html>
 	<meta name='viewport' content='width=device-width,initial-scale=1'>
 	<title>Gamebook app</title>
   <meta name="theme-color" content="rgb(47, 99, 255)">
-  
+
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/material-design-iconic-font/2.2.0/css/material-design-iconic-font.min.css">
   <link rel="stylesheet" href="https://librogamesland.github.io/magebook/template/mageapp.css">
 </head>
@@ -37,19 +40,19 @@ const defaultTemplate = `<!DOCTYPE html>
 
 
 
-const renderer = (indexedBook, properties, currentChapter) => ({
-  html:      text => text,
-  paragraph: text => `${text}<br><div class="space"></div>\n`,
-  strong:    text => `<b>${text}</b>`,
-  em:        text => `<i>${text}</i>`,
-  codespan:  text => {
+const renderer = (indexedBook, properties, selectedChapter) => ({
+  html:      (text : string) => text,
+  paragraph: (text : string) => `${text}<br><div class="space"></div>\n`,
+  strong:    (text : string) => `<b>${text}</b>`,
+  em:        (text : string) => `<i>${text}</i>`,
+  codespan:  (text : string) => {
     const code = raw(text).trim();
     return code.trim().startsWith('<') && code.trim().endsWith('>') ? code : ''
   },
-  code:      (code, infostring) => infostring.trim() == 'html' ? code : '',
+  code:      (code : string, infostring : string) => infostring.trim() == 'html' ? code : '',
   br:        () => '<br><div class="space"></div>',
-  link: (fullKey, i, text) => {
-    
+  link: (fullKey : string, _i :string, text: string) => {
+
     const key = fullKey.replace('#', '').trim()
     const renamedKey = properties.renameAnchor({
       key,
@@ -59,11 +62,11 @@ const renderer = (indexedBook, properties, currentChapter) => ({
 
     return `<a href="#${renamedKey}">${properties.renameLink({
       book: indexedBook,
-      text: text.trim(), 
+      text: text.trim(),
       chapter,
       title: chapter ? chapter.title : null,
       key,
-      currentChapter,
+      selectedChapter,
 
     })}</a>`
   },
@@ -71,22 +74,22 @@ const renderer = (indexedBook, properties, currentChapter) => ({
 
 
 
-const encode = (bookText) => {
-  const indexedBook = extractIndexedBook(bookText)
-  const properties = sanitizeProperties(indexedBook.properties)
+const encode = (bookText : Book | string) => {
+  const book = bookify(bookText)
+  const properties = sanitizeProperties(book.index.properties)
 
   const result = {
-    properties: indexedBook.properties,
+    properties: book.index.properties,
     toc: [],
     titles: {},
     chapters: {},
   }
 
 
-  for(const [key, chapter] of indexedBook.chapters){ 
+  for(const [chapterIndex, chapter] of book.index.chapters.entries()){
 
     result.toc.push(key)
-    
+
     const {text, title } = chapter
 
     if(title) result.titles[key] = title
@@ -99,7 +102,7 @@ const encode = (bookText) => {
   }
 
   let template = defaultTemplate
-  const tIndex = indexedBook.titlePage.indexOf('\n```template') 
+  const tIndex = indexedBook.titlePage.indexOf('\n```template')
   if(tIndex > 0){
     const startIndex = tIndex + '\n```template'.length
     const endIndex = indexedBook.titlePage.indexOf('\n```', startIndex)

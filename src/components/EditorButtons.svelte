@@ -8,15 +8,15 @@
 
   import { isVSCode } from '../javascript/vscode.js';
   import { cursorPosition } from '../javascript/codemirror';
-  import { firstAvaiableKey, getRightOrderKey } from '../javascript/book-utils';
+  import { firstAvaiableKey, findNewKeyIndex } from '../javascript/book-utils';
 
 
-  $: ({book, currentChapterKey, editor} = $nullUntilLoaded)
+  $: ({book, selectedChapter, editor} = $nullUntilLoaded)
 
 
   const addChapter = (key, text) => {
 
-    const index = editor.state.doc.line(getRightOrderKey(book, key, currentChapterKey) + 1).to
+    const index = editor.state.doc.line(getRightOrderKey(book, key, selectedChapter.key) + 1).to
     editor.dispatch({
       changes: { from: index, to: index, insert: '\n' + text },
     })
@@ -46,7 +46,7 @@
   const addQuickLink = () => {
     let { from, to} = $cursorPosition
 
-    const {contentStart, end, group } = book.index.chapters.get($currentChapterKey)
+    const {contentStart, end, group } = book.index.chapters.get($selectedChapter)
 
     const key = firstAvaiableKey(book)
     const link = book.index.properties['disableShortLinks'] == 'true'
@@ -67,7 +67,7 @@
     const cText = group ? `\n\n### ${key}\n[group]:<> ("${group}")` : `\n\n### ${key}`
     addChapter(key, cText)
 
-    if(getRightOrderKey(book, key, $currentChapterKey) <= contentStart) to += cText.length + 1
+    if(getRightOrderKey(book, key, $selectedChapter.key) <= contentStart) to += cText.length + 1
     editor.dispatch({
       selection: {anchor: to},
       effects: [ EditorView.scrollIntoView(to)]

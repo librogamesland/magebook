@@ -3,7 +3,7 @@
   import { store } from "../javascript/store";
   //@ts-ignore
   import { plugins } from  'mage-plugins';
-  import { portrait } from "../javascript/utils";
+  import { portrait } from "../javascript/viewport";
   import { showPluginPanel } from "../javascript/store";
 
   if(plugins.length > 0) showPluginPanel.set(true)

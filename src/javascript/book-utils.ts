@@ -8,57 +8,59 @@ import {isNatNumber, shuffleArray} from './utils'
 export const sanitizeKey = (key : string) => key.replace(/[^a-z0-9]/gi,'')
 
 
-export const generateChapterFullText = ({key, title = '', flags = [], group= '', text = '', beforeSpaceLines = 2, afterSpaceLines= 0}) => {
-  let r = '\n'.repeat(beforeSpaceLines)
-  r += (title) ? `### ${title} {#${key}}` : `### ${key}`
-  if(flags && flags.length > 0)  r += "\n" + flags.map( flag => `![][flag-${flag}]`).join(' ')
-  if(group) r+= `\n[group]:<> ("${group}")`
-  if(text) r+= `\n${text}`
 
-  return r + '\n'.repeat(afterSpaceLines)
+export const atLinePosition = (text : string, lineNumber : number, end = true) => {
+
 }
-
 
 
 // INDEX FUNCTION
 
-type BookIndex = {
+export type BookChapter = {
+  key: string;
   title: string;
-  properties: {
-    [property: string]: string;
-  };
-  chapters: {
-    key: string;
-    title: string;
-    group: string;
-    flags: string[];
+  group: string;
+  flags: string[];
+  lines: {
     start: number;
     textStart: number;
     textEnd: number;
     end: number;
-    links: string[];
-    linkedFrom: number[];
-  }[];
-  keys: {
-    [key: string]: number;
+  }
+  links: string[];
+  linkedFrom: number[];
+}
+
+export type BookIndex = {
+  title: string;
+  lines: {
+    titlePageEnd: number;
+    end: number;
+  },
+  lineStarts: number[];
+  properties: {
+    [property: string]: string;
   };
+  chapters: BookChapter[];
+  keys: { [key: string]: number; };
   chaptersWith: {
-    key: {
-      [key: string]: number[];
-    };
-    group: {
-      [group: string]: number[];
-    };
-    flag: {
-      [flag: string]: number[];
-    };
+    key:   { [key  : string]: number[]; };
+    group: { [group: string]: number[]; };
+    flag:  { [flag : string]: number[]; };
   }
 
 };
 
-export const newIndex = (bookText : string) => {
+export const indexBook = (bookText : string) => {
+  const lines = bookText.split('\n')
+
   const index : BookIndex = {
     title: '',
+    lines: {
+      titlePageEnd: -1,
+      end: lines.length - 1,
+    },
+    lineStarts: [0],
     properties: {},
     chapters: [],
     keys: {},
@@ -70,14 +72,16 @@ export const newIndex = (bookText : string) => {
   }
 
 
-  let key :string = null
+  let key :string | null = null
   let chapter : typeof index.chapters[0]
 
   let lastLineHadContent = false
-  let lastContentLinePlusOne = 1
+  let lastContentLinePlusOne = 0
 
-  const lines = bookText.split('\n')
+  let lineIndex = 0
   lines.forEach( (originalLine, i) => {
+    lineIndex += originalLine.length + 1
+    index.lineStarts.push(lineIndex)
 
     const line = originalLine.trim()
     if(lastLineHadContent) lastContentLinePlusOne = i
@@ -99,9 +103,13 @@ export const newIndex = (bookText : string) => {
 
     // chapters parsing
     if(line.startsWith('### ')){
+
+      if(key === null){
+        index.lines.titlePageEnd = i - 1
+      }
       if(key !== null){
-        chapter.textEnd = lastContentLinePlusOne - 1
-        chapter.end = i - 1
+        chapter.lines.textEnd = lastContentLinePlusOne - 1
+        chapter.lines.end = i - 1
 
         if(chapter.group){
           if(!index.chaptersWith.group[chapter.group]) index.chaptersWith.group[chapter.group] = []
@@ -118,15 +126,18 @@ export const newIndex = (bookText : string) => {
         title = key.substring(0, indexOfKey - 1).trim()
         key = key.substring(indexOfKey + 2,  key.lastIndexOf('}')).trim()
       }
+
       chapter = {
         key,
         title,
         group: '',
         flags: [],
-        start: lastContentLinePlusOne,
-        textStart: i,
-        textEnd: i,
-        end: i,
+        lines: {
+          start: lastContentLinePlusOne,
+          textStart: i,
+          textEnd: i,
+          end: i,
+        },
         links: [], // keys of chapter a user could go from this one
         linkedFrom: [], // index of chapters who are referring the key of this one
       }
@@ -147,7 +158,11 @@ export const newIndex = (bookText : string) => {
           const endBracket = line.indexOf(']', i)
           if(endBracket == -1) break
           const flag = line.substring(i, endBracket).trim()
-          if(!chapter.flags.includes(flag)) chapter.flags.push(flag)
+          if(!chapter.flags.includes(flag)){
+            chapter.flags.push(flag)
+            if(index.chaptersWith.flag[flag] == null) index.chaptersWith.flag[flag] = []
+            index.chaptersWith.flag[flag].push(index.chapters.length)
+          }
         }
       }
       return
@@ -181,8 +196,8 @@ export const newIndex = (bookText : string) => {
   })
 
   if(key !== null){
-    chapter.end = lines.length - 1
-    chapter.textEnd = lastLineHadContent ? chapter.end : lastContentLinePlusOne - 1
+    chapter.lines.end = lines.length - 1
+    chapter.lines.textEnd = lastLineHadContent ? chapter.lines.end : lastContentLinePlusOne - 1
 
     if(chapter.group){
       if(!index.chaptersWith.group[chapter.group]) index.chaptersWith.group[chapter.group] = []
@@ -205,175 +220,56 @@ export const newIndex = (bookText : string) => {
     }
   }
 
+  if(index.chapters.length === 0) index.lines.titlePageEnd = index.lines.end
+
   return index
 
 
 }
 
-window['newIndex'] = newIndex
-
-export const indexBook = (bookText : string) => {
-  const result = {
-    properties: {},
-    chapters: new Map(),
-    linksToChapter: new Map(),
-    groups: new Set(),
-  }
-
-  let key = ''
-  let chapter
-
-  let lastLineHadContent = false
-  let lastContentLinePlusOne = 1
-
-  const lines = bookText.split('\n')
-  lines.forEach( (oLine, zeroIndexlineNumber) => {
-    const i = zeroIndexlineNumber  // We keep zero indexed as reference
-    const line = oLine.trim()
-
-    if(lastLineHadContent) lastContentLinePlusOne = i
-    lastLineHadContent = (line !== '')
-
-    // Parsing dell'header
-    if(key === '' && !line.startsWith('### ')) {
-      if(line.startsWith('# ')) {
-        result.properties['title'] = line.replace(/\#/g, '').trim()
-        return
-      }
-      const semicolon = line.indexOf(':')
-      if(semicolon !== -1){
-        result.properties[line.substr(0, semicolon).trim()] = line.substr(semicolon + 1).trim()
-      }
-      return
-    }
-
-    // Parsing del testo
-    if(line.startsWith('### ')){
-      if(key !== ''){
-        chapter.contentEnd = lastContentLinePlusOne - 1
-        chapter.end = i - 1
-        result.chapters.set(key, chapter)
-      }
-      // crea nuova entità
-      key = line.substr(4).trim()
-      let title = ''
-      const index = key.indexOf('{#')
-      if(index != -1){
-        title = key.substr(0, index - 1).trim()
-        key = key.substr(index + 2,  key.lastIndexOf('}') - 2 - index).trim()
-      }
-      chapter = {
-        title,
-        group: '',
-        start: lastContentLinePlusOne,
-        contentStart: i,
-        contentEnd: i,
-        end: i,
-        flags: [],
-        links: new Set(),
-      }
-      return
-    }
-
-    let flagStarts = [ '![flag-', '![][flag-' ]
-    if(flagStarts.some( flagStart => line.includes(flagStart))){
-
-      for(const flagStart of flagStarts){
-        let i = 0;
-        while((i = line.indexOf(flagStart, i)) != -1){
-          i += flagStart.length
-          const endBracket = line.indexOf(']', i)
-          if(endBracket == -1) break
-          const flag = line.substring(i, endBracket).trim()
-          chapter.flags.push(flag)
-        }
-      }
-      return
-    }
-    const groupIndex = line.indexOf('[group]:<> ("')
-    if(groupIndex != -1){
-      chapter.group = line.substring(groupIndex + 13, line.lastIndexOf('")'))
-      result.groups.add(chapter.group)
-      return
-    }
-
-
-    let myRegexp = new RegExp(`\\[([^\\[]*)\\]\\(\\s*\\#([^\\)]+)\\s*\\)`, "g");
-
-    let match = myRegexp.exec(oLine);
-    while (match != null) {
-      const linkTarget = match[2].trim()
-      chapter.links.add(linkTarget)
-      if(!result.linksToChapter.has(linkTarget)) result.linksToChapter.set(linkTarget, new Set())
-      result.linksToChapter.get(linkTarget).add(key)
-      match = myRegexp.exec(oLine);
-    }
-
-    if(result.properties && result.properties['disableShortLinks'] === 'true') return
-
-    let shortRegexp = new RegExp(`\\[([^\\[]*)\\](?!\\()`, "g");
-
-    match = shortRegexp.exec(oLine);
-    while (match != null) {
-      const linkTarget = match[1].trim()
-      chapter.links.add(linkTarget)
-      if(!result.linksToChapter.has(linkTarget)) result.linksToChapter.set(linkTarget, new Set())
-      result.linksToChapter.get(linkTarget).add(key)
-      match = shortRegexp.exec(oLine);
-    }
-
-  })
-
-  if(key !== ''){
-    chapter.end = lines.length - 1
-    chapter.contentEnd = lastLineHadContent ? chapter.end : lastContentLinePlusOne - 1
-    result.chapters.set(key, chapter)
-  }
-
-  return result
+export type BookChapterContent = {
+  text: string,
+  content: string,
 }
 
+export type BookContent = {
+  titlePage: string;
+  chapters: BookChapterContent[]
+}
 
+/*
+export const extractContent = (book, chapterIndex) => {
+  const chapter = book.index.chapters[chapterIndex]
+  const text = book.text.substring()
+}*/
 
-export const extractIndexedBook = (bookText: string) => {
+export const contentBook = (bookOrText: string , index?: BookIndex) => {
+  if(!index) index = indexBook(bookOrText)
+  const book = {text: bookOrText, index}
+  const lines = book.text.split('\n')
 
-  const result = {
-    properties: {},
-    chapters: new Map(),
-    linksToChapter: new Map(),
-    groups: new Set(),
-    titlePage: '',
+  return {
+    titlePage: lines.slice(0, book.index.lines.titlePageEnd + 1).join('\n'),
+    chapters: book.index.chapters.map( (chapter, i) => {
 
-    ...indexBook(bookText)
+      return {
+        text: lines.slice(chapter.lines.textStart, chapter.lines.textEnd + 1).join('\n'),
+        content: lines.slice(chapter.lines.textStart, chapter.lines.textEnd + 1).filter(line => {
+          const trimmedLine = line.trim()
+          return !(trimmedLine.startsWith('###') || trimmedLine.includes('[group]:') || trimmedLine.includes('![][flag-') || trimmedLine.includes('![flag-'))
+        }).join('\n'),
+      }
+    })
   }
-
-  const lines = bookText.split('\n')
-
-
-  // Add titlePage text, the one before chapters
-  result.titlePage = lines.slice(0, result.chapters.size > 0 ? result.chapters.values().next().value.contentStart : lines.length - 1).join('\n')
-
-  // Add text of every chapter
-  for(const [key, {contentStart, contentEnd}] of result.chapters){
-    const text = lines.slice(contentStart + 1,contentEnd +1).filter( line => {
-      const trimmedLine = line.trim()
-      return !(trimmedLine.startsWith('###') || trimmedLine.includes('[group]:') || trimmedLine.includes('![][flag-') || trimmedLine.includes('![flag-'))
-    }).join('\n')
-
-    const fullText = lines.slice(contentStart,contentEnd +1).join('\n')
-
-    Object.assign(result.chapters.get(key), {text, fullText})
-  }
-
-  return result
 }
 
 
 // BOOK OBJECT/CLASS
 
-interface Book {
+export interface Book {
   text: string
-  index: ReturnType<typeof indexBook>,
+  index: BookIndex,
+  content: BookContent,
 }
 
 interface EditableBook extends Book {
@@ -382,10 +278,10 @@ interface EditableBook extends Book {
   apply: (transformation: (book: this) => void) => void
 }
 
-
-export const bookHeadless = (initialText = '') => new class implements EditableBook {
+/** Main implementation of an EditableBook. Uses a string as a store. */
+export const stringBook = (initialText = '') : EditableBook => new class {
   #cachedIndex = null
-  #cachedExtractedIndex = null
+  #cachedContent = null
   #text = initialText
   steps : Array<QueueStep> = []
 
@@ -401,16 +297,16 @@ export const bookHeadless = (initialText = '') => new class implements EditableB
     return this.#cachedIndex
   }
 
-  get extractedIndex() {
-    if(this.#cachedExtractedIndex === null) this.#cachedExtractedIndex = extractIndexedBook(this.#text)
-    return this.#cachedExtractedIndex
+  get content() {
+    if(this.#cachedContent === null) this.#cachedContent = contentBook(this.#text, this.#cachedIndex)
+    return this.#cachedContent
   }
 
   replace(from : number, to : number, newText: string){
     this.steps.push({type: 'r', from, to, newText})
     this.#text = this.#text.substring(0, from) + newText + this.#text.substring(to, this.#text.length)
     this.#cachedIndex = null
-    this.#cachedExtractedIndex = null
+    this.#cachedContent = null
   }
 
 
@@ -419,47 +315,126 @@ export const bookHeadless = (initialText = '') => new class implements EditableB
   }
 }
 
-
 export const bookify = (bookOrText : Book | string) : Book => {
   if(typeof bookOrText !== 'string') return bookOrText
-  return bookHeadless(bookOrText)
+  return stringBook(bookOrText)
 }
+
+export const chaptersOf = (bookOrText : Book | string) : [BookChapter, BookChapterContent][] => {
+  const book = bookify(bookOrText)
+  return book.index.chapters.map ( (chapter, i) => {
+    return [chapter, book.content.chapters[i]]
+  })
+}
+
 
 
 // UTILIES FOR BOOK OBJECT
 
+/**
+ * Finds and retrieves the first unused key for a given book or text input.
+ * @param bookOrText The input book or text to search for an available key.
+ * @returns The first available key as a string.
+ */
 export const firstAvaiableKey = (bookOrText : Book | string)  => {
   const book = bookify(bookOrText)
-  const chapters = book.index.chapters
-
-  for(let i = 1; i < 10000; i++){
-    if(!chapters.has(String(i))) return String(i)
+  // Iterate over keys to find the right one.
+  // Not sure if it's computationally efficient, it looks ok for now.
+  let i = 1
+  while(true){
+    if(book.index.keys[String(i)] === undefined) return String(i)
+    i += 1
   }
-
-  return String(10000)
 }
 
 
-export const getRightOrderKey = (bookOrText : Book | string, key, $currentChapterKey) => {
+
+/**
+ * Find the best place where to insert a new chapter with the set key.
+ * Makes educated guesses on what should be the intended place from a human perspective.
+ *
+ * @return The chapter index where the new key should be place. chapterIndex == 0 means before any other chapter,
+ *  chapterIndex == book.index.chapters.length means after any other chapter.
+ */
+export const findNewKeyIndex = (bookOrText : Book | string, key : string, $selectedChapterIndex = -1): number => {
   const book = bookify(bookOrText)
-  const $bookIndex = book.index
-
   if(!isNatNumber(key)){
-    const currentChapter = $bookIndex.chapters.get(String($currentChapterKey))
-    return currentChapter ? currentChapter.contentEnd : book.text.split('\n').length - 1
+    if($selectedChapterIndex === -1) return book.index.chapters.length
+    return $selectedChapterIndex + 1
   }
 
-  const n =  Math.floor(key)
-  for(let i = n; i >= 0; i--){
-    if($bookIndex.chapters.has(String(i))) return $bookIndex.chapters.get(String(i)).contentEnd
+  const n = parseInt(key)
+  // Check if there are numerical keys before this one in the neighbourhood.
+  const neighbourhood = Math.max(0, n - 1000) // 1000 is a reasonable value
+  for(let i = n; i>=neighbourhood; i--){
+    const previousKeyIndex = book.index.keys[String(i)]
+    if(previousKeyIndex) return previousKeyIndex + 1
   }
-
-  for(let i = n; i < 10000; i++){
-    if($bookIndex.chapters.has(String(i))) return $bookIndex.chapters.get(String(i)).start - 1
+  // Otherwise, get all keys that are numerical and search amongst them
+  const numericalKeys = Object.keys(book.index.keys).filter( key => isNatNumber(key)).map( key => parseInt(key)).sort((a,b)=> a - b)
+  if(numericalKeys.length === 0){  // if no numerical key, just place it at the bottom
+    if($selectedChapterIndex === -1) return book.index.chapters.length
+    return $selectedChapterIndex + 1
   }
-  return $bookIndex.chapters.get(String($currentChapterKey))
+  if(numericalKeys[0] > n){ // if all keys are higher, place it before the lowest key
+    const followingKeyIndex = book.index.keys[String(numericalKeys[0])]
+    return followingKeyIndex
+  }
+  // Otherwise, find the maximum key amongst the ones lower than this one
+  let maximumPreviousKey = numericalKeys[0]
+  for(const key of numericalKeys){
+    if(key > n) break;
+    maximumPreviousKey = key  // should be changed to a binary search.
+  }
+  const previousKeyIndex = book.index.keys[String(maximumPreviousKey)]
+  return previousKeyIndex + 1
 }
 
+export type ChapterData = {
+  key : string,
+  title?: string,
+  flags?: string[],
+  group?: string,
+  content?: string,
+  beforeSpaceLines?: number,
+  afterSpaceLines?: number,
+}
+export const chapterText = ({key, title = '', flags = [], group= '', content = '', beforeSpaceLines = 2, afterSpaceLines= 0} : ChapterData) => {
+  let r = '\n'.repeat(beforeSpaceLines)
+  r += (title) ? `### ${title} {#${key}}` : `### ${key}`
+  if(flags && flags.length > 0)  r += "\n" + flags.map( flag => `![][flag-${flag}]`).join(' ')
+  if(group) r+= `\n[group]:<> ("${group}")`
+  if(content) r+= `\n${content}`
+
+  return r + '\n'.repeat(afterSpaceLines)
+}
+
+export const addChapter = (book: EditableBook, {
+  key = null as string | null,
+  title = '',
+  flags = [],
+  group = '',
+  content = '',
+}, $selectedChapterIndex : number = -1) =>{
+  if(key == null) key = firstAvaiableKey(book)
+  const chapterIndex = findNewKeyIndex(book, key, $selectedChapterIndex)
+  const text = chapterText({
+    key, title, flags, group, content,
+    beforeSpaceLines : (chapterIndex > 0 ? 2 : 0),
+    afterSpaceLines : (chapterIndex > 0 ? 0 : 2),
+  })
+
+  const position = chapterIndex === 0
+    ? book.index.lineStarts[book.index.lines.titlePageEnd + 1] - 1
+    : book.index.lineStarts[book.index.chapters[chapterIndex - 1].lines.textEnd + 1] - 1
+
+  book.replace(position, position, text)
+  return chapterIndex
+}
+
+export const removeChapter = (book: EditableBook, chapterIndex : number) => {
+
+}
 
 
 
@@ -505,7 +480,10 @@ export const remapBook = (indexedBook, chapterMap : Map<string, string>) => {
   return text
 }
 
-export const shuffleBook = (bookText, {selectedFlags = [], groupsFilter = [], onlyNumbers = true} = {}) => {
+export const shuffleBook = (bookText,
+  {selectedFlags = [], groupsFilter = [], onlyNumbers = true}
+  : {selectedFlags?: string[], groupsFilter?: string[], onlyNumbers?: boolean}
+  = {}) => {
   const indexedBook = extractIndexedBook(bookText)
   const toShuffle = []
 

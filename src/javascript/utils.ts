@@ -37,7 +37,8 @@ export const shuffleArray = <T>(array : T[])=> {
 
 
 /** Check if n is natural number */
-export const isNatNumber = (n : number) => (n > 0 || String(n) === "0") && Math.floor(n) === +n
+//@ts-expect-error
+export const isNatNumber = (n : number | string) => (n > 0 || String(n) === "0") && Math.floor(n) === +n
 
 
 
@@ -100,14 +101,6 @@ export const greekLetters = [
   "α", "β", "γ", "δ", "ε", "ζ", "η", "θ", "ι", "κ", "λ", "μ", "ν", "ξ", "ο", "π", "ρ", "σ", "τ", "υ", "φ", "χ", "ψ", "ω",
 ]
 
-
-// Detect orientation change in JavaScript
-const portraitChecker = window.matchMedia('(orientation: portrait)');
-export const portrait = writable(portraitChecker.matches)
-
-portraitChecker.addEventListener('change', (event) => {
-  portrait.set(event.matches)
-});
 
 
 

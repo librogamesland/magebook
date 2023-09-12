@@ -44,8 +44,8 @@
   // Change page title if the page is visited by a real user
   // keep "Magebook" title for web engines
   $: { if(!(/bot|google|baidu|bing|msn|duckduckbot|teoma|slurp|yandex/i.test(navigator.userAgent))){
-    if(book && $book.index.properties.title){
-      document.title = $book.index.properties.title + " - Magebook"
+    if(book && $book.index.title){
+      document.title = $book.index.title + " - Magebook"
     }
   } }
 

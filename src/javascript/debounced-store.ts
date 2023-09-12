@@ -1,7 +1,7 @@
 import { writable } from 'svelte/store';
 
 
-export const debouncable = (millis: number, defaultValue = null)  => {
+export const debouncable = <T>(millis: number, defaultValue : T)  => {
   let timer : any
 	let value = defaultValue
   const { subscribe, set } = writable(defaultValue);
@@ -18,12 +18,12 @@ export const debouncable = (millis: number, defaultValue = null)  => {
 
     get: flush,
 
-    set: (newValue) => {
+    set: (newValue : T) => {
       value = newValue
       flush()
     },
 
-    lazySet: (newValue) => {
+    lazySet: (newValue : T) => {
       value = newValue
       clearTimeout(timer);
       timer = setTimeout(() => {

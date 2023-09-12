@@ -12,26 +12,26 @@
   import final from '../../assets/img/flags/final.png'
   import fixed from '../../assets/img/flags/fixed.png'
 
-  let flagImgs = { death, final, fixed }
+  let flagImgs : Record<string, string> = { death, final, fixed }
 
   $: ({book, editor} = $nullUntilLoaded)
 
 
   export let params;
-  export let callback;
+  export let callback : Function;
 
   !params;
 
-  // Entity input bindings
+  // Entity input binddings
   let groupFilter = "";
-  let flags = {
+  let flags : Record<string, boolean> = {
     final : false,
     fixed : false,
     death : false,
   }
 
   let selectedGroup = 'allgroupidtag'
-  $: groups = !book ? [] : [...$book.index.groups]
+  $: groups = !book ? [] : [...Object.keys($book.index.chaptersWith.group)]
 
   $: {
     if(selectedGroup != 'allgroupidtag'){
@@ -61,7 +61,7 @@
       data: {
         book: shuffled,
         cursor: {row: 0, column: 0},
-        title: book.index.properties.title
+        title: book.index.title
       }
     })
   }
@@ -99,7 +99,7 @@
   >
     {$_("dialogs.ok")}
   </button>
-  <button class="cancel" on:click={() => download('md', book.flush())}>{$_('dialogs.shuffle.savecopy')}</button>
+  <button class="cancel" on:click={() => download('md', book)}>{$_('dialogs.shuffle.savecopy')}</button>
 
   <button class="cancel" on:click={() => callback(false)}
     >{$_("dialogs.cancel")}</button

@@ -2,70 +2,85 @@ import { get, writable } from 'svelte/store'
 import { store, showSidemenu } from './store'
 import { EditorView } from  'codemirror'
 import { StateEffect } from "@codemirror/state"
-import { generateChapterFullText, getRightOrderKey } from './book-utils';
+import { addChapter } from './book-utils';
 
 
 export const subviewUpdateEffect = StateEffect.define<string>();
 
-const chapterHistory = []
-const historyCanGoBack = writable(false)
-
-const goToChapter = async(key, updateHistory = true) => {
-  const { book, currentChapterKey, editor } = await store
-  const $currentChapterKey = get(currentChapterKey)
+// we are going to memorize both the chapter index and the chapter key
+const chapterHistory : [number, string][] = []
+export const historyCanGoBack = writable(false)
 
 
-  const addChapter = (key, text) => {
-    const index = editor.state.doc.line(getRightOrderKey(book, key, $currentChapterKey) + 1).to
-    editor.dispatch({
-      changes: { from: index, to: index, insert: '\n' + text },
-    })
-  }
-
-  if(! book.index.chapters.has(key)) {
-
-    addChapter(key, generateChapterFullText({
-      key,
-      group: $currentChapterKey ? book.index.chapters.get($currentChapterKey).group : ''
-    }))
-  }
-  if(updateHistory){
-    chapterHistory.push($currentChapterKey)
-    historyCanGoBack.set(true)
-  }
-
-  showSidemenu.set(false)
-
-
-
+export const focusOnChapter = async(chapterIndex : number) => {
+  const { book, editor } = await store
   editor.dispatch({
     selection: {anchor: editor.state.doc.line(
-      book.index.chapters.get(key).contentEnd + 1
+      book.index.chapters[chapterIndex].lines.textEnd + 1
     ).to},
     effects: [
       subviewUpdateEffect.of("subviewUpdate"),
 
       EditorView.scrollIntoView(
         editor.state.doc.line(
-          book.index.chapters.get(key).contentStart + 1
+          book.index.chapters[chapterIndex].lines.textStart + 1
         ).to,
         { y: 'start', yMargin: 20, }
       )
     ]
   })
 
-
-
   editor.focus()
-
 }
 
-const goBack = () => {
+
+export const goToChapter = async(chapterIndex : number, updateHistory = true) => {
+  const { book } = await store
+
+  if(updateHistory){
+    chapterHistory.push([chapterIndex, book.index.chapters[chapterIndex].key])
+    historyCanGoBack.set(true)
+  }
+  showSidemenu.set(false)
+  await focusOnChapter(chapterIndex)
+}
+
+export const goToKey = async(key : string, updateHistory = true) => {
+  const { book, selectedChapterIndex, selectedChapter, editor } = await store
+  const $selectedChapterIndex = get(selectedChapterIndex)
+  const $selectedChapter = get(selectedChapter)
+
+  let chapterIndex = book.index.keys[key]
+    ?? addChapter(book, {
+      key,
+      group: $selectedChapter.group
+    }, $selectedChapterIndex)
+
+
+  if(updateHistory){
+    chapterHistory.push([chapterIndex, key])
+    historyCanGoBack.set(true)
+  }
+
+  showSidemenu.set(false)
+
+  focusOnChapter(chapterIndex)
+}
+
+export const goBack = async() => {
   if(chapterHistory.length == 0) return
   if(chapterHistory.length == 1) historyCanGoBack.set(false)
 
-  goToChapter(chapterHistory.pop(), false)
+  const {book} = await store
+  const [chapterIndex, chapterKey] = chapterHistory.pop()
+  /* we are not keeping the record of how keys changed.
+  The current policy checks if the chapter with the given index
+  has still the same key, otherwise goes to the chapter with the given key. */
+  if(book.index.chapters[chapterIndex].key === chapterKey){
+    goToChapter(chapterIndex, false)
+    return
+  }
+  goToKey(chapterKey, false)
 }
 
 
-export {goToChapter, historyCanGoBack, goBack}

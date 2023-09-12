@@ -8,10 +8,11 @@
 
 
   import ActionButtons from './ActionButtons.svelte'
-  import { flagURL, urlOfChapter } from '../javascript/urls';
+  import { flagURL } from '../javascript/urls';
+    import type { BookChapter } from 'src/javascript/book-utils.js';
 
 
-  $: ({book, currentChapterKey } = $nullUntilLoaded)
+  $: ({book, selectedChapterIndex, selectedChapter } = $nullUntilLoaded)
 
   let windowW = 0
   let w = localStorage['mage-sidebar-width'] ? parseInt(localStorage['mage-sidebar-width']) : 250
@@ -62,11 +63,11 @@
 
 
 
-  $: { if($currentChapterKey != '') {
+  $: { if($selectedChapterIndex != -1) {
     (async () =>{
       await tick();
       try{
-        scrollIntoView(document.querySelector('aside ul.chapters li.selected'), {
+        scrollIntoView(document.querySelector('aside ul.chapters a.selected'), {
           behavior: 'smooth',
           scrollMode: 'if-needed',
         });
@@ -76,7 +77,7 @@
     (async () =>{
       await tick();
       try{
-        scrollIntoView(document.querySelector('aside ul.chapters li'), {
+        scrollIntoView(document.querySelector('aside ul.chapters a'), {
           behavior: 'smooth',
           scrollMode: 'if-needed',
         });
@@ -86,16 +87,15 @@
 
   let selectedGroup = 'allgroupidtag'
 
-  $: filterChapters = book === null ? [] : [...($book.index.chapters)].filter( ([key, chapter]) => {
+  $: filteredChapters = book === null ? [] : Array.from($book.index.chapters.entries()).filter( ([_chapterIndex, chapter]) => {
     if(!selectedGroup || selectedGroup == 'allgroupidtag') return true
     if(selectedGroup == 'allgrouperrorsidtag'){
-      const linksHere = $book.index.linksToChapter.get(key)
-      const hasEntering = linksHere && linksHere.size > 0
-      const hasExiting  = (chapter.links && chapter.links.size > 0) || (chapter.flags && chapter.flags.length > 0)
+      const hasEntering = chapter.linkedFrom.length > 0
+      const hasExiting  = chapter.links.length > 0 || chapter.flags.length > 0
       return (!hasEntering || !hasExiting)
     }
     if(selectedGroup == 'allgrouporphanlinksidtag'){
-      const hasBrokenLinks = chapter.links && [...chapter.links].some(link => !$book.index.chapters.has(link))
+      const hasBrokenLinks = chapter.links.some(link => !$book.index.keys[link])
       return hasBrokenLinks
     }
     const group = chapter.group
@@ -104,41 +104,26 @@
 
   $: {
     if(book !== null)
-    if(![...($book.index.groups), 'allgroupidtag', 'allgrouperrorsidtag', 'allgrouporphanlinksidtag'].includes(selectedGroup)){
+    if(![...(Object.keys($book.index.chaptersWith.group)), 'allgroupidtag', 'allgrouperrorsidtag', 'allgrouporphanlinksidtag'].includes(selectedGroup)){
       selectedGroup = 'allgroupidtag'
     }
   }
 
-  const setBookKey = (key) => {
-    book.update(() => ({key}))
-    $showSidemenu = false
-  }
 
-  const chapterErrors = (key, chapter) => {
-    const linksHere = $book.index.linksToChapter.get(key)
-    const hasEntering = linksHere && linksHere.size > 0
-    const hasExiting  = (chapter.links && chapter.links.size > 0) || (chapter.flags && chapter.flags.length > 0)
+  const chapterErrors = (chapter : BookChapter) => {
+    const hasEntering = chapter.linkedFrom.length > 0
+    const hasExiting  = chapter.links.length > 0 || chapter.flags.length > 0
 
-    const brokenLinks = chapter.links && [...chapter.links].some(link => !$book.index.chapters.has(link))
 
     return (hasEntering ? '' : '<i class="icon-help"></i>') +
         ((hasEntering && hasExiting) ? '' : '<i class="icon-right"></i>') +
         (hasExiting ? '' : '<i class="icon-help"></i>')
   }
 
-  const brokenLinks = (key, chapter) => {
-    const hasBrokenLinks = chapter.links && [...chapter.links].some(link => !$book.index.chapters.has(link))
+  const brokenLinks = (chapter : BookChapter) => {
+    const hasBrokenLinks = chapter.links.some(link => !$book.index.keys[link])
     return (hasBrokenLinks ? '<b>[</b><i class="icon-help"></i><b>]</b>' : '');
   }
-
-  // Regex per matchare i link in markdown
-  $: linksHere = book === null ? [] : [... ($book.index.linksToChapter.get($currentChapterKey) || new Set())]
-
-
-  let currentURL = location.href
-  window.addEventListener('hashchange', () => {
-    currentURL = location.href
-  }, false);
 
 
 
@@ -159,13 +144,13 @@
   </div>
   <div class={"max-w-[400px] pb-5 mx-auto h-full flex flex-col w-full overflow-hidden " + (( w > 150 || windowW < 680) ? 'px-8' : 'px-3')} >
     {#if book && (w > 100 || windowW < 680)}
-    <h1>
+    <h1 class="!pl-0">
       <span class="select-dropdown w-full">
-        <select bind:value={selectedGroup}>
+        <select bind:value={selectedGroup} class="w-full rounded-sm">
           <option value="allgroupidtag">{$_('sidemenu.allgroup')}</option>
           <option value="allgrouperrorsidtag">{$_('sidemenu.allgrouperrors')}</option>
           <option value="allgrouporphanlinksidtag">{$_('sidemenu.allgrouporphanlinks')}</option>
-          {#each [...($book.index.groups)] as group}
+          {#each Object.keys($book.index.chaptersWith.group) as group}
             <option value={group}>{group}</option>
           {/each}
         </select>
@@ -173,47 +158,49 @@
     </h1>
     <ActionButtons {windowW} {w}/>
     <ul class="chapters">
-      {#each filterChapters as [key, chapter]}
+      {#each filteredChapters as [chapterIndex, chapter]}
       <a
-        href={currentURL + '&c=' + encodeURIComponent(key)}
-        class:selected={key === $currentChapterKey}
-        on:click|preventDefault={() => goToChapter(key)}>
+        href={'' + '&c=' + encodeURIComponent(chapter.key)}
+        class:selected={chapterIndex === $selectedChapterIndex}
+        on:click|preventDefault={() => goToChapter(chapterIndex)}>
         {#if w > 200 || windowW < 680}
 
-        {key}
+        {chapter.key}
 
         <b>{chapter.title || ''}</b>
         {#each chapter.flags || [] as flag}
           <img class="inline-block w-6 h-6" src={flagURL(flag, book)} alt={flag}/>
         {/each}
-        <span class="errors">{@html chapterErrors(key, chapter)} </span>
-        <span class="errors">{@html brokenLinks(key, chapter)} </span>
+        <span class="errors">{@html chapterErrors(chapter)} </span>
+        <span class="errors">{@html brokenLinks(chapter)} </span>
         {:else}
-          <div class="text-center w-full mx-auto">{key}</div>
+          <div class="text-center w-full mx-auto">{chapter.key}</div>
         {/if}
       </a>
       {/each}
     </ul>
-    <h1>{$_("sidemenu.linkshere")} {$currentChapterKey}:</h1>
-    <ul class="links-here">
-      {#each linksHere as key}
-      <a
-        href={currentURL + '&c=' + encodeURIComponent(key)}
-        class:selected={key === $currentChapterKey}
-        on:click|preventDefault={() => goToChapter(key)}>
-        {#if w > 200 || windowW < 680}
+    {#if $selectedChapterIndex != -1}
+      <h1>{$_("sidemenu.linkshere")} {$selectedChapter.key}:</h1>
+      <ul class="links-here">
+        {#each $selectedChapter == null ? [] : $selectedChapter.linkedFrom as chapterIndex}
+        <a
+          href={'' + '&c=' + encodeURIComponent($book.index.keys[chapterIndex])}
+          class:selected={chapterIndex === $selectedChapterIndex}
+          on:click|preventDefault={() => goToChapter(chapterIndex)}>
+          {#if w > 200 || windowW < 680}
 
-        {key}
-        <b>{$book.index.chapters.get(key).title || ''}</b>
-        {#each $book.index.chapters.get(key).flags || [] as flag}
-        <img class="inline-block w-6 h-6" src={flagURL(flag, book)} alt={flag}/>
+          {$book.index.chapters[chapterIndex].key}
+          <b>{$book.index.chapters[chapterIndex].title || ''}</b>
+          {#each $book.index.chapters[chapterIndex].flags || [] as flag}
+            <img class="inline-block w-6 h-6" src={flagURL(flag, book)} alt={flag}/>
+          {/each}
+          {:else}
+            <div class="text-center w-full mx-auto">{$book.index.chapters[chapterIndex].key}</div>
+          {/if}
+        </a>
         {/each}
-        {:else}
-          <div class="text-center w-full mx-auto">{key}</div>
-        {/if}
-      </a>
-      {/each}
-    </ul>
+      </ul>
+    {/if}
     {/if}
   </div>
 </aside>
@@ -388,6 +375,11 @@
 
   :global(.mage-theme-dark) aside h1{
     background-color: #272727 !important;
+    color: #bbb !important;
+  }
+
+  :global(.mage-theme-dark) .select-dropdown{
+    background-color: #424242 !important;
     color: #bbb !important;
   }
 

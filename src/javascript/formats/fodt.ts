@@ -1,20 +1,20 @@
 import {template} from './fodt-template.js'
-import {trimHTML, encodeToHTML, mangle, sanitizeProperties} from '../encoder.js'
-import {extractIndexedBook } from '../book-utils'
+import {trimHTML, encodeToHTML, mangle, sanitizeProperties, renameKeyAndTitle, type ExportProperties} from '../encoder.js'
+import {bookify, type Book, chaptersOf } from '../book-utils'
 
 
 const mimetype = 'application/vnd.oasis.opendocument.text'
 const extension = 'fodt'
 
 
-const whitemap = {
+const whitemap : Record<string, string> = {
   '<p>': `<text:p text:style-name="Standard">`,
   '</p>': `</text:p>`,
-  '<b>': `<text:span text:style-name="bold">`, 
-  '</b>': `</text:span>`,  
-  '<i>': `<text:span text:style-name="italic">`, 
+  '<b>': `<text:span text:style-name="bold">`,
+  '</b>': `</text:span>`,
+  '<i>': `<text:span text:style-name="italic">`,
   '</i>': `</text:span>`,
-  '<u>': `<text:span text:style-name="underline">`, 
+  '<u>': `<text:span text:style-name="underline">`,
   '</u>': `</text:span>`,
 
   // Temp links
@@ -27,46 +27,46 @@ const whitemap = {
 const whitelist = ['<b>', '</b>', '<i>', '</i>', '<u>', '</u>']
 
 const inlineRenderer = () => ({
-  html:      text => whitelist.includes(text.trim().toLowerCase()) ? text.trim().toLowerCase() : mangle(text),
-  paragraph: text => `${text}`,
-  strong:    text => `<b>${text}</b>`,
-  em:        text => `<i>${text}</i>`,
+  html:      (text : string) => whitelist.includes(text.trim().toLowerCase()) ? text.trim().toLowerCase() : mangle(text),
+  paragraph: (text : string) => `${text}`,
+  strong:    (text : string) => `<b>${text}</b>`,
+  em:        (text : string) => `<i>${text}</i>`,
   codespan:  () => '',
   code: () => '',
   link: () => '',
 })
 
-const renderer = (indexedBook, properties, currentChapter) => ({
-  html:      text => whitelist.includes(text.trim().toLowerCase()) ? text.trim().toLowerCase() : mangle(text),
-  paragraph: text => `<p>${text}</p>`,
-  strong:    text => `<b>${text}</b>`,
-  em:        text => `<i>${text}</i>`,
+const renderer = (book : Book, properties : ExportProperties) => ({
+  html:      (text : string) => whitelist.includes(text.trim().toLowerCase()) ? text.trim().toLowerCase() : mangle(text),
+  paragraph: (text : string) => `<p>${text}</p>`,
+  strong:    (text : string) => `<b>${text}</b>`,
+  em:        (text : string) => `<i>${text}</i>`,
   br:        () => '</p><p>',
-  codespan:  text => '',
-  code: (code, lang) => '',
-  link: (fullKey, i, text) => {
-    
+  codespan:  (_text : string) => '',
+  code: (_code : string, _lang : string) => '',
+  link: (fullKey : string, _i : string, text : string) => {
+
     const key = fullKey.replace('#', '').trim()
     const renamedKey = properties.renameAnchor({
       key,
-      book: indexedBook
+      book,
     })
-    const chapter = indexedBook.chapters.has(key) ? indexedBook.chapters.get(key) : null
+
+    const chapterIndex = book.index.keys[key]
+    const chapter = (chapterIndex === undefined) ? undefined : book.index.chapters[chapterIndex]
 
     return `<mage-link to="${renamedKey}">${encodeToHTML(properties.renameLink({
-      book: indexedBook,
-      text: text.trim(), 
+      book,
+      text: text.trim(),
       chapter,
-      title: chapter ? chapter.title : null,
-      key,
-      currentChapter,
-
+      title: chapter?.title,
+      key: chapter?.key,
     }), inlineRenderer())}</mage-link>`
   },
 })
 
 
-const bookmark = (key, text) =>
+const bookmark = (key : string, text : string) =>
 `<text:span text:style-name="bold"><text:bookmark-start text:name="${key}"/>${encodeToHTML(text, inlineRenderer())}<text:bookmark-end text:name="${key}"/></text:span>`
 
 
@@ -84,35 +84,19 @@ const sanitizeAndConvertToOpenOffice = (text : string) : string => {
 
 
 
-const encode = (bookText) => {
-  const indexedBook = extractIndexedBook(bookText)
-  const properties = sanitizeProperties(indexedBook.properties)
+const encode = (bookOrText : Book | string) => {
+  const book = bookify(bookOrText)
+  const properties = sanitizeProperties(book.index.properties)
   const inlineStyle = properties.titleStyle == 'inline'
 
   let result = ''
-  for(const [key, chapter] of indexedBook.chapters){ 
+  for(const [chapter, {content}] of chaptersOf(book)){
 
-    const {text} = chapter
-    // Add chapter heading
-    const renamedKey = properties.renameAnchor({
-      key: key,
-      book: indexedBook
-    })
+    const {renamedKey, renamedTitle} = renameKeyAndTitle(properties, book, chapter)
 
-    const renamedTitle = properties.renameTitle({
-      book: indexedBook,
-      chapter,
-      key: key,
-      title: chapter.title ? chapter.title.trim() : '',
-
-    })
-
-
-    // Get chapter heading
+    // Get chapter bookmark and text
     const bookmarkText = bookmark(renamedKey, renamedTitle)
-    
-    // Get chapter text (or blank line if chapter is empty)
-    const htmlText = trimHTML(encodeToHTML(text, renderer(indexedBook, properties, chapter)).replaceAll('<br>', '</p><p>').trim() || `<p></p>`)
+    const htmlText = trimHTML(encodeToHTML(content, renderer(book, properties)).replaceAll('<br>', '</p><p>').trim() || `<p></p>`)
 
     const newChapter = sanitizeAndConvertToOpenOffice(htmlText)
 
@@ -121,10 +105,10 @@ const encode = (bookText) => {
       result+= newChapter.replace('>', '>' + bookmarkText + ' ')
     }else{
       result+= `<text:p text:style-name="Heading_3" text:outline-level="3">${bookmarkText}</text:p>` + newChapter
-    }  
+    }
 
 
-    // Add blank line after 
+    // Add blank line after
     const shouldBreak = false
     result +=  `<text:p text:style-name="${shouldBreak ? 'break' : 'Standard'}"/>`
   }
@@ -134,4 +118,4 @@ const encode = (bookText) => {
 
 }
 
-export default { encode, mimetype }
+export default { encode, mimetype, extension }

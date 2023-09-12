@@ -21,7 +21,7 @@ import { indexBook, type Book } from './book-utils.js'
 
 
 let onChangeCallback = (text: string) => ({text, index: indexBook(text)})
-export const setOnChangeCallback = callback => onChangeCallback = callback
+export const setOnChangeCallback = (callback : typeof onChangeCallback) => onChangeCallback = callback
 
 
 export const editorComponentID = 'main-editor'
@@ -99,7 +99,7 @@ const getLinkDecorations = (view: EditorView, {text, index} : Book) => {
           for(const [key, property] of Object.entries(index.properties)){
             if(key.startsWith('code-') && rawText.startsWith('`' + key.substring('code-'.length))) style = property
           }
-          const code = Decoration.mark({attributes: {class: "cm-mage-code", style}, inclusive: true})
+          const code = Decoration.mark({attributes: {class: "cm-mage-code", style: style ?? ''}, inclusive: true})
 
           decos.push(code.range(node.from, node.to))
         }else if (node.name == 'Paragraph') {
@@ -146,7 +146,7 @@ const magePlugin = ViewPlugin.fromClass(class {
   constructor(editor: EditorView) {
     const text = editor.state.doc.toString()
     const index = indexBook(text)
-    this.decorations = getLinkDecorations(editor, {text, index})
+    this.decorations = getLinkDecorations(editor, {text, index} as Book)
     this.editor = editor
   }
 
@@ -320,16 +320,13 @@ export const setupCodemirror = (text : string) => {
 
   const editor = new EditorView({
     doc: text,
-    parent: document.getElementById(editorComponentID),
+    parent: document.getElementById(editorComponentID) as Element,
     extensions,
-
   })
 
 
 
 
-
-  window['editor'] = editor
 
   return [editor, extensions]
 }
