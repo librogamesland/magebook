@@ -13,7 +13,7 @@
   import {s} from '../javascript/settings'
   const {font, fontSize, pageWidth, pageZoom, titleHighlight, justifyText, lineMargin, lineSpacing, countChars} = s
 
-  $: ({book, currentChapterFullTitle} = $nullUntilLoaded)
+  $: ({book, selectedChapterFullTitle} = $nullUntilLoaded)
 
 
   onMount(() => {
@@ -44,8 +44,8 @@
 
 
   <div class="toolbar">
-    <h1 class="only-desktop" on:click={ () => $showSidemenu = !$showSidemenu} title={currentChapterFullTitle && $currentChapterFullTitle}>
-      {$currentChapterFullTitle ?? ''}
+    <h1 class="only-desktop" on:click={ () => $showSidemenu = !$showSidemenu} title={selectedChapterFullTitle && $selectedChapterFullTitle}>
+      {$selectedChapterFullTitle ?? ''}
     </h1>
 
     <EditorButtons></EditorButtons>
@@ -281,6 +281,10 @@
   :global( #main-editor .cm-mage-HTMLu){
     text-decoration: underline;
     color:  #444 !important;
+  }
+
+  :global(#main-editor .cm-mage-property){
+    color: #8B85C1 !important;
   }
 
   :global(.cm-scroller){

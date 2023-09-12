@@ -9,14 +9,14 @@ import {syntaxTree} from "@codemirror/language"
 import {search, searchKeymap} from '@codemirror/search'
 import { defaultKeymap, indentWithTab } from "@codemirror/commands"
 import { debouncable } from './debounced-store.js'
-import { goToChapter } from './navigator.js'
+import { goToChapter, goToKey } from './navigator.js'
 
 import { history, historyKeymap } from './history'
 
 import { s } from './settings'
 import { isVSCode } from './vscode.js'
 import { get, writable } from 'svelte/store'
-import { indexBook } from './book-utils.js'
+import { indexBook, type Book } from './book-utils.js'
 
 
 
@@ -38,6 +38,7 @@ const flag = Decoration.mark({class: "cm-mage-flag"})
 const HTMLi = Decoration.mark({class: "cm-mage-HTMLi"})
 const HTMLb = Decoration.mark({class: "cm-mage-HTMLb"})
 const HTMLu = Decoration.mark({class: "cm-mage-HTMLu"})
+const property = Decoration.mark({class: "cm-mage-property"})
 
 
 
@@ -47,10 +48,11 @@ const getChapterFromLink = (rawText : string) => rawText.includes('(#')
 
 
 /* Iterate through visible links and mark them as working/broken */
-const getLinkDecorations = (view: EditorView, {text, index}) => {
+const getLinkDecorations = (view: EditorView, {text, index} : Book) => {
 
+  const endTitlePage = index.lineStarts[index.lines.titlePageEnd + 1]
 
-  let decos = []
+  let decos : any[] = []
 
 
   for (let {from, to} of view.visibleRanges) {
@@ -65,23 +67,23 @@ const getLinkDecorations = (view: EditorView, {text, index}) => {
           }else if(index.properties['disableShortLinks'] == 'true' ){
             if(rawText.includes('(#')){
               const text = getChapterFromLink(rawText)
-              const link = index.chapters.has(text) ? workingLink : brokenLink
+              const link = index.keys[text] !== undefined ? workingLink : brokenLink
               decos.push(link.range(node.from, node.to))
             }
           }else{
             const splitIndex = rawText.indexOf('][')
             if(splitIndex != -1 ){
               const text1 = getChapterFromLink(rawText.substring(0, splitIndex + 1))
-              const link1 = index.chapters.has(text1) ? workingLink : brokenLink
+              const link1 = index.keys[text1] !== undefined ? workingLink : brokenLink
               decos.push(link1.range(node.from, node.from + splitIndex + 1))
 
               const text2 = getChapterFromLink(rawText.substring(splitIndex + 1))
-              const link2 = index.chapters.has(text2) ? workingLink : brokenLink
+              const link2 = index.keys[text2] !== undefined ? workingLink : brokenLink
               decos.push(link2.range(node.from  + splitIndex + 1, node.to))
 
             }else{
               const text = getChapterFromLink(rawText)
-              const link = index.chapters.has(text) ? workingLink : brokenLink
+              const link = index.keys[text] !== undefined ? workingLink : brokenLink
               decos.push(link.range(node.from, node.to))
             }
           }
@@ -100,6 +102,20 @@ const getLinkDecorations = (view: EditorView, {text, index}) => {
           const code = Decoration.mark({attributes: {class: "cm-mage-code", style}, inclusive: true})
 
           decos.push(code.range(node.from, node.to))
+        }else if (node.name == 'Paragraph') {
+          if(node.to < endTitlePage){
+            const lines = view.state.doc.sliceString(node.from, node.to).split('\n')
+            let accumulator = 0
+            for(const line of lines){
+              const colon = line.indexOf(':')
+              if(colon!= -1){
+                decos.push(property.range(node.from + accumulator, node.from + accumulator + colon + 1))
+              }
+              accumulator += line.length + 1
+            }
+          }
+            //applyAll(rawText, /([^:]+:).*(?:\n|$)/gm, property, decos, node)
+
         }else if(node.name == 'Image'){
           const rawText = view.state.doc.sliceString(node.from, node.to)
           if(rawText.includes('][flag-')){
@@ -118,7 +134,7 @@ const getLinkDecorations = (view: EditorView, {text, index}) => {
       }
     })
   }
-  return  Decoration.set(decos)
+  return Decoration.set(decos)
 }
 
 
@@ -210,7 +226,7 @@ const magePlugin = ViewPlugin.fromClass(class {
         )
         const firstOpeningSquare = totalText.lastIndexOf('[', firstClosingBracket)
         const text = getChapterFromLink(totalText.substring(firstOpeningSquare))
-        goToChapter(text)
+        goToKey(text)
 
         e.preventDefault()
         e.stopPropagation()
