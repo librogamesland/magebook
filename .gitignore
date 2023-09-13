@@ -1,3 +1,7 @@
+# Api build
+dist/index.js
+dist/index.d.ts
+
 # Plugins
 src/plugins/vendor*
 
