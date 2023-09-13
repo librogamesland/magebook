@@ -35,10 +35,12 @@ export const focusOnChapter = async(chapterIndex : number) => {
 
 
 export const goToChapter = async(chapterIndex : number, updateHistory = true) => {
-  const { book } = await store
+  const { selectedChapterIndex, selectedChapter } = await store
+  const $selectedChapterIndex = get(selectedChapterIndex)
+  const $selectedChapter = get(selectedChapter)
 
-  if(updateHistory){
-    chapterHistory.push([chapterIndex, book.index.chapters[chapterIndex].key])
+  if(updateHistory && $selectedChapterIndex !== -1){
+    chapterHistory.push([$selectedChapterIndex, $selectedChapter.key])
     historyCanGoBack.set(true)
   }
   showSidemenu.set(false)
@@ -57,8 +59,8 @@ export const goToKey = async(key : string, updateHistory = true) => {
     }, $selectedChapterIndex)
 
 
-  if(updateHistory){
-    chapterHistory.push([chapterIndex, key])
+  if(updateHistory && $selectedChapterIndex !== -1){
+    chapterHistory.push([$selectedChapterIndex, $selectedChapter.key])
     historyCanGoBack.set(true)
   }
 
