@@ -46,7 +46,7 @@ const renderer = (indexedBook, properties, selectedChapter) => ({
   strong:    (text : string) => `<b>${text}</b>`,
   em:        (text : string) => `<i>${text}</i>`,
   codespan:  (text : string) => {
-    const code = raw(text).trim();
+    const code = raw(text)?.trim() ?? '';
     return code.trim().startsWith('<') && code.trim().endsWith('>') ? code : ''
   },
   code:      (code : string, infostring : string) => infostring.trim() == 'html' ? code : '',

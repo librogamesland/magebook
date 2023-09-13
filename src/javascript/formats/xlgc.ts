@@ -169,7 +169,7 @@ const encode = (bookOrText : Book | string) => {
     }
   }
 
-  const xmlValue = (name: string, type: string, cdata: any) => ({
+  const xmlValue = (name: string | boolean, type: string, cdata: any) => ({
     "_attributes": { name, type },
     ...(type === "boolean"
       ? { "_cdata": (cdata == true) ? "true" : "false" }
@@ -187,8 +187,7 @@ const encode = (bookOrText : Book | string) => {
         "name": chapter.key
       },
       "attribute": [
-        ["description", "string", encodeToHTML(content, renderer).trim() ]
-        // @ts-ignore
+        ["description", "string", encodeToHTML(content, renderer).trim() ],
         ["chapter_title", "string", chapter.title],
         ["hashtags", "array", filterFlags(chapter.flags)],
         ["flag_export", "boolean", !chapter.flags.includes("noexport")],

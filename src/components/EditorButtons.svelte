@@ -8,20 +8,12 @@
 
   import { isVSCode } from '../javascript/vscode.js';
   import { cursorPosition } from '../javascript/codemirror';
-  import { firstAvaiableKey, findNewKeyIndex } from '../javascript/book-utils';
+  import { firstAvaiableKey, findNewKeyIndex, addChapter } from '../javascript/book-utils';
 
 
-  $: ({book, selectedChapter, editor} = $nullUntilLoaded)
+  $: ({book, selectedChapterIndex, selectedChapter, editor} = $nullUntilLoaded)
 
 
-  const addChapter = (key, text) => {
-
-    const index = editor.state.doc.line(getRightOrderKey(book, key, selectedChapter.key) + 1).to
-    editor.dispatch({
-      changes: { from: index, to: index, insert: '\n' + text },
-    })
-
-  }
 
   const addLink = () => {
 
@@ -44,38 +36,43 @@
 
 
   const addQuickLink = () => {
-    let { from, to} = $cursorPosition
-
-    const {contentStart, end, group } = book.index.chapters.get($selectedChapter)
-
     const key = firstAvaiableKey(book)
-    const link = book.index.properties['disableShortLinks'] == 'true'
-      ? `[](#${key})`
-      : `[${key}]`
+    addChapter(book, {
+      key,
+
+    }, $selectedChapterIndex)
+
+    // TODO: change this dirt hack and handle focus properly
+    setTimeout(() => {
+      let { from, to} = $cursorPosition
+
+
+      const link = book.index.properties['disableShortLinks'] == 'true'
+        ? `[](#${key})`
+        : `[${key}]`
 
 
 
-    if(contentStart != (editor.state.doc.lineAt(to).number -1) ){
-      editor.dispatch({ changes: { from: to, to, insert: link }, })
-      to += link.length
-    }else{
-      // Special case: if is on same line of heading, create a new line skip
-      editor.dispatch({ changes: { from: to, to, insert: '\n' + link }, })
-      to += link.length + 1
+      if($selectedChapter.lines.textStart != (editor.state.doc.lineAt(to).number -1) ){
+        editor.dispatch({ changes: { from: to, to, insert: link }, })
+        to += link.length
+      }else{
+        // Special case: if is on same line of heading, create a new line skip
+        editor.dispatch({ changes: { from: to, to, insert: '\n' + link }, })
+        to += link.length + 1
 
-    }
-    const cText = group ? `\n\n### ${key}\n[group]:<> ("${group}")` : `\n\n### ${key}`
-    addChapter(key, cText)
+      }
 
-    if(getRightOrderKey(book, key, $selectedChapter.key) <= contentStart) to += cText.length + 1
-    editor.dispatch({
-      selection: {anchor: to},
-      effects: [ EditorView.scrollIntoView(to)]
-    })
+      editor.dispatch({
+        selection: {anchor: to},
+        effects: [ EditorView.scrollIntoView(to, { y: 'start', yMargin: 20, }), ]
+      })
 
 
 
-    editor.focus()
+      editor.focus()
+
+    }, 200)
 
   }
 

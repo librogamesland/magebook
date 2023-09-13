@@ -61,33 +61,60 @@ describe('export working', async () => {
     await clickOn(page, 'nav div:nth-child(3) div.content p:nth-child(5)')
 
 
-    console.log(dirPath)
     await wait(1000)
-    await clickOn(page, 'nav div:nth-child(3) div.content p:nth-child(4)')
-    await wait(1000)
-
-    const extensions = {
+    let extensions = {
+      'json': 0,
       'html': 0,
       'docx': 0,
       'pdf': 0,
       'fodt': 0,
       'xlgc': 0,
     }
-    const files = await fs.readdir(dirPath);
-    for (const file of files) {
-      const ext = file.split('.').pop()
-      expect(ext in extensions).toBe(true)
-      if (ext in extensions) extensions[ext]++
+
+    {
+      const files = await fs.readdir(dirPath);
+      for (const file of files) {
+        const ext = file.split('.').pop()
+        expect(ext in extensions).toBe(true)
+        if (ext in extensions) extensions[ext]++
+      }
     }
     expect(extensions).toEqual({
-      'html': 2,
+      'json': 0,
+      'html': 1,
       'docx': 1,
       'pdf': 0,
       'fodt': 1,
       'xlgc': 1,
     })
-    await wait(2000)
-  }, 30000)
+    await clickOn(page, 'nav div:nth-child(3) div.content p:nth-child(4)')
+    await wait(1000)
+    extensions = {
+      'json': 0,
+      'html': 0,
+      'docx': 0,
+      'pdf': 0,
+      'fodt': 0,
+      'xlgc': 0,
+    }
+    {
+      const files = await fs.readdir(dirPath);
+      for (const file of files) {
+        const ext = file.split('.').pop()
+        expect(ext in extensions).toBe(true)
+        if (ext in extensions) extensions[ext]++
+      }
+    }
+
+    expect(extensions).toEqual({
+      'json': 1,
+      'html': 1,
+      'docx': 1,
+      'pdf': 0,
+      'fodt': 1,
+      'xlgc': 1,
+    })
+  }, 20000)
 
 
 })
