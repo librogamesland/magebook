@@ -91,7 +91,7 @@ const encode = (bookOrText : Book | string) => {
 
   let result = ''
   for(const [chapter, {content}] of chaptersOf(book)){
-
+    if(chapter.flags.includes('noexport')) continue
     const {renamedKey, renamedTitle} = renameKeyAndTitle(properties, book, chapter)
 
     // Get chapter bookmark and text

@@ -6,7 +6,7 @@
   import { sortBook, compactBook } from "../javascript/book-utils";
   import { s } from "../javascript/settings";
 
-  import { store, showSidemenu, nullUntilLoaded } from "../javascript/store";
+  import { showSidemenu, nullUntilLoaded } from "../javascript/store";
   import { isVSCode } from "../javascript/vscode.js";
 
   // Dialogs
@@ -14,7 +14,7 @@
   import About from "./dialogs/About.svelte";
   import Confirm from "./dialogs/Confirm.svelte";
   import Graph from "./dialogs/Graph.svelte";
-  import Shuffle from "./dialogs/Shuffle.svelte";
+  import Remap from "./dialogs/Remap.svelte";
   import NewBook from "./dialogs/NewBook.svelte";
   import NewFirebook from "./dialogs/NewFirebook.svelte";
   import Recover from "./dialogs/Recover.svelte";
@@ -78,36 +78,9 @@
         <p on:click={() => dialog(Graph, () => graphToImg(book))}>
           {$_("navbar.book.graph")}
         </p>
-        <p on:click={() => dialog(Shuffle)}>{$_("navbar.book.shuffle")}</p>
-        <p
-          on:click={async () => {
-            if (
-              await dialog(
-                Confirm,
-                $_("dialogs.confirm"),
-                $_("dialogs.chapter.sort"),
-                true
-              )
-            ) book.set(sortBook(book));
-          }}
-        >
-          {$_("navbar.book.sort")}
-        </p>
-        <p
-          on:click={async () => {
-            if (
-              await dialog(
-                Confirm,
-                $_("dialogs.confirm"),
-                $_("dialogs.chapter.compact"),
-                true
-              )
-            ) book.set(compactBook(book))
-          }}
-        >
-          {$_("navbar.book.compact")}
-        </p>
-
+        <p on:click={() => dialog(Remap, 'shuffle')}>{$_("navbar.book.shuffle")}</p>
+        <p on:click={() => dialog(Remap, 'sort')}>{$_("navbar.book.sort")}</p>
+        <p on:click={() => dialog(Remap, 'compact')}>{$_("navbar.book.compact")}</p>
         {#if isVSCode}
           <!--<hr>
       <p on:click={() => dialog(NewFirebook)}>{$_('navbar.file.newFire')}</p>

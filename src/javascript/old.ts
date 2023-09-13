@@ -243,4 +243,47 @@ const decode = xlgc => {
 
 
 
+export const remapBook = (book, chapterMap : Map<string, string>) => {
+  // Create an object mapping old chapters' keys to new keys
+  const inverseMap = new Map<string, string>()
+  for(const [key, val] of chapterMap) inverseMap.set(val, key)
+
+  // Array of new keys
+  const mapKeys = [...chapterMap.keys()]
+
+
+  let result = indexedBook.titlePage
+  let insertingKeyAtIndex = 0
+  for(const [key, oldChapter] of indexedBook.chapters){
+
+    // If this chapter has been remapped, insert a new key here
+    let newKey = inverseMap.has(key) ? mapKeys[insertingKeyAtIndex++] : key
+
+    // If key has been remapped, pick the remapped, otherwise keep the old one
+    const {title, flags, group, text} = inverseMap.has(key) ? indexedBook.chapters.get(chapterMap.get(newKey)): oldChapter
+
+    result += generateChapterFullText({
+      key: newKey,
+      title,
+      flags,
+      group,
+      text,
+      beforeSpaceLines: 1,
+      afterSpaceLines: 2
+    })
+  }
+
+  let text = result.replace(/\[([^\[]*)\](\(\s*#(\w+)\s*\))/g, (...all) => `[${all[1]}](#${
+    inverseMap.has(all[3]) ? inverseMap.get(all[3]) : all[3]
+  })`)
+
+  if(!indexedBook.properties['disableShortLinks']) text = text.replace(/\[([^\[]*)\]/g, (...all) => `[${
+    inverseMap.has(all[1]) ? inverseMap.get(all[1]) : all[1]
+  }]`)
+
+  return text
+}
+
+
+
 */

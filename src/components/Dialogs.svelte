@@ -46,7 +46,7 @@
 
 {#if lock}
   <div class="dialog-mask"/>
-  <div class="dialog-container">
+  <div class="dialog-container" role="dialog">
     <div class="dialog lock">
       <h3>{$_('dialogs.lock.title')}</h3>
       <p>{@html $_('dialogs.lock.text')}</p>
@@ -58,8 +58,9 @@
 
 {#if component}
   <div class="dialog-mask" on:click|self={() => callback(false)}/>
-  <div class="dialog-container" on:click|self={() => callback(false)}>
+  <div id="mage-modal" class="dialog-container" tabindex="-1" aria-modal="true" role="dialog" on:click|self={() => callback(false)}>
     <svelte:component this={component} {params} {callback}/>
+    <span tabindex="0" aria-hidden="true" onfocus="document.getElementById('mage-modal').focus()"></span>
   </div>
 {/if}
 

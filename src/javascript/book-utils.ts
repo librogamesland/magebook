@@ -196,15 +196,15 @@ export const indexBook = (bookText : string) => {
   })
 
   if(key !== null){
-    chapter.lines.end = lines.length - 1
-    chapter.lines.textEnd = lastLineHadContent ? chapter.lines.end : lastContentLinePlusOne - 1
+    chapter!.lines.end = lines.length - 1
+    chapter!.lines.textEnd = lastLineHadContent ? chapter!.lines.end : lastContentLinePlusOne - 1
 
-    if(chapter.group){
-      if(!index.chaptersWith.group[chapter.group]) index.chaptersWith.group[chapter.group] = []
-      index.chaptersWith.group[chapter.group].push(index.chapters.length)
+    if(chapter!.group){
+      if(!index.chaptersWith.group[chapter!.group]) index.chaptersWith.group[chapter!.group] = []
+      index.chaptersWith.group[chapter!.group].push(index.chapters.length)
     }
 
-    index.chapters.push(chapter)
+    index.chapters.push(chapter!)
   }
 
 
@@ -272,41 +272,42 @@ export interface Book {
   content: BookContent,
 }
 
-interface EditableBook extends Book {
+export interface EditableBook extends Book {
   set: (newText: string) => void
   replace: (from: number, to: number, newText: string) => void
   apply: (transformation: (book: this) => void) => void
 }
 
 /** Main implementation of an EditableBook. Uses a string as a store. */
-export const stringBook = (initialText = '') : EditableBook => new class {
-  #cachedIndex = null
-  #cachedContent = null
+export const stringBook = (initialText = '') : EditableBook => new class implements EditableBook {
+  #cachedIndex : BookIndex | undefined = undefined
+  #cachedContent : BookContent | undefined = undefined
   #text = initialText
   steps : Array<QueueStep> = []
 
   set(newText : string){
       this.steps.push({type: 's', newText})
       this.#text = newText
-      this.#cachedIndex = null
+      this.#cachedIndex = undefined
+      this.#cachedContent = undefined
   }
 
   get text() { return this.#text}
   get index() {
-    if(this.#cachedIndex === null) this.#cachedIndex = indexBook(this.#text)
+    if(this.#cachedIndex === undefined) this.#cachedIndex = indexBook(this.#text)
     return this.#cachedIndex
   }
 
   get content() {
-    if(this.#cachedContent === null) this.#cachedContent = contentBook(this.#text, this.#cachedIndex)
+    if(this.#cachedContent === undefined) this.#cachedContent = contentBook(this.#text, this.#cachedIndex)
     return this.#cachedContent
   }
 
   replace(from : number, to : number, newText: string){
     this.steps.push({type: 'r', from, to, newText})
     this.#text = this.#text.substring(0, from) + newText + this.#text.substring(to, this.#text.length)
-    this.#cachedIndex = null
-    this.#cachedContent = null
+    this.#cachedIndex = undefined
+    this.#cachedContent = undefined
   }
 
 
@@ -432,63 +433,126 @@ export const addChapter = (book: EditableBook, {
   return chapterIndex
 }
 
-export const removeChapter = (book: EditableBook, chapterIndex : number) => {
+export const deleteChapter = (book: EditableBook, chapterIndex : number) => {
+  const { start, end, textStart, textEnd } = book.index.chapters[chapterIndex].lines
+  const {lineStarts} = book.index
+  if(chapterIndex === 0 && book.index.chapters.length > 1){
+    console.log("www", textStart, end)
+    const from = lineStarts[textStart] - 1
+    const to = lineStarts[end + 1] - 1
+    book.replace(from, to, '' )
+    return
+  }
+
+  const from = lineStarts[start] - 1
+  const to = lineStarts[textEnd + 1] - 1
+  book.replace(from, to, '' )
+}
+
+export const editChapter = (book: EditableBook, chapterIndex : number, {
+  key = '',
+  title = '',
+  flags = [],
+  group = '',
+  content = '',
+}, $selectedChapterIndex : number = -1) => {
+  const chapter = book.index.chapters[chapterIndex]
+  content = book.content.chapters[chapterIndex].content
+  if(key == chapter.key &&
+    title == chapter.title &&
+    group == chapter.group &&
+    flags.length === chapter.flags.length &&
+    flags.every( (flag, i) => flag === chapter.flags[i]) ){
+      return
+  }
+
+  const {textStart, textEnd} = chapter.lines
+
+  if(group == chapter.group &&
+    flags.length === chapter.flags.length &&
+    flags.every( (flag, i) => flag === chapter.flags[i]) ){
+      book.replace(book.index.lineStarts[textStart], book.index.lineStarts[textStart + 1] - 1, chapterHeading(key, title))
+  }else{
+    book.replace(book.index.lineStarts[textStart], book.index.lineStarts[textEnd + 1] - 1,
+      chapterText({
+        key, title, flags, group,
+        content: book.content.chapters[chapterIndex].content,
+        beforeSpaceLines:0, afterSpaceLines: 0
+      }))
+  }
+
+  if(key !== chapter.key){
+    book.set(remapLinks(book.text, {[chapter.key] : key}))
+  }
+
 
 }
 
 
+export const chapterHeading = (key: string, title: string = '') : string => {
+  if(title === '') return `### ${key}`
+  return `### ${title} {#${key}}`
+}
 
 
-export const remapBook = (indexedBook, chapterMap : Map<string, string>) => {
-  // Create an object mapping old chapters' keys to new keys
-  const inverseMap = new Map<string, string>()
-  for(const [key, val] of chapterMap) inverseMap.set(val, key)
+export const remapLinks = (text : string, inverseKeyMap : Record<string, string>, disableShortLinks = false) => {
 
-  // Array of new keys
-  const mapKeys = [...chapterMap.keys()]
-
-
-  let result = indexedBook.titlePage
-  let insertingKeyAtIndex = 0
-  for(const [key, oldChapter] of indexedBook.chapters){
-
-    // If this chapter has been remapped, insert a new key here
-    let newKey = inverseMap.has(key) ? mapKeys[insertingKeyAtIndex++] : key
-
-    // If key has been remapped, pick the remapped, otherwise keep the old one
-    const {title, flags, group, text} = inverseMap.has(key) ? indexedBook.chapters.get(chapterMap.get(newKey)): oldChapter
-
-    result += generateChapterFullText({
-      key: newKey,
-      title,
-      flags,
-      group,
-      text,
-      beforeSpaceLines: 1,
-      afterSpaceLines: 2
-    })
-  }
-
-  let text = result.replace(/\[([^\[]*)\](\(\s*#(\w+)\s*\))/g, (...all) => `[${all[1]}](#${
-    inverseMap.has(all[3]) ? inverseMap.get(all[3]) : all[3]
+  text = text.replace(/\[([^\[]*)\](\(\s*#(\w+)\s*\))/g, (...all) => `[${all[1]}](#${
+    (all[3] in inverseKeyMap) ? inverseKeyMap[all[3]] : all[3]
   })`)
 
-  if(!indexedBook.properties['disableShortLinks']) text = text.replace(/\[([^\[]*)\]/g, (...all) => `[${
-    inverseMap.has(all[1]) ? inverseMap.get(all[1]) : all[1]
+  if(!disableShortLinks) text = text.replace(/\[([^\[]*)\]/g, (...all) => `[${
+    (all[1] in inverseKeyMap) ? inverseKeyMap[all[1]] : all[1]
   }]`)
 
   return text
 }
 
-export const shuffleBook = (bookText,
-  {selectedFlags = [], groupsFilter = [], onlyNumbers = true}
-  : {selectedFlags?: string[], groupsFilter?: string[], onlyNumbers?: boolean}
-  = {}) => {
-  const indexedBook = extractIndexedBook(bookText)
-  const toShuffle = []
 
-  /* Find key that should be shuffled */
-  for (const [key, {group, flags}] of indexedBook.chapters){
+/**
+ *
+ * @param bookOrText
+ * @param map Pair of numbers, where to remap each chapterIndex
+ * @returns
+ */
+export const remapMoveChapters = (bookOrText : Book | string, map : Record<number, number>) : string=> {
+  const book = bookify(bookOrText)
+
+  const reverseMap : Record<number, number> = {}
+  const inverseKeyMap : Record<string, string> = {}
+  for(const [from, to] of Object.entries(map)) {
+    const fromInt = parseInt(from)
+    reverseMap[to] = fromInt
+    inverseKeyMap[book.index.chapters[fromInt].key] = book.index.chapters[to].key
+  }
+
+  const newChaptersText = []
+  for (const [chapterIndex, [chapter, {text}]] of chaptersOf(book).entries()){
+    if(chapterIndex in reverseMap){
+      const newText = book.content.chapters[reverseMap[chapterIndex]].text
+      const endOfFirstLine = newText.indexOf('\n')
+      newChaptersText.push(
+        chapterHeading(chapter.key, chapter.title) + ((endOfFirstLine === -1) ? '' : newText.substring(endOfFirstLine))
+      )
+    }else{
+      newChaptersText.push(text)
+    }
+  }
+
+  return book.content.titlePage + '\n' + remapLinks(newChaptersText.join('\n\n'), inverseKeyMap)
+}
+
+
+export type ChapterFilter = {
+  selectedFlags?: string[],
+  groupsFilter?: string[],
+  onlyNumbers?: boolean
+}
+
+const filteredChapterIndexes = (book : Book, {selectedFlags = [], groupsFilter = [], onlyNumbers = true} : ChapterFilter) => {
+  const indexes: number[] = []
+
+  for (const [chapterIndex, {key, group, flags}] of book.index.chapters.entries()){
     // Skip key if is not numeric and onlyNumbers = true
     if(onlyNumbers && !isNatNumber(key)) continue;
 
@@ -498,48 +562,80 @@ export const shuffleBook = (bookText,
     // Skip key if chapter has a flag in selectedFlags
     if(flags.some(flag => selectedFlags.includes(flag))) continue;
 
-    toShuffle.push(key)
+    indexes.push(chapterIndex)
   }
+
+  return indexes
+
+}
+
+
+export const shuffleBook = (bookOrText : Book | string, filter : ChapterFilter = {}) : string => {
+  const book = bookify(bookOrText)
+  const toShuffle = filteredChapterIndexes(book, filter)
 
   // Shuffle keys
   const shuffledKeys = JSON.parse(JSON.stringify(toShuffle));  // Obj copy
   shuffleArray(shuffledKeys);
 
-  return remapBook(indexedBook, new Map (toShuffle.map( (key, i) => [String(key), String(shuffledKeys[i])])))
+  const shuffleMap: Record<number, number> = {}
+  for (const [index, from] of toShuffle.entries()) shuffleMap[from] = shuffledKeys[index]
+
+  return remapMoveChapters(book, shuffleMap)
+}
+
+/** ChapterFilter option "onlyNumbers" is, of course, always overwritten to true */
+export const compactBook = (bookOrText : Book | string, filter : ChapterFilter = {}) => {
+  const book = bookify(bookOrText)
+  filter = {...filter, onlyNumbers: true}
+  const toCompact = filteredChapterIndexes(book, filter).sort(
+    (aI, bI) => parseInt(book.index.chapters[aI].key) - parseInt(book.index.chapters[bI].key)
+  )
+
+  const toCompactKeys = toCompact.map( chapterIndex => parseInt(book.index.chapters[chapterIndex].key))
+  const busyKeys = Object.keys(book.index.keys).filter( key => toCompactKeys.includes(key as unknown as number)).map( key => parseInt(key))
+
+  const inverseKeyMap : Record<string, string> = {}
+  let newText = book.text
+  let i = 1
+  for(const chapterIndex of toCompact){
+    while(busyKeys.includes(i)){
+      i+= 1
+    }
+    const newKey = String(i)
+    const {key, title, lines: {textStart}} = book.index.chapters[chapterIndex]
+    inverseKeyMap[key] = newKey
+
+    const start = book.index.lineStarts[textStart]
+    const end   = book.index.lineStarts[textStart + 1] - 1
+
+    newText = newText.substring(0, start) + chapterHeading(newKey, title) + newText.substring(end)
+    i += 1
+  }
+
+  return book.content.titlePage + remapLinks(newText.substring(book.content.titlePage.length), inverseKeyMap)
 }
 
 
-export const compactBook = (bookText) => {
-  const indexedBook = extractIndexedBook(bookText)
-  const toCompact = []
-  const numbers   = []
+export const sortBook = (bookOrText : Book | string, filter : ChapterFilter = {}) : string => {
+  const book = bookify(bookOrText)
+  filter = {...filter, onlyNumbers: true}
+  const sortedIndexes = filteredChapterIndexes(book, filter)
+    .sort((aI, bI) => parseInt(book.index.chapters[aI].key) - parseInt(book.index.chapters[bI].key))
 
-  let i = 0
-  for(const [key,] of indexedBook.chapters){
-    if(isNatNumber(key)){
-      toCompact.push(key)
-      numbers.push(++i)
+  const newChaptersText = []
+  let remappingUntil = 0
+  for (const [chapterIndex, [chapter, {text}]] of chaptersOf(book).entries()){
+    if(sortedIndexes.includes(chapterIndex)){
+      newChaptersText.push(book.content.chapters[sortedIndexes[remappingUntil]].text)
+      remappingUntil += 1
+    }else{
+      newChaptersText.push(text)
     }
   }
 
-  return remapBook(indexedBook,  new Map (toCompact.map( (key, i) => [String(numbers[i]), String(key)])))
+  return book.content.titlePage + '\n' + newChaptersText.join('\n\n')
 }
-
-
-
-export const sortBook = (bookText) => {
-  const indexedBook = extractIndexedBook(bookText)
-  const toSort = []
-
-  for (const [key,] of indexedBook.chapters){
-    if(isNatNumber(key)) toSort.push(Number(key))
-  }
-
-  toSort.sort( (a, b) => Number(a) - Number(b))
-
-  return remapBook(indexedBook,  new Map (toSort.map( key => [String(key), String(key)])))
-}
-
 
 type QueueStep = { type: string, newText: string, from?: number, to?: number }
 

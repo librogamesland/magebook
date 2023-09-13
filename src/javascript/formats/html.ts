@@ -78,7 +78,7 @@ const encode = (bookOrText : Book | string) => {
   let toc = ''
   let result = ''
   for(const [chapter, {content} ] of chaptersOf(book)){
-
+    if(chapter.flags.includes('noexport')) continue
     const {renamedKey, renamedTitle} = renameKeyAndTitle(properties, book, chapter)
 
     toc += `  <a href="#${renamedKey}">${renamedTitle}</a>\n`

@@ -10,8 +10,6 @@ add     = "Add chapter"
 edit    = "Edit chapter"
 delete  = "Chapter “%1” will be deleted"
 exists  = "Chapter already exists"
-sort    = "Chapters will be sorted. This will change the book structure permanently."
-compact = "Chapters will be renamed so no number will be missing in the middle. This will change the book structure permanently."
 
 name         = "Key"
 title        = "Title"
@@ -35,12 +33,23 @@ new    = "Create or load a New Book"
 book   = "Book name"
 getStarted = """This feature lets you link Magebook with your Google account. After that, you will be able to work on shared documents, like the Google Docs' ones.<br>Get start by linking Magebook to your account. <a target="_blank" href="https://librogamesland.github.io/magebook/index.html#/?id=collaborative-projects">More on the user guide here</a>."""
 
-[dialogs.shuffle]
-title      = "Shuffle"
-hint       = "Shuffle chapters with numeric key. You may choose to shuffle only chapters belonging to some groups, or to exclude chapters based on their flags. You should save a copy of your book before shuffling."
+[dialogs.remap]
 group      = "Group filter"
 flags      = "Exclude flags"
 savecopy   = "Save a copy"
+
+[dialogs.remap.shuffle]
+title      = "Shuffle"
+hint       = "Shuffle chapters with numeric key. You may choose to shuffle only chapters belonging to some groups, or to exclude chapters based on their flags. You should save a copy of your book before shuffling."
+
+[dialogs.remap.sort]
+title      = "Sort"
+hint       = "Move numeric keys so that the lower come first. This will change the book structure permanently. You should save a copy of your book before sorting."
+
+[dialogs.remap.compact]
+title      = "Compact"
+hint       = "Rename chapters so that no number will be missing in the middle. This will change the book structure permanently. You should save a copy of your book before compacting."
+
 
 [dialogs.lock]
 title      = "Warning"

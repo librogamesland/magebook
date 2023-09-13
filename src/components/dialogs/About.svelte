@@ -13,7 +13,7 @@
 
 <div class="dialog">
   <h3>Magebook - v. {manifest.version}</h3>
-  <img src={logo} alt="Magebook logo">
+  <img class="mx-auto" src={logo} alt="Magebook logo">
   <br>
   <p>{@html $_('about.text')}</p>
   <p>{$_('about.contact')}: <a target="_blank" rel="noopener" href="mailto:luca.fabbian.1999@gmail.com?subject=Magebook%20-%20Segnalazione">luca.fabbian.1999@gmail.com</a></p>

@@ -2,17 +2,18 @@
   import { _ } from "svelte-i18n";
   import { tick } from "svelte";
   import { nullUntilLoaded } from '../../javascript/store'
-  import { shuffleBook } from '../../javascript/book-utils'
+  import { compactBook, shuffleBook, sortBook } from '../../javascript/book-utils'
   import { session } from '../../javascript/database.js'
   import { download } from '../../javascript/file.js'
   import { isFirebase } from '../../javascript/database.js'
   import { isVSCode } from '../../javascript/vscode'
 
-  import death from '../../assets/img/flags/death.png'
-  import final from '../../assets/img/flags/final.png'
-  import fixed from '../../assets/img/flags/fixed.png'
+  import fixed    from '../../assets/img/flags/fixed.png'
+  import noexport from '../../assets/img/flags/noexport.png'
+  import death    from '../../assets/img/flags/death.png'
+  import final    from '../../assets/img/flags/final.png'
 
-  let flagImgs : Record<string, string> = { death, final, fixed }
+  let flagImgs : Record<string, string> = { fixed, noexport, death, final }
 
   $: ({book, editor} = $nullUntilLoaded)
 
@@ -20,13 +21,15 @@
   export let params;
   export let callback : Function;
 
-  !params;
+  $: [type] = $params as [string]
+
 
   // Entity input binddings
   let groupFilter = "";
   let flags : Record<string, boolean> = {
+    fixed : true,
+    noexport: false,
     final : false,
-    fixed : false,
     death : false,
   }
 
@@ -42,24 +45,26 @@
     }
   }
 
-  const shuffle = ()  => {
+  const remap = ()  => {
     const selectedFlags = Object.keys(flags).filter((key) => flags[key]);
-    const filter = groupFilter.split(',').map( s => s.trim()).filter(s => s)
+    const groupsFilter = groupFilter.split(',').map( s => s.trim()).filter(s => s)
 
+    const doRemap : Record<string, Function> = {
+      shuffle: () => shuffleBook(book, {selectedFlags, groupsFilter}),
+      sort:    () => sortBook(book, {selectedFlags, groupsFilter}),
+      compact: () => compactBook(book, {selectedFlags, groupsFilter}),
+    }
 
-    const shuffled = shuffleBook($book, {selectedFlags, groupsFilter: filter})
+    const remapped = doRemap[type]()
 
-    if($isFirebase || isVSCode){
-      editor.dispatch({
-        changes: {from: 0, to: editor.state.doc.length, insert: shuffled}
-      })
-
+    if($isFirebase || isVSCode || type !== 'shuffle'){
+      book.set(remapped)
       callback(false)
       return
     }
     session.open({
       data: {
-        book: shuffled,
+        book: remapped,
         cursor: {row: 0, column: 0},
         title: book.index.title
       }
@@ -68,9 +73,9 @@
 </script>
 
 <div class="dialog">
-  <h3>{$_("dialogs.shuffle.title")}</h3>
-  <p>{$_("dialogs.shuffle.hint")}</p>
-  <h4>{$_("dialogs.shuffle.group")}:</h4>
+  <h3>{$_(`dialogs.remap.${type}.title`)}</h3>
+  <p>{$_(`dialogs.remap.${type}.hint`)}</p>
+  <h4>{$_("dialogs.remap.group")}:</h4>
   <div class="input">
     <input bind:value={groupFilter} type="text" />
     <span class="select-dropdown" style="margin-left:5px">
@@ -82,24 +87,24 @@
       </select>
     </span>
   </div>
-  <h4>{$_("dialogs.shuffle.flags")}:</h4>
+  <h4>{$_("dialogs.remap.flags")}:</h4>
   <div class="flags">
-    {#each ["final", "fixed", "death"] as flag}
-      <div
+    {#each ["fixed", "noexport", "final", "death"] as flag}
+      <button
         class:selected={flags[flag]}
         on:click={() => (flags[flag] = !flags[flag])}
       >
-        <img alt={flag} src={flagImgs[flag]} class="mx-auto"/>
-      </div>
+        <img class="inline-block w-6 h-6 mx-auto" alt={flag} src={flagImgs[flag]}/>
+    </button>
     {/each}
   </div>
   <button
     class="ok"
-    on:click={shuffle}
+    on:click={remap}
   >
     {$_("dialogs.ok")}
   </button>
-  <button class="cancel" on:click={() => download('md', book)}>{$_('dialogs.shuffle.savecopy')}</button>
+  <button class="cancel" on:click={() => download('md', book)}>{$_('dialogs.remap.savecopy')}</button>
 
   <button class="cancel" on:click={() => callback(false)}
     >{$_("dialogs.cancel")}</button
@@ -112,10 +117,7 @@
     margin-left: 20px;
     margin-right: 20px;
   }
-  img {
-    box-sizing: border-box;
-    margin-top: calc((2.5rem - 20px) / 2);
-  }
+
 
   h4 {
     margin: 1.3rem 0 15px;
@@ -128,7 +130,7 @@
   }
 
   .input > input {
-    height: 1rem;
+    padding: 0.4rem 0.2rem;
     margin: 0.5rem 0;
     flex-grow: 1;
     flex-shrink: 1;
@@ -150,7 +152,7 @@
     border: 1px solid #555;
   }
 
-  .flags > div {
+  .flags > button {
     box-sizing: border-box;
     flex: 1 0 auto;
     text-align: center;
@@ -158,12 +160,12 @@
     justify-content: center;
   }
   @media (hover: hover) {
-    .flags > div:hover {
+    .flags > button:hover {
       background-color: #ddd;
     }
   }
 
-  .flags > div.selected {
+  .flags > button.selected {
     background-color: #8a8a8a;
   }
 </style>

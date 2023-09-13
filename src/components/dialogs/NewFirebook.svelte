@@ -50,6 +50,7 @@
 </div>
 
 <style>
+
   :global(.getstarted br) {
     line-height: 1rem;
     content: " ";
@@ -69,7 +70,7 @@
   }
 
   .input > input {
-    height: 1rem;
+    padding: 0.4rem 0.2rem;
     margin: 0.5rem 0;
     flex-grow: 1;
     flex-shrink: 1;

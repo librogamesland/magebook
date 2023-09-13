@@ -4,14 +4,16 @@
   import { sanitizeKey } from '../../javascript/book-utils'
   import { nullUntilLoaded } from '../../javascript/store'
 
-  import death from '../../assets/img/flags/death.png'
-  import final from '../../assets/img/flags/final.png'
-  import fixed from '../../assets/img/flags/fixed.png'
+  import fixed    from '../../assets/img/flags/fixed.png'
+  import death    from '../../assets/img/flags/death.png'
+  import final    from '../../assets/img/flags/final.png'
+  import noexport from '../../assets/img/flags/noexport.png'
+
 
   $: ({book} = $nullUntilLoaded)
 
 
-  let flagImgs = { death, final, fixed }
+  let flagImgs = { fixed, noexport, death, final }
 
   export let params : any
   export let callback : any
@@ -20,20 +22,23 @@
 
 
   // Entity input bindings
-  let dialogTitle, key, value, title, flags, group, originalKey, genericFlags
+  let dialogTitle : string, key : string, value, title: string, flags : Record<string, boolean>, group: string, originalKey : string, genericFlags
   const filterFlags = () =>  Object.keys(flags).filter(key => flags[key]).concat(genericFlags.split('\n').map(el => el.trim()).filter(el => el.length > 0))
 
   const unsubscribe = params.subscribe( p => {
     ;([dialogTitle, key, value] = p)
     originalKey = key
     ;({ title = '', group = '' } = value)
-    const flagProps = value.flags || []
+    const flagProps : string[] = value.flags || []
+
     flags = {
-      final: flagProps.includes('final'),
-      fixed: flagProps.includes('fixed'),
-      death: flagProps.includes('death'),
+      fixed:    flagProps.includes('fixed'),
+      noexport: flagProps.includes('noexport'),
+      final:    flagProps.includes('final'),
+      death:    flagProps.includes('death'),
     }
-    genericFlags = flagProps.filter(el => el !== 'final' && el !== 'fixed' && el !== 'death').join('\n')
+
+    genericFlags = flagProps.filter(el => !Object.keys(flagImgs).includes(el)).join('\n')
   })
 
   onDestroy(unsubscribe)
@@ -67,12 +72,12 @@
 
   </div>
   <div class="flags">
-    {#each ['final', 'fixed', 'death'] as flag}
-      <div
+    {#each ['fixed', 'noexport', 'final', 'death'] as flag}
+      <button
         class:selected={flags[flag]}
         on:click={() => (flags[flag] = !flags[flag])}>
-        <img alt={flag} src={flagImgs[flag]} class="mx-auto"/>
-      </div>
+        <img class="inline-block w-6 h-6 mx-auto" alt={flag} src={flagImgs[flag]}/>
+      </button>
     {/each}
   </div>
   <div class="flags-generic">
@@ -96,11 +101,6 @@
 
 
 <style>
-  img {
-    box-sizing: border-box;
-    margin-top: calc((2.5rem - 20px) / 2);
-  }
-
 
   .input {
     width: 100%;
@@ -109,7 +109,7 @@
   }
 
   .input > input {
-    height: 1rem;
+    padding: 0.4rem 0.2rem;
     margin: 0.5rem 0;
     flex-grow: 1;
     flex-shrink: 1;
@@ -131,7 +131,7 @@
     border: 1px solid #555;
   }
 
-  .flags > div {
+  .flags > button {
     box-sizing: border-box;
     flex: 1 0 auto;
     text-align: center;
@@ -139,7 +139,7 @@
     justify-content: center;
   }
   @media (hover: hover) {
-    .flags > div:hover {
+    .flags > button:hover {
       background-color: #ddd;
     }
   }
@@ -156,21 +156,21 @@
   }
 
 
-  .flags > div.selected {
+  .flags > button.selected {
     background-color: #8a8a8a;
   }
 
-  :global(.mage-theme-dark .dialog .flags > div ){
+  :global(.mage-theme-dark .dialog .flags > button ){
     background-color: #161616;
   }
 
   @media (hover: hover) {
-    :global(.mage-theme-dark .dialog .flags > div:hover ){
+    :global(.mage-theme-dark .dialog .flags > button:hover ){
       background-color: #565656;
     }
   }
 
-  :global(.mage-theme-dark .dialog .flags > div.selected ){
+  :global(.mage-theme-dark .dialog .flags > button.selected ){
     background-color: #2b356b;
   }
 

@@ -139,7 +139,10 @@
 
 
 <aside class={($showSidemenu ? 'foreground' : '') + ' flex flex-row'} style={`width: ${w}px`}>
-  <div class="sidebar-resizer bg-[#ccc] dark:!bg-[#272727] hover:bg-zinc-500 border-l-2 flex-initial w-[6px] min-w-[6px] flex-shrink-0 h-full cursor-col-resize"
+  <div class="sidebar-resizer bg-[#ccc] hover:bg-zinc-500 dark:bg-[#272727]  hover:dark:bg-[#505050]
+  border-l-2
+  boder-[#ccc] dark:border-[#272727]
+  flex-initial w-[6px] min-w-[6px] flex-shrink-0 h-full cursor-col-resize"
   on:touchstart|preventDefault|stopPropagation={handleResize} on:mousedown|preventDefault|stopPropagation={handleResize}>
   </div>
   <div class={"max-w-[400px] pb-5 mx-auto h-full flex flex-col w-full overflow-hidden " + (( w > 150 || windowW < 680) ? 'px-8' : 'px-3')} >

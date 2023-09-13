@@ -1,23 +1,26 @@
 import { writable, type Updater, type Subscriber } from 'svelte/store'
 import queryString from 'query-string'
 
-import death from '../assets/img/flags/death.png'
-import fixed from '../assets/img/flags/fixed.png'
-import final from '../assets/img/flags/final.png'
+
+import fixed    from '../assets/img/flags/fixed.png'
+import noexport from '../assets/img/flags/noexport.png'
+import final    from '../assets/img/flags/final.png'
+import death    from '../assets/img/flags/death.png'
 import genericFlag from '../assets/img/flags/generic.png'
+import type { Book } from './book-utils'
 
 
-export const flagsURLs = {death, final, fixed }
+export const flagsURLs: Record<string, string> = {fixed, noexport, final, death }
 
-export const trimmedFlag = (flag) => flag.substring(0, flag.indexOf(':') !== -1 ? flag.indexOf(':') : Infinity )
+export const trimmedFlag = (flag : string) => flag.substring(0, flag.indexOf(':') !== -1 ? flag.indexOf(':') : Infinity )
 
-export const flagURL = (flag, book) : string => {
+export const flagURL = (flag : string, book : Book) : string => {
   flag = trimmedFlag(flag)
   return flagsURLs[flag] ?? book.index.properties['flag-' + flag] ?? genericFlag
 }
 
-export const urlOfChapter = (chapter) => {
-  return location.href + '&c=' + encodeURIComponent(chapter)
+export const urlOfChapterKey = (chapterKey : string) => {
+  return location.href + '&c=' + encodeURIComponent(chapterKey)
 }
 
 

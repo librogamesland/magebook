@@ -72,7 +72,7 @@ const encode = (bookOrText : Book | string) => {
 
   const name = book.index.title || 'magebook'
   for(const [chapter, {content}] of chaptersOf(book)){
-
+    if(chapter.flags.includes('noexport')) continue
     const {renamedKey, renamedTitle} = renameKeyAndTitle(properties, book, chapter)
 
 

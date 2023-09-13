@@ -1,6 +1,6 @@
 <script lang="ts">
   import { _ } from 'svelte-i18n'
-  import { firstAvaiableKey, chapterText, findNewKeyIndex, sanitizeKey, addChapter } from '../javascript/book-utils'
+  import { firstAvaiableKey, type EditableBook, chapterText, findNewKeyIndex, sanitizeKey, addChapter, deleteChapter, editChapter } from '../javascript/book-utils'
   import { historyCanGoBack, goBack, goToChapter} from '../javascript/navigator.js'
   import { ctrlShortcuts } from '../javascript/shortcuts.js'
   // Dialogs
@@ -45,88 +45,48 @@
   }
 
   const edit = async () => {
-
-    const cKey = $selectedChapter.key
-    if(cKey == '') return
+    if($selectedChapterIndex === -1) return
+    const chapterIndex = $selectedChapterIndex
+    const chapter = book.index.chapters[chapterIndex]
     const result = await dialog(
       Chapter,
-      $_('dialogs.chapter.edit'),
-      cKey,
-      book.index.chapters.get(cKey)
+      $_('dialogs.chapter.add'),
+      chapter.key,
+      {
+        title: chapter.title,
+        group: chapter.group,
+        flags: chapter.flags,
+        text: ""
+      }
     )
+
     if(!result) return
     let { key, value } = result as any
     key = sanitizeKey(key)
     value.group = sanitizeKey(value.group || '')
     if (!key) return
 
-    if(key !== cKey){
-      let text = $book.text.replace(/\[([^\[]*)\](\(\s*#(\w+)\s*\))/g, (...all) => `[${all[1]}](#${
-        all[3] === cKey ? key  : all[3]
-      })`)
-
-      if(!book.index.properties['disableShortLinks'] || book.index.properties['disableShortLinks'] !== 'true'){
-        text = text.replace(/\[([^\[]*)\](?!\()/g, (...all) => `[${all[1] === cKey ? key  : all[1]}]`)
-      }
-
-      editor.dispatch({
-        changes: {from: 0, to: editor.state.doc.length, insert: text}
-      })
-
-
-    }
-
-    // Get old content
-    const chapter =  book.index.chapters.get(cKey)
-
-    // We want to get the whole chapter content and throw away:
-    // - the title (!line.startsWith('### '))
-    // - the group (!(line.includes('[group]:<>'))
-    // - the flags (line.includes('![flag-') || line.includes('![][flag-')))
-    // We will feed such content to the `generateChapterText`, which will add the edited title, group and flags
-    const content = editor.state.sliceDoc(
-        editor.state.doc.line(chapter.contentStart + 1).from,
-        editor.state.doc.line(chapter.contentEnd + 1).to
-      ).split('\n').filter(line => !line.startsWith('### ')).filter( line => !(line.includes('[group]:<>') || line.includes('![flag-') || line.includes('![][flag-'))).join('\n').trim()
-
-    // Replace chapter
-    const start = editor.state.doc.line(chapter.start ).to
-    const end = editor.state.doc.line(chapter.contentEnd + 1).to
-
-    const newContent = generateChapterFullText({
-      beforeSpaceLines: 2,
+    editChapter(book as EditableBook, chapterIndex, {
       key,
-      title: value.title || '',
+      title: value.title?? '',
       group: value.group,
-      flags: value.flags || [],
-      text: content,
-    })
+      flags: value.flags?? [],
+    }, $selectedChapterIndex)
 
-    editor.dispatch({
-      changes: { from: start, to: end, insert: newContent },
-    })
 
-    goToChapter(key)
+    goToChapter(chapterIndex, false)
 
     $showSidemenu = false
   }
 
 
   const del = async () => {
+    const chapterIndex = $selectedChapterIndex
     const key = $selectedChapter.key
     if(key == '') return
     if (await dialog(Confirm, $_('dialogs.confirm'), $_(`dialogs.chapter.delete`).replace("%1", key))) {
-      const chapter = book.index.chapters.get(key)
-      const start = editor.state.doc.line(chapter.start ).to
-      const end = editor.state.doc.line(chapter.contentEnd + 1).to
-
-
-      editor.dispatch({
-        changes: { from: start, to: end, insert: '' },
-      })
-
+      deleteChapter(book, chapterIndex)
       $showSidemenu = false
-
       editor.focus()
     }
   }
