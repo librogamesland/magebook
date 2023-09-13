@@ -1,3 +1,8 @@
+/* build with:
+bun build firepad-api.ts --outfile index.js
+*/
+
+
 import { Headless } from '@lucafabbian/firepad'
 import firebase from 'firebase/compat/app'
 import 'firebase/compat/database'
@@ -28,8 +33,6 @@ export const getTextOfRemoteBook = (url : string) => new Promise<string>((resolv
 
 
   headless.getText( (text : string) => {
-    console.log("text connected to firebase")
-
     resolve(text)
     headless.dispose()
     database.goOffline()
@@ -39,3 +42,10 @@ export const getTextOfRemoteBook = (url : string) => new Promise<string>((resolv
 
 
 export * from './javascript/book-utils'
+export * as md from './javascript/formats/md'
+export * as docx from './javascript/formats/docx'
+export * as fodt from './javascript/formats/fodt'
+export * as html from './javascript/formats/html'
+export * as json from './javascript/formats/json'
+export * as xlgc from './javascript/formats/xlgc'
+

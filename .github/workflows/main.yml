@@ -1,5 +1,5 @@
 name: "Build, Test and Deploy"
-on: 
+on:
   push:
     branches:
       - main
@@ -21,6 +21,7 @@ jobs:
       - name: Publish to npm registry
         continue-on-error: true
         run: |
+          cd dist
           npm config set //registry.npmjs.org/:_authToken=$NPM_AUTH_TOKEN
           npm publish
         env:
@@ -37,7 +38,7 @@ jobs:
         with:
           repo-token: ${{ secrets.GITHUB_TOKEN }}
           tag: ${{ steps.version.outputs.version }}
-        
+
       - name: Prepare for github pages
         run: |
           rm -rf src .gitignore node_modules package-lock.json \

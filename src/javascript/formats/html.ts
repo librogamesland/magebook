@@ -109,6 +109,6 @@ const encode = (bookOrText : Book | string) => {
 
 
 
-export default { encode, mimetype, extension }
+export { encode, mimetype, extension }
 
 

@@ -50,7 +50,6 @@ const generateGraph = (bookOrText : Book | string) => {
   for(const flag of Object.keys(book.index.chaptersWith.flag)){
     flagUrls[flag] = new URL(flagURL(flag, book), document.baseURI)
   }
-  console.log(book.index.chaptersWith)
 
 
 

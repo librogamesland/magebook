@@ -74,6 +74,7 @@ export const goBack = async() => {
   if(chapterHistory.length == 1) historyCanGoBack.set(false)
 
   const {book} = await store
+  // @ts-ignore
   const [chapterIndex, chapterKey] = chapterHistory.pop()
   /* we are not keeping the record of how keys changed.
   The current policy checks if the chapter with the given index

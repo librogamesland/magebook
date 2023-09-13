@@ -25,7 +25,8 @@
     "docs": "docsify serve . --port 3005",
     "version": "echo $npm_package_version",
     "dev": "vite",
-    "build": "vite build",
+    "build": "vite build && (npm run api:build || exit 0)",
+    "api:build": "bun build ./src/api.ts --outfile dist/index.js --target node && npx tsc --emitDeclarationOnly src/api.ts -d --outfile dist/index",
     "vs:build": "vite build && rm -rf ./vscode/editor && cp -r ./editor ./vscode/  && mv ./vscode/editor/assets/index.*.js ./vscode/editor/assets/index.js &&  mv ./vscode/editor/assets/index.*.css ./vscode/editor/assets/index.css",
     "preview": "vite preview",
     "check": "svelte-check --tsconfig ./tsconfig.json",
@@ -48,6 +49,7 @@
     "@viz-js/viz": "^3.1.0",
     "@zerodevx/svelte-toast": "^0.9.5",
     "autoprefixer": "^10.4.15",
+    "bun": "^1.0.1",
     "codemirror": "^6.0.1",
     "date-format": "^4.0.14",
     "dedent-js": "^1.0.1",
@@ -73,12 +75,6 @@
     "tslib": "^2.6.2",
     "typescript": "^5.2.2",
     "vite": "^4.4.9",
-    "vitest": "^0.34.4",
-    "xml-js": "^1.6.11"
-  },
-  "dependencies": {
-    "stream": "^0.0.2",
-    "stream-browserify": "^3.0.0",
-    "xml2js": "^0.6.2"
+    "vitest": "^0.34.4"
   }
 }

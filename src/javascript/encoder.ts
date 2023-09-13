@@ -14,7 +14,6 @@ const raw    = (t : string) => (a.innerHTML = t, a.textContent)
 const mangle = (t : string) => (a.textContent = t, a.innerHTML)
 export {raw, mangle}
 
-window['marked'] = marked
 const tokenizer = {
   heading(){},
   nptable(){},

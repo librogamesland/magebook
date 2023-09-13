@@ -1,6 +1,6 @@
 import {isNatNumber} from '../utils.js'
 
-import { js2xml, xml2js } from 'xml-js'
+import { js2xml, xml2js } from '../xml-js/index.mjs'
 import {trimHTML, encodeToHTML, raw, mangle} from '../encoder.js'
 import {bookify, type Book, chaptersOf, type ChapterData, chapterText} from '../book-utils'
 
@@ -224,9 +224,8 @@ const encode = (bookOrText : Book | string) => {
 
 
 
-  console.log(js2xml(schema, {compact: true, spaces: 2}))
   return {encodedBook: js2xml(schema, {compact: true, spaces: 2}), mimetype, extension }
 }
 
 
-export default { encode, decode, mimetype, extension }
+export { encode, decode, mimetype, extension }

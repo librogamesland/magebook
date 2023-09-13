@@ -3,12 +3,12 @@ import saveAs from 'file-saver'
 import { encode } from 'js-base64';
 
 
-import md   from './formats/md.js'
-import xlgc from './formats/xlgc.js'
-import fodt from './formats/fodt.js'
-import docx from './formats/docx.js'
-import html from './formats/html.js'
-import json from './formats/json.js'
+import * as md   from './formats/md.js'
+import * as xlgc from './formats/xlgc.js'
+import * as fodt from './formats/fodt.js'
+import * as docx from './formats/docx.js'
+import * as html from './formats/html.js'
+import * as json from './formats/json.js'
 
 
 import { bookify, type Book } from './book-utils.js'

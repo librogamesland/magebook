@@ -21,4 +21,4 @@ const encode = (bookOrText : Book | string) => {
 
 
 
-export default {mimetype, extension, decode, encode }
+export {mimetype, extension, decode, encode }

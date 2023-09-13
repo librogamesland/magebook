@@ -3,7 +3,6 @@ import {bookify, type Book, chaptersOf} from '../book-utils'
 
 import * as docx from '../../../node_modules/docx/build/index.js'
 
-console.log(docx)
 const mimetype = 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
 const extension = 'docx'
 
@@ -267,4 +266,4 @@ const encode = (bookOrText : Book | string) => {
 }
 
 
-export default {encode, mimetype, extension}
+export {encode, mimetype, extension}

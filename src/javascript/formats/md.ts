@@ -18,4 +18,4 @@ const encode = (bookOrText : Book | string) => {
 
 
 
-export default {mimetype, decode, encode, extension }
+export {mimetype, decode, encode, extension }
