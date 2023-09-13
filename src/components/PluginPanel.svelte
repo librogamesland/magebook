@@ -2,15 +2,15 @@
   import { _ } from 'svelte-i18n'
   import { store } from "../javascript/store";
   //@ts-ignore
-  import { plugins } from  'mage-plugins';
+  import { pluginPanel } from '../javascript/plugin-interface';
   import { portrait } from "../javascript/viewport";
   import { showPluginPanel } from "../javascript/store";
 
-  if(plugins.length > 0) showPluginPanel.set(true)
+  if($pluginPanel.length > 0) showPluginPanel.set(true)
 
 
   const firstTab = () => {
-    for(const plugin of plugins){
+    for(const plugin of $pluginPanel){
       if(plugin.tabs && plugin.tabs[0]) return plugin.tabs[0].id
     }
 
@@ -81,14 +81,14 @@
 
   </div>
   <div class="overflow-y-auto" style={`width: calc(${w}px)`}>
-    {#each plugins as plugin}
+    {#each $pluginPanel as plugin}
       {#if plugin.widget}
         <svelte:component this={plugin.widget} {store} {w} {tab}/>
       {/if}
     {/each}
   </div>
   <div class="bg-slate-500">
-    {#each plugins as plugin}
+    {#each $pluginPanel as plugin}
       {#each plugin.tabs as pluginTab}
         <div class={"h-[60px] w-[60px] m-2 py-1 rounded-md bg-slate-600 hover:shadow-md shadow-black cursor-pointer hover:scale-105 transition-all flex justify-center items-center "
           + (pluginTab.id == tab ? 'bg-slate-800' : '')}

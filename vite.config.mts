@@ -46,8 +46,7 @@ const pluginLoader = {
           import plugin0 from '/absolute/path/src/plugins/PLUGIN-NAME/src/main.js'
           export const plugins = [plugin0]
       */
-      return` ${plugins.map( (p, i) => `import plugin${i} from '${path.join(__dirname, 'src/plugins', p, 'src/main.js')}'`).join('\n')}
-      export const plugins = [ ${plugins.map( (p, i) => `plugin${i}`).join(', ')} ]`
+      return plugins.map((p, i) => `import '${path.join(__dirname, 'src/plugins', p, 'src/main.js')}'`).join('\n')
     }
     return null;
   }

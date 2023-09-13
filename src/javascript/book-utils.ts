@@ -1,5 +1,7 @@
 
+import { get } from 'svelte/store';
 import {isNatNumber, shuffleArray} from './utils'
+import { defaultBookProperties } from './plugin-interface';
 
 
 // GENERIC UTILITIES
@@ -38,9 +40,7 @@ export type BookIndex = {
     end: number;
   },
   lineStarts: number[];
-  properties: {
-    [property: string]: string;
-  };
+  properties: Record<string, string>;
   chapters: BookChapter[];
   keys: { [key: string]: number; };
   chaptersWith: {
@@ -51,7 +51,7 @@ export type BookIndex = {
 
 };
 
-export const indexBook = (bookText : string) => {
+export const indexBook = (bookText : string, defaultProperties : Record<string, string>| null = null) => {
   const lines = bookText.split('\n')
 
   const index : BookIndex = {
@@ -61,7 +61,7 @@ export const indexBook = (bookText : string) => {
       end: lines.length - 1,
     },
     lineStarts: [0],
-    properties: {},
+    properties: defaultProperties ?? get(defaultBookProperties),
     chapters: [],
     keys: {},
     chaptersWith: {

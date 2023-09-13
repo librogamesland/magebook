@@ -18,6 +18,7 @@ import {s} from './settings'
 
 import {get} from 'svelte/store'
 import { isVSCode, vscode } from './vscode'
+import { bookFormats } from './plugin-interface';
 
 
 type FormatModule = {
@@ -32,7 +33,7 @@ type FormatModule = {
   decode? : (text : string) => Promise<string> | string,
 }
 
-const formats : Record<string, FormatModule> = { md, fodt, html, json, docx, xlgc }
+const defaultFormats : Record<string, FormatModule> = { md, fodt, html, json, docx, xlgc }
 
 
 
@@ -46,6 +47,10 @@ const open = (elem : HTMLInputElement) => {
   // Usa un fileReader per leggere il file come testo
   const reader = new FileReader()
   reader.onload = async() => {
+    const formats = {
+      ...defaultFormats,
+      ...(get(bookFormats) as Record<string, FormatModule>)
+    }
     let extension = name.substring(name.lastIndexOf('.') + 1)
     if(extension == 'magebook') extension = 'md' // treat magebook files as md
 
@@ -77,7 +82,10 @@ const open = (elem : HTMLInputElement) => {
 // Download file
 const download = async(formatKey : string, bookOrString : Book | string) => {
   const book = bookify(bookOrString)
-
+  const formats = {
+    ...defaultFormats,
+    ...(get(bookFormats) as Record<string, FormatModule>)
+  }
   const format = formats[formatKey]
 
   if(format === undefined || format.encode === undefined){

@@ -8,7 +8,7 @@ import {Decoration} from "@codemirror/view"
 import {syntaxTree} from "@codemirror/language"
 import {search, searchKeymap} from '@codemirror/search'
 import { defaultKeymap, indentWithTab } from "@codemirror/commands"
-import { debouncable } from './debounced-store.js'
+import { debouncable } from './special-svelte-stores.js'
 import { goToChapter, goToKey } from './navigator.js'
 
 import { history, historyKeymap } from './history'

@@ -1,8 +1,8 @@
 <script lang="ts">
   import { _ } from 'svelte-i18n'
   import { s } from '../../javascript/settings'
-  //@ts-ignore
-  import { plugins } from 'mage-plugins';
+  import { settingsDialog } from '../../javascript/plugin-interface'
+  import type { SvelteComponent } from 'svelte';
 
   const {font, fontSize, pageWidth, pageZoom, titleHighlight, justifyText, lineMargin, lineSpacing, dateFormat, singleChapterMode, countChars} = s
 
@@ -10,10 +10,12 @@
   export let callback : (value: any) => void
 
 
+
   type PluginCallback = (bool : boolean) => void
 
-  const pluginCallbacks : { [key : string]: PluginCallback }= {}
-  const registerCallback = (key : string, pluginCallback : PluginCallback) => pluginCallbacks[key] = pluginCallback
+  // https://stackoverflow.com/questions/64545260/svelte-using-bindthis-inside-each-block
+  let _pluginCallbacks  : any[] = []
+  $: pluginCallbacks = _pluginCallbacks.filter(Boolean)
 
 
   const fontCheck = new Set([
@@ -110,9 +112,9 @@
       </tr>
       <tr style="height: 15px;"></tr>
 
-      {#each plugins as plugin}
-        {#if plugin.settings}
-          <svelte:component this={plugin.settings} onCallback={ (call) => registerCallback(plugin.id, call)}/>
+      {#each $settingsDialog.entries() as [index, settings]}
+        {#if settings}
+          <svelte:component this={settings} bind:callback={_pluginCallbacks[index]}/>
           <tr style="height: 15px;"></tr>
         {/if}
       {/each}

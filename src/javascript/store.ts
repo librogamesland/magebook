@@ -1,6 +1,6 @@
 
 import { derived, writable, type Writable } from 'svelte/store'
-import { debouncable } from './debounced-store'
+import { debouncable } from './special-svelte-stores'
 import { indexBook, type BookIndex, contentBook, stringBook } from './book-utils'
 import { cursorPosition, setOnChangeCallback } from './codemirror'
 import type { EditorView } from 'codemirror'
