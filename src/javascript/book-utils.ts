@@ -61,7 +61,7 @@ export const indexBook = (bookText : string, defaultProperties : Record<string, 
       end: lines.length - 1,
     },
     lineStarts: [0],
-    properties: defaultProperties ?? get(defaultBookProperties),
+    properties: {...(defaultProperties ?? get(defaultBookProperties))},
     chapters: [],
     keys: {},
     chaptersWith: {
