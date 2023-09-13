@@ -1,4 +1,3 @@
-/
 
 
 import {encodeToHTML, sanitizeProperties, raw} from '../encoder.js'

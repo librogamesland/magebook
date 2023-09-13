@@ -7,7 +7,7 @@
   import { nullUntilLoaded, showSidemenu } from '../javascript/store.js'
 
 
-  import ActionButtons from './ActionButtons.svelte'
+  import ActionButtons from './SidebarButtons.svelte'
   import { flagURL } from '../javascript/urls';
     import type { BookChapter } from 'src/javascript/book-utils.js';
 

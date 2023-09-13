@@ -103,8 +103,8 @@
 <div class="buttons">
   <button class="icon-back" on:click={goBack} title={$_('sidemenu.actions.goback')} disabled={!$historyCanGoBack} />
   <button class="icon-plus" on:click={add} title={$_('sidemenu.actions.add')} />
-  <button class="icon-pencil" on:click={edit} title={$_('sidemenu.actions.edit')} disabled={$selectedChapter == null} />
-  <button class="icon-trash" on:click={del} title={$_('sidemenu.actions.delete')} disabled={$selectedChapter == null} />
+  <button class="icon-pencil" on:click={edit} title={$_('sidemenu.actions.edit')} disabled={$selectedChapterIndex === -1} />
+  <button class="icon-trash" on:click={del} title={$_('sidemenu.actions.delete')} disabled={$selectedChapterIndex === -1} />
 </div>
 {:else}
 <div class="buttons !border-b-0">
@@ -112,8 +112,8 @@
   <button class="icon-plus !py-2" on:click={add} title={$_('sidemenu.actions.add')} />
 </div>
 <div class="buttons !border-t-0">
-  <button class="icon-pencil !pt-0 !pb-2" on:click={edit} title={$_('sidemenu.actions.edit')}  disabled={$selectedChapter == null} />
-  <button class="icon-trash  !pt-0 !pb-2" on:click={del} title={$_('sidemenu.actions.delete')} disabled={$selectedChapter == null} />
+  <button class="icon-pencil !pt-0 !pb-2" on:click={edit} title={$_('sidemenu.actions.edit')}  disabled={$selectedChapterIndex === -1} />
+  <button class="icon-trash  !pt-0 !pb-2" on:click={del} title={$_('sidemenu.actions.delete')} disabled={$selectedChapterIndex === -1} />
 </div>
 {/if}
 
@@ -126,7 +126,7 @@
     border-bottom: none;
     background-color: #f1f1f1;
   }
-  .buttons > button[disabled=true] {
+  .buttons > button[disabled] {
     opacity: 0.3;
     pointer-events:none;
     cursor: not-allowed; /* nota: dovrei usare un wrapper, perché cursor not allowed non funziona quando pointer-events = none*/
@@ -146,9 +146,15 @@
   }
 
   :global(.mage-theme-dark) .buttons{
-    background-color: #121423 !important;
+    background-color: #000 !important;
   }
+  :global(.mage-theme-dark aside) .buttons > button {
+    border: 0 !important;
+  }
+
   :global(.mage-theme-dark aside) .buttons > button:hover {
     background-color: #444 !important;
   }
+
+
 </style>
