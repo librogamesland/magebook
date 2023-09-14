@@ -36,43 +36,38 @@
 
 
   const addQuickLink = () => {
+    let {to} = $cursorPosition
+    const currentIndex = $selectedChapterIndex
+
     const key = firstAvaiableKey(book)
-    addChapter(book, {
+    const [addedIndex, addedText] = addChapter(book, {
       key,
 
     }, $selectedChapterIndex)
 
-    // TODO: change this dirt hack and handle focus properly
-    setTimeout(() => {
-      let { from, to} = $cursorPosition
+    if(addedIndex <= currentIndex) to += addedText.length
 
-
-      const link = book.index.properties['disableShortLinks'] == 'true'
-        ? `[](#${key})`
-        : `[${key}]`
+    const link = book.index.properties['disableShortLinks'] == 'true'
+      ? `[](#${key})`
+      : `[${key}]`
 
 
 
-      if($selectedChapter.lines.textStart != (editor.state.doc.lineAt(to).number -1) ){
-        editor.dispatch({ changes: { from: to, to, insert: link }, })
-        to += link.length
-      }else{
-        // Special case: if is on same line of heading, create a new line skip
-        editor.dispatch({ changes: { from: to, to, insert: '\n' + link }, })
-        to += link.length + 1
+    if($selectedChapter.lines.textStart != (editor.state.doc.lineAt(to).number -1) ){
+      editor.dispatch({ changes: { from: to, to, insert: link }, })
+      to += link.length
+    }else{
+      // Special case: if is on same line of heading, create a new line skip
+      editor.dispatch({ changes: { from: to, to, insert: '\n' + link }, })
+      to += link.length + 1
 
-      }
+    }
 
-      editor.dispatch({
-        selection: {anchor: to},
-        effects: [ EditorView.scrollIntoView(to, { y: 'start', yMargin: 20, }), ]
-      })
+    editor.dispatch({
+      selection: {anchor: to},
+    })
 
-
-
-      editor.focus()
-
-    }, 200)
+    editor.focus()
 
   }
 

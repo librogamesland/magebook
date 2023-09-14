@@ -35,7 +35,7 @@
     value.group = sanitizeKey(value.group || '')
     if (!key) return
 
-    const chapterIndex = addChapter(book, {
+    const [chapterIndex] = addChapter(book, {
       key,
       title: value.title ?? '',
       group: value.group,

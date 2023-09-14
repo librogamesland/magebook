@@ -416,7 +416,7 @@ export const addChapter = (book: EditableBook, {
   flags = [],
   group = '',
   content = '',
-}, $selectedChapterIndex : number = -1) =>{
+}, $selectedChapterIndex : number = -1) : [number, string] =>{
   if(key == null) key = firstAvaiableKey(book)
   const chapterIndex = findNewKeyIndex(book, key, $selectedChapterIndex)
   const text = chapterText({
@@ -430,7 +430,7 @@ export const addChapter = (book: EditableBook, {
     : book.index.lineStarts[book.index.chapters[chapterIndex - 1].lines.textEnd + 1] - 1
 
   book.replace(position, position, text)
-  return chapterIndex
+  return [chapterIndex, text ]
 }
 
 export const deleteChapter = (book: EditableBook, chapterIndex : number) => {

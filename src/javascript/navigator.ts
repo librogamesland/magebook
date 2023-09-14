@@ -56,7 +56,7 @@ export const goToKey = async(key : string, updateHistory = true) => {
     ?? addChapter(book, {
       key,
       group: $selectedChapter.group
-    }, $selectedChapterIndex)
+    }, $selectedChapterIndex)[0]
 
 
   if(updateHistory && $selectedChapterIndex !== -1){
