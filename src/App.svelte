@@ -13,7 +13,7 @@
   import Sidebar from './components/Sidebar.svelte'
   import { handleShortcuts } from './javascript/shortcuts'
   import { s } from './javascript/settings'
-  import manifest from '../package.json'
+  import manifest from '../dist/package.json'
   import { isVSCode } from './javascript/vscode';
   import { nullUntilLoaded, store } from './javascript/store';
   import PluginPanel from './components/PluginPanel.svelte';
