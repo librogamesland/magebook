@@ -7,6 +7,8 @@ export const defaultBookProperties = mergeable<string>()
 type PluginPanel = {
   tabs : {
     id : string,
+    label: string,
+    icon: string,
   }[]
   widget : SvelteComponent,
 }

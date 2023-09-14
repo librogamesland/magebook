@@ -1,4 +1,32 @@
-import { get, writable, type Writable } from 'svelte/store';
+import { derived, get, writable, type Readable, type Writable } from 'svelte/store';
+
+export const storable = (
+  localStorageKey: string,
+  defaultValues: Record<string, any>,
+)  => {
+  const r = {} as Record<string, Writable<any>>
+  const der = [] as Array<Readable<[string, any]>>
+  for (const [key, value] of Object.entries({
+    ...defaultValues,
+    ...JSON.parse(localStorage['mageai-settings'] || '{}'),
+  })) {
+    const store = writable(value);
+    r[key] = store
+    der.push(derived([store], ([$store]) => [key, $store] as [string,any]))
+  }
+
+
+
+  derived(der, (derValues) => {
+    const storesValues : Record<string, any> = {}
+    for (const [key, value] of derValues) {
+      storesValues[key] = value
+    }
+    return JSON.stringify(storesValues)
+  }).subscribe(value => localStorage[localStorageKey] = value)
+  return r
+}
+
 
 export const mergeable = <T>() => {
   const substores : Writable<Record<string, T>>[] = []

@@ -201,7 +201,7 @@
     border-left: 5px solid transparent;
   }
 
-  :global(input[type="text"]){
+  :global(input[type="text"], textarea){
     border: 1px solid #ccc;
     background-color: #fafafa;
   }

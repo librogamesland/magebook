@@ -75,22 +75,23 @@
 
 </script>
 
-<div class={"plugin-panel bg-zinc-400 z-10 flex " + (($showPluginPanel && !(tab == null)) ? '' : 'hidden')} style="grid-area: pluginpanel">
-  <div class="bg-zinc-400 hover:bg-zinc-500 border-l-0 border-zinc-500 flex-initial flex-shrink-0 w-[6px] h-full cursor-col-resize"
-  on:touchstart|preventDefault|stopPropagation={handleResize} on:mousedown|preventDefault|stopPropagation={handleResize}>
+<div class={"plugin-panel bg-zinc-400 flex " + (($showPluginPanel && !(tab == null)) ? '' : 'hidden')} style="grid-area: pluginpanel">
 
-  </div>
-  <div class="overflow-y-auto" style={`width: calc(${w}px)`}>
+  <div class="overflow-y-auto relative" style={`width: calc(${w}px)`}>
+    <div class="bg-zinc-400 absolute l-0 hover:bg-zinc-500 border-l-0 border-zinc-500 flex-initial flex-shrink-0 w-[8px] h-full cursor-col-resize"
+    on:touchstart|preventDefault|stopPropagation={handleResize} on:mousedown|preventDefault|stopPropagation={handleResize}>
+
+    </div>
     {#each $pluginPanel as plugin}
       {#if plugin.widget}
         <svelte:component this={plugin.widget} {store} {w} {tab}/>
       {/if}
     {/each}
   </div>
-  <div class="bg-slate-500">
+  <div class="bg-slate-500 select-none">
     {#each $pluginPanel as plugin}
       {#each plugin.tabs as pluginTab}
-        <div class={"h-[60px] w-[60px] m-2 py-1 rounded-md bg-slate-600 hover:shadow-md shadow-black cursor-pointer hover:scale-105 transition-all flex justify-center items-center "
+        <button class={"h-[60px] w-[60px] m-2 py-1 rounded-md bg-slate-600 hover:shadow-md shadow-black cursor-pointer hover:scale-105 transition-all flex justify-center items-center "
           + (pluginTab.id == tab ? 'bg-slate-800' : '')}
         on:click={() => {
           if(tab === pluginTab.id){
@@ -101,8 +102,18 @@
           if(w < 10) w = preferredW
 
         }}>
-          <div class="text-slate-300 text-xs font-bold text-center">{@html $_(pluginTab.id)}</div>
-        </div>
+          <div class="text-center">
+            {#if pluginTab.icon} {@html pluginTab.icon} {/if}
+
+            {#if pluginTab.label}
+              <span class="text-slate-300 text-xs font-bold">
+                {@html $_(pluginTab.label)}
+              </span>
+            {/if}
+          </div>
+
+
+        </button>
       {/each}
     {/each}
   </div>
