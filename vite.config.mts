@@ -43,8 +43,7 @@ const pluginLoader = {
 
       // Create a virtual module like:
       /*
-          import plugin0 from '/absolute/path/src/plugins/PLUGIN-NAME/src/main.js'
-          export const plugins = [plugin0]
+          import '/absolute/path/src/plugins/PLUGIN-NAME/src/main.js'
       */
       return plugins.map((p, i) => `import '${path.join(__dirname, 'src/plugins', p, 'src/main.js')}'`).join('\n')
     }

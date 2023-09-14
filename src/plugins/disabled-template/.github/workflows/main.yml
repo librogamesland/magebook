@@ -1,0 +1,46 @@
+name: "Build, Test and Deploy"
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2.3.1
+
+      - name: Install and Build
+        run: |
+          npm ci
+          git clone https://github.com/librogamesland/magebook.git
+          cd magebook
+          git checkout 0ee9bb2   # Version 1.2.17, update to the version you wish
+          cd ..
+          mkdir -p 'magebook/src/plugins/vendor-plugin-magenook'
+          mv * 'magebook/src/plugins/vendor-plugin-magenook' || true
+          cd magebook
+          npm ci
+          npm run build
+
+        # Now you have the full magebook built with the plugin inside the ./editor directory
+        # Deploy as you wish!
+        # For example, you may setup a github repository named REPONAME, enable github pages and push there with:
+
+        #  cd editor
+        #  git config --global user.email YOUR_EMAIL
+        #  git config --global user.name YOUR_NAME
+        #  git init
+        #  git add .
+        #  git commit -am "Website updated (through custom github action)"
+        #  git branch -M main
+        #  git remote add origin "https://$GITHUB_TOKEN@github.com/REPONAME/REPONAME.github.io.git"
+        #  git push -f -u origin main
+
+        env:
+          #put your tokens here, for example:
+          GITHUB_TOKEN: ${{ secrets.API_TOKEN_GITHUB }}
+
+
+
