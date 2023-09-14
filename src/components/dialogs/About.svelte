@@ -1,6 +1,6 @@
 <script lang="ts">
   import { _ } from 'svelte-i18n'
-  import manifest from '../../../package.json'
+  import manifest from '../../../dist/package.json'
   import logo from '../../assets/img/logo.png'
 
 
