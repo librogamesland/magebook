@@ -6,10 +6,7 @@ import {storable} from '../../../javascript/special-svelte-stores'
   Main settings of the plugin and other temporary
   data that should be cached on the local storage.
 */
-const key = 'templateplugin-settings'
-
-console.error(`ERROR: YOU NEED TO CHANGE THE KEY IN THE PLUGIN.
-OTHERWISE IT WILL CONFLICT WITH OTHER KEYS IN THE LOCAL STORAGE.`)
+const key = 'extensions-plugin-settings'
 
 export const {
   settingExample

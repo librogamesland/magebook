@@ -3,6 +3,8 @@ import { store, showSidemenu } from './store'
 import { EditorView } from  'codemirror'
 import { StateEffect } from "@codemirror/state"
 import { addChapter } from './book-utils';
+import { urlParam } from './urls';
+import { closeDialog } from '../components/Dialogs.svelte';
 
 
 export const subviewUpdateEffect = StateEffect.define<string>();
@@ -85,5 +87,3 @@ export const goBack = async() => {
   }
   goToKey(chapterKey, false)
 }
-
-

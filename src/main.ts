@@ -35,4 +35,3 @@ if ('serviceWorker' in navigator && !isVSCode) {
 new App({
   target: document.body,
 })
-

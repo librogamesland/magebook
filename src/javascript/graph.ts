@@ -1,5 +1,5 @@
 import { bookify, type Book } from './book-utils';
-import { flagURL } from './urls';
+import { flagURL, urlOfChapterKey } from './urls';
 
 
 
@@ -66,7 +66,7 @@ const generateGraph = (bookOrText : Book | string) => {
           flags.length == 0 ? '' : `<tr><td align="center"><table border="0"><tr>${
               flags.map( flag => `<td align="center"><img src="${flagUrls[flag]}"/></td>`).join('')
           }</tr></table></td></tr>`
-      }</table>>, tooltip="${whitelist(content)}"${nodeStyle(key, flags, book)}, href="http://localhost:5173/#msession=WS8NEWal6qUixYhcOPZH&c=125"]`
+      }</table>>, tooltip="${whitelist(content)}"${nodeStyle(key, flags, book)}, href="${urlOfChapterKey(key)}"]`
 
     for(const link of links){
       if(book.index.keys[link]) s += `

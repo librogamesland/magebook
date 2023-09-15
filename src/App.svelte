@@ -5,7 +5,7 @@
   import {_} from 'svelte-i18n'
   import { SvelteToast } from '@zerodevx/svelte-toast'
 
-  import Dialogs from './components/Dialogs.svelte'
+  import Dialogs, { closeDialog } from './components/Dialogs.svelte'
   import { dialog } from './components/Dialogs.svelte'
   import Alert from './components/dialogs/Alert.svelte'
   import Navbar  from './components/Navbar.svelte'
@@ -17,6 +17,9 @@
   import { isVSCode } from './javascript/vscode';
   import { nullUntilLoaded, store } from './javascript/store';
   import PluginPanel from './components/PluginPanel.svelte';
+  import { urlParam } from './javascript/urls';
+  import { goToKey } from './javascript/navigator';
+    import { wait } from './javascript/utils';
 
   const { theme } = s
 
@@ -71,6 +74,28 @@
       localStorage[key] = manifest.version
     }
   }catch(e){}
+
+
+
+  store.then( async(s) => {
+    Object.assign(window, s)
+    nullUntilLoaded.set(s)
+
+    const afterSomeSeconds = wait(500)
+
+
+    await afterSomeSeconds
+    urlParam('c').subscribe(key => {
+      console.log(key)
+      if(key){
+        goToKey(key)
+        closeDialog(false)
+        urlParam('c').set(null)
+      }
+    })
+  })
+
+
 </script>
 
 <svelte:head>

@@ -8,7 +8,7 @@
 
 
   import ActionButtons from './SidebarButtons.svelte'
-  import { flagURL } from '../javascript/urls';
+  import { flagURL, urlOfChapterKey } from '../javascript/urls';
     import type { BookChapter } from 'src/javascript/book-utils.js';
 
 
@@ -163,7 +163,7 @@
     <ul class="chapters">
       {#each filteredChapters as [chapterIndex, chapter]}
       <a
-        href={'' + '&c=' + encodeURIComponent(chapter.key)}
+        href={urlOfChapterKey($book.index.chapters[chapterIndex].key)}
         class:selected={chapterIndex === $selectedChapterIndex}
         on:click|preventDefault={() => goToChapter(chapterIndex)}>
         {#if w > 200 || windowW < 680}
@@ -187,7 +187,7 @@
       <ul class="links-here">
         {#each $selectedChapter == null ? [] : $selectedChapter.linkedFrom as chapterIndex}
         <a
-          href={'' + '&c=' + encodeURIComponent($book.index.keys[chapterIndex])}
+          href={urlOfChapterKey($book.index.chapters[chapterIndex].key)}
           class:selected={chapterIndex === $selectedChapterIndex}
           on:click|preventDefault={() => goToChapter(chapterIndex)}>
           {#if w > 200 || windowW < 680}

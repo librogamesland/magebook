@@ -1,5 +1,5 @@
 <script context="module" lang="ts">
-  import { writable } from 'svelte/store'
+  import { get, writable } from 'svelte/store'
 
 
   const dialogStore = writable({})
@@ -19,6 +19,14 @@
         params: writable(params),
       })
     )
+
+  export const closeDialog = (data: any) => {
+    try {
+      // @ts-expect-error
+      get(dialogStore).callback(data)
+    }catch(e :any){}
+  }
+
   export { dialog, dialogStore, lockStore }
 </script>
 
