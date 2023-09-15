@@ -17,8 +17,10 @@
     return null
   }
 
+  const minW = 8
+
   let tab = firstTab()
-  let w = localStorage['mage-pluginpanel-width'] ? parseInt(localStorage['mage-pluginpanel-width']) : 8
+  let w = localStorage['mage-pluginpanel-width'] ? parseInt(localStorage['mage-pluginpanel-width']) : minW
   let h = 250
   let isResizing = false
 
@@ -40,7 +42,7 @@
 			h = Math.min(startH + y, 0)
 		}else{
 			const x = ("touches" in e) ? e.changedTouches[0].pageX : e.x
-			newpreferredW = w = Math.min(Math.max(startW - x, 8), window.innerWidth * 0.45)
+			newpreferredW = w = Math.min(Math.max(startW - x, minW), window.innerWidth * 0.45)
 		}
 	}
 
@@ -48,7 +50,7 @@
   const endResize = () => {
     isResizing = false
     if(w < 30){
-      w = 8
+      w = minW
     }else{
       preferredW = newpreferredW
     }
@@ -99,7 +101,7 @@
           + (pluginTab.id == tab ? 'bg-slate-800' : '')}
         on:click={() => {
           if(tab === pluginTab.id){
-            w = (w < 10) ? preferredW : 0
+            w = (w < 10) ? preferredW : minW
             return
           }
           tab = pluginTab.id
