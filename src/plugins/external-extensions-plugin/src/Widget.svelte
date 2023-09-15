@@ -22,7 +22,7 @@
 
 {#if tab.startsWith('templateplugin.tabs.')}
   {#if tab === 'templateplugin.tabs.1'}
-    <iframe class:pointer-events-none={isResizing} title="test" src="/public/tools/libreoffice/index.html#magebookplugin=true" width="100%" height="100%" frameborder="0" allowfullscreen></iframe>
+    <iframe class:pointer-events-none={isResizing} title="test" src="./tools/libreoffice/index.html#magebookplugin=true" width="100%" height="100%" frameborder="0" allowfullscreen></iframe>
   {/if}
 {/if}
 
