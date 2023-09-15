@@ -18,11 +18,11 @@
   }
 
   let tab = firstTab()
-  let w = localStorage['mage-pluginpanel-width'] ? parseInt(localStorage['mage-pluginpanel-width']) : 250
+  let w = localStorage['mage-pluginpanel-width'] ? parseInt(localStorage['mage-pluginpanel-width']) : 8
   let h = 250
   let isResizing = false
 
-  let preferredW = localStorage['mage-pluginpanel-preferredwidth'] ? parseInt(localStorage['mage-pluginpanel-preferredwidth']) : 250
+  let preferredW = localStorage['mage-pluginpanel-preferredwidth'] ? parseInt(localStorage['mage-pluginpanel-preferredwidth']) : 500
   let newpreferredW = preferredW
 
   let startW = 0
@@ -40,7 +40,7 @@
 			h = Math.min(startH + y, 0)
 		}else{
 			const x = ("touches" in e) ? e.changedTouches[0].pageX : e.x
-			newpreferredW = w = Math.min(Math.max(startW - x, 0), window.innerWidth * 0.45)
+			newpreferredW = w = Math.min(Math.max(startW - x, 8), window.innerWidth * 0.45)
 		}
 	}
 
@@ -48,7 +48,7 @@
   const endResize = () => {
     isResizing = false
     if(w < 30){
-      w = 0
+      w = 8
     }else{
       preferredW = newpreferredW
     }
