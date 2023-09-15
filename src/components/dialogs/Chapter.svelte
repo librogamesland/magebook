@@ -13,7 +13,7 @@
   $: ({book} = $nullUntilLoaded)
 
 
-  let flagImgs = { fixed, noexport, death, final }
+  let flagImgs: Record<string, string> = { fixed, noexport, death, final }
 
   export let params : any
   export let callback : any
@@ -22,10 +22,17 @@
 
 
   // Entity input bindings
-  let dialogTitle : string, key : string, value, title: string, flags : Record<string, boolean>, group: string, originalKey : string, genericFlags
+  let dialogTitle : string
+  let key : string
+  let value: any
+  let title: string
+  let flags : Record<string, boolean>
+  let group: string
+  let originalKey : string
+  let genericFlags : string
   const filterFlags = () =>  Object.keys(flags).filter(key => flags[key]).concat(genericFlags.split('\n').map(el => el.trim()).filter(el => el.length > 0))
 
-  const unsubscribe = params.subscribe( p => {
+  const unsubscribe = params.subscribe( (p : any) => {
     ;([dialogTitle, key, value] = p)
     originalKey = key
     ;({ title = '', group = '' } = value)

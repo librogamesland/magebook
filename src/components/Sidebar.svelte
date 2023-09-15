@@ -15,9 +15,9 @@
   $: ({book, selectedChapterIndex, selectedChapter } = $nullUntilLoaded)
 
   let windowW = 0
-  let w = localStorage['mage-sidebar-width'] ? parseInt(localStorage['mage-sidebar-width']) : 250
+  let w = localStorage['mage-sidebar-width'] ? parseInt(localStorage['mage-sidebar-width']) : 400
 
-  let preferredW = localStorage['mage-sidebar-preferredwidth'] ? parseInt(localStorage['mage-sidebar-preferredwidth']) : 250
+  let preferredW = localStorage['mage-sidebar-preferredwidth'] ? parseInt(localStorage['mage-sidebar-preferredwidth']) : 400
   let newpreferredW = preferredW
 
   let startW = 0
@@ -67,7 +67,7 @@
     (async () =>{
       await tick();
       try{
-        scrollIntoView(document.querySelector('aside ul.chapters a.selected'), {
+        scrollIntoView(document.querySelector('aside ul.chapters a.selected')!, {
           behavior: 'smooth',
           scrollMode: 'if-needed',
         });
@@ -77,7 +77,7 @@
     (async () =>{
       await tick();
       try{
-        scrollIntoView(document.querySelector('aside ul.chapters a'), {
+        scrollIntoView(document.querySelector('aside ul.chapters a')!, {
           behavior: 'smooth',
           scrollMode: 'if-needed',
         });
@@ -132,14 +132,14 @@
 <svelte:window bind:innerWidth={windowW} />
 
 
-<div
+<div role="button" tabindex="0"
   class={`mask ${$showSidemenu ? 'foreground' : ''}`}
   on:click={() => $showSidemenu = false}
 />
 
 
 <aside class={($showSidemenu ? 'foreground' : '') + ' flex flex-row'} style={`width: ${w}px`}>
-  <div class="sidebar-resizer bg-[#ccc] hover:bg-zinc-500 dark:bg-[#272727]  hover:dark:bg-[#505050]
+  <div role="button" tabindex="-1" class="sidebar-resizer bg-[#ccc] hover:bg-zinc-500 dark:bg-[#272727]  hover:dark:bg-[#505050]
   border-l-2
   boder-[#ccc] dark:border-[#272727]
   flex-initial w-[6px] min-w-[6px] flex-shrink-0 h-full cursor-col-resize"

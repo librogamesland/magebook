@@ -1,4 +1,6 @@
+// @ts-nocheck
 
+// TODO: REFACTOR INTO EXTERNAL TOOL
 
 import {encodeToHTML, sanitizeProperties, raw} from '../encoder.js'
 import {bookify, type Book } from '../book-utils'

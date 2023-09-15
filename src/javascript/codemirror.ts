@@ -16,7 +16,7 @@ import { history, historyKeymap } from './history'
 import { s } from './settings'
 import { isVSCode } from './vscode.js'
 import { get, writable } from 'svelte/store'
-import { indexBook, type Book } from './book-utils.js'
+import { indexBook, type Book, type BookIndex } from './book-utils.js'
 
 
 
@@ -48,7 +48,7 @@ const getChapterFromLink = (rawText : string) => rawText.includes('(#')
 
 
 /* Iterate through visible links and mark them as working/broken */
-const getLinkDecorations = (view: EditorView, {text, index} : Book) => {
+const getLinkDecorations = (view: EditorView, {text, index} : {text : string, index: BookIndex}) => {
 
   const endTitlePage = index.lineStarts[index.lines.titlePageEnd + 1]
 
@@ -195,29 +195,29 @@ const magePlugin = ViewPlugin.fromClass(class {
   eventHandlers: {
     mousedown: (e, view) => {
       let target = e.target as HTMLElement
-      if(target.classList.contains('tok-link')) target = target.parentElement
+      if(target.classList.contains('tok-link')) target = target.parentElement!
       if(target.classList.contains('cm-mage-workinglink') || target.classList.contains('cm-mage-brokenlink')){
 
         // [sp] we get the closest cm-line ancestor, as the link could be split in multiple <div>s due to how
         // firepad highlights text
-        const parentLine = target.closest('.cm-line')
+        const parentLine = target.closest('.cm-line') as HTMLElement
 
 
-        let totalText = parentLine.textContent
+        let totalText = parentLine.textContent ?? ''
         let elementsText = '' // this will include all the text that comes before the one clicked by the user
-        function iterate(instance, target) {
+        function iterate(instance : HTMLElement, target : HTMLElement) {
           if(instance == target) return true
 
           for (let child of instance.childNodes) {
             if(child.nodeType == Node.TEXT_NODE) elementsText += child.textContent
-            if(iterate(child, target)) return true;
+            if(iterate(child as HTMLElement, target)) return true;
           }
           return false
         }
 
         iterate(parentLine, target)
 
-        const notFoundBecomesInfinity = (a) => a === -1 ? Infinity : a
+        const notFoundBecomesInfinity = (a : number) => a === -1 ? Infinity : a
 
 
         const firstClosingBracket = Math.min(
@@ -248,6 +248,7 @@ const displayedLine = Decoration.replace({})
 const getSubviewDecorations = () => {
 
   let builder = new RangeSetBuilder<Decoration>()
+  /* TODO: REWORK SUBVIEW
   const $subviewChapter = get(subviewChapter)
   if(!$subviewChapter)   return builder.finish();
 
@@ -255,7 +256,7 @@ const getSubviewDecorations = () => {
 
     builder.add(from, to, displayedLine)
 
-  }
+  } */
   return builder.finish()
 }
 
@@ -273,7 +274,7 @@ const subviewPlugin = StateField.define<DecorationSet>({
 
 
 
-export const setupCodemirror = (text : string) => {
+export const setupCodemirror = (text : string) : [EditorView, any[]]=> {
   const extensions = isVSCode
     ? [
       highlightSpecialChars(),

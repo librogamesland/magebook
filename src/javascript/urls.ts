@@ -34,7 +34,7 @@ export const urlOfChapterKey = (chapterKey : string) => {
  * or 's' itself if it's a single value.
  */
 //@ts-expect-error
-export const getLast = (s: string | string[]): string => (Array.isArray(s) && s.length > 0) ? s[s.length - 1] : s;
+export const getLast = (s: string | (string | null)[] | null): string | null => s === null ? null : (Array.isArray(s) && s.length > 0) ? s[s.length - 1] : s;
 
 
 /**
@@ -69,10 +69,10 @@ export const urlParams =  (() => {
   return {
     get: (key : string) => getLast(value[key]),
     get value(){return value;},
-    set(params) {
+    set(params : Record<string, any>) {
       location.hash = '#' + queryString.stringify(params);
     },
-    update (updateFunction) {
+    update (updateFunction: (currentParams: Record<string, any>) => Record<string, any>) {
       const newParams = updateFunction(queryString.parse(location.hash));
       location.hash = '#' + queryString.stringify(newParams);
     },
@@ -99,9 +99,9 @@ export const urlParams =  (() => {
  *   return 'contact';
  * });
  */
-export const urlParam = (key) => {
+export const urlParam = (key : string) => {
 
-  let value : string = getLast(queryString.parse(location.hash)[key]);
+  let value : string  | null = getLast(queryString.parse(location.hash)[key]);
   const { set, subscribe } = writable(value);
 
 
@@ -113,7 +113,7 @@ export const urlParam = (key) => {
     }
   })
 
-  const newSet = (newValue: string) => {
+  const newSet = (newValue: string | null) => {
     if(value === newValue) return;
     value = newValue;
     urlParams.update((params) => {

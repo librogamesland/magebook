@@ -1,6 +1,6 @@
 <script lang="ts">
   import { _ } from 'svelte-i18n'
-  import { firstAvaiableKey, type EditableBook, chapterText, findNewKeyIndex, sanitizeKey, addChapter, deleteChapter, editChapter } from '../javascript/book-utils'
+  import { firstAvaiableKey, type EditableBook, sanitizeKey, addChapter, deleteChapter, editChapter } from '../javascript/book-utils'
   import { historyCanGoBack, goBack, goToChapter} from '../javascript/navigator.js'
   import { ctrlShortcuts } from '../javascript/shortcuts.js'
   // Dialogs

@@ -279,7 +279,7 @@ export interface EditableBook extends Book {
 }
 
 /** Main implementation of an EditableBook. Uses a string as a store. */
-export const stringBook = (initialText = '') : EditableBook => new class implements EditableBook {
+export const stringBook = (initialText = '') => new class implements EditableBook {
   #cachedIndex : BookIndex | undefined = undefined
   #cachedContent : BookContent | undefined = undefined
   #text = initialText
@@ -295,7 +295,7 @@ export const stringBook = (initialText = '') : EditableBook => new class impleme
   get text() { return this.#text}
   get index() {
     if(this.#cachedIndex === undefined) this.#cachedIndex = indexBook(this.#text)
-    return this.#cachedIndex
+    return this.#cachedIndex!
   }
 
   get content() {

@@ -1,4 +1,4 @@
-import { SvelteComponent } from "svelte";
+import { type ComponentType, SvelteComponent } from "svelte";
 import { arrayable, mergeable } from "./special-svelte-stores";
 
 
@@ -10,11 +10,11 @@ type PluginPanel = {
     label: string,
     icon: string,
   }[]
-  widget : SvelteComponent,
+  widget : ComponentType<SvelteComponent<any>>,
 }
 
 export const pluginPanel = arrayable<PluginPanel>()
 
-export const settingsDialog = arrayable<SvelteComponent>()
+export const settingsDialog = arrayable<ComponentType<SvelteComponent<any>>>()
 
 export const bookFormats = mergeable<any>()

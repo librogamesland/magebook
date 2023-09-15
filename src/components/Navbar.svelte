@@ -20,6 +20,7 @@
   import Recover from "./dialogs/Recover.svelte";
   import Settings from "./dialogs/Settings.svelte";
   import EditorButtons from "./EditorButtons.svelte";
+  import { asAny } from "../javascript/utils.js";
 
   const { theme } = s;
 
@@ -57,7 +58,7 @@
           name="open"
           id="open"
           accept=".xlgc,.md, .magebook"
-          on:change={(e) => open(e.target)}
+          on:change={(e) => open(asAny(e.target))}
         />
         <label for="open">{$_("navbar.file.open")} </label>
         {#if book}

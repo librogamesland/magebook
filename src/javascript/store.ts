@@ -1,14 +1,14 @@
 
 import { derived, writable, type Writable } from 'svelte/store'
 import { debouncable } from './special-svelte-stores'
-import { indexBook, type BookIndex, contentBook, stringBook } from './book-utils'
+import { indexBook, type BookIndex, contentBook, stringBook, type EditableBook } from './book-utils'
 import { cursorPosition, setOnChangeCallback } from './codemirror'
 import type { EditorView } from 'codemirror'
 
 
 export const showSidemenu = writable(false)
 export const showPluginPanel = writable(false)
-export const isSynced = debouncable(500, null)
+export const isSynced = debouncable<null | boolean>(500, null)
 
 
 
@@ -18,7 +18,7 @@ export const isSynced = debouncable(500, null)
 // main interface from writing/reading text from the store
 export const bookStoreCodemirror = (editor : EditorView, setOnChangeCallback : any) => {
 
-  let text = '', index : BookIndex = null
+  let text = '', index : BookIndex | null = null
   const getState = (newText : string) => {
     text = newText
     index = indexBook(text)
@@ -60,8 +60,8 @@ export const bookStoreCodemirror = (editor : EditorView, setOnChangeCallback : a
     subscribe,
 
     get text() { return text },
-    get index() { return index },
-    get content() { return contentBook(text, index) },
+    get index() { return index! },
+    get content() { return contentBook(text, index!) },
 
 
     replace(from : number, to : number, newText : string) {
@@ -70,7 +70,7 @@ export const bookStoreCodemirror = (editor : EditorView, setOnChangeCallback : a
       })
     },
 
-    apply(transformation) {
+    apply(transformation : (book : EditableBook) => any) {
       const book = stringBook(editor.state.doc.toString())
       transformation(book)
       book.steps.forEach(step => {
@@ -84,7 +84,7 @@ export const bookStoreCodemirror = (editor : EditorView, setOnChangeCallback : a
 
           case 'r': {
             editor.dispatch({
-              changes: {from: step.from, to: step.to, insert: step.newText}
+              changes: {from: step.from!, to: step.to, insert: step.newText}
             })
             break
           }
@@ -101,12 +101,12 @@ export const bookStoreCodemirror = (editor : EditorView, setOnChangeCallback : a
 
 
 // initialization from outside
-let resolveInitDataCallback = null
+let resolveInitDataCallback : ( ({editor} : {editor : EditorView}) => any) | null = null
 const initData = new Promise<{editor: EditorView}>( resolve => {
   resolveInitDataCallback = resolve
 })
 
-export const resolveInitData = ({editor}) => resolveInitDataCallback({editor})
+export const resolveInitData = ({editor} : {editor: EditorView}) => resolveInitDataCallback!({editor})
 
 
 
@@ -167,6 +167,8 @@ export const store = (async () => {
 
 })()
 
+// TODO: fix typing on this one
+// @ts-ignore
 export const nullUntilLoaded : Writable<Awaited<typeof store>> = writable({
   book: null,
   selectedChapter: null,

@@ -4,6 +4,7 @@ import type { Book, BookChapter } from './book-utils';
 export {marked}
 
 if(typeof DOMParser === 'undefined'){
+  // @ts-ignore
   const JSDOM = global.JSDOM || require("jsdom").JSDOM;
   global.DOMParser = new JSDOM().window.DOMParser
   global.document = new JSDOM().window.document

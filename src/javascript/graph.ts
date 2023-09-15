@@ -3,7 +3,8 @@ import { flagURL } from './urls';
 
 
 
-const Viz = window["Viz"];
+// @ts-ignore
+const Viz : any = window["Viz"];
 
 
 const allowedChars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!\#$%&'()*+,-./:;<=>?@[\\]^_`{|}~àèéìòù\n ";
@@ -23,15 +24,17 @@ const sanitizeLabel = (text : string) => text.replace(/\//g, "\\").replace(/\"/g
 const sanitizeLink = (text: string) => text.replace(/[\]\[\#\)\(]/g, "")
 
 
-const nodeStyle  = (key, flags, indexBook) => {
+const nodeStyle  = (key : string, flags : string[], book: Book) => {
   if(flags.includes('final')) return ', color="#ffa200"'
   if(flags.includes('death')) return ', color="#000000", fontcolor="#FFFFFF"'
   if(flags.includes('fixed')) return ', color="#b02900", fontcolor="#FFFFFF"'
   if(flags.length > 0) {
-    const relevantPart = /\w+/g.exec(flags[0])[0]
-    const seed = relevantPart.split("").reduce((acc, item) => acc + item.charCodeAt(0), 0)
-    const color = seed % 8 + 1
-    return `, color="${color}:1", fillcolor="#D3D3D3" style="rounded,filled,bold", colorscheme="accent8"`
+    const relevantPart = /\w+/g.exec(flags[0])
+    if(relevantPart !== null) {
+      const seed = relevantPart[0].split("").reduce((acc, item) => acc + item.charCodeAt(0), 0)
+      const color = seed % 8 + 1
+      return `, color="${color}:1", fillcolor="#D3D3D3" style="rounded,filled,bold", colorscheme="accent8"`
+    }
   }
 
   return ''
@@ -46,7 +49,7 @@ const generateGraph = (bookOrText : Book | string) => {
     edge  [fontname="arial", fontsize=12];
   `
 
-  const flagUrls = {}
+  const flagUrls : Record<string, URL> = {}
   for(const flag of Object.keys(book.index.chaptersWith.flag)){
     flagUrls[flag] = new URL(flagURL(flag, book), document.baseURI)
   }
@@ -103,11 +106,9 @@ const generateGraph = (bookOrText : Book | string) => {
 
 
 // Return the src attribute of an img tag
-const graphToImg = async(book) => {
+const graphToImg = async(bookOrText : Book | string) => {
   const viz = await Viz.instance()
-  return viz.renderSVGElement(...generateGraph(book))
-
-  //return hpccWasm.graphviz.layout(generateGraph(book), "svg", "dot")
+  return viz.renderSVGElement(...generateGraph(bookOrText))
 }
 
 export {generateGraph, graphToImg}

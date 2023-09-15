@@ -2,7 +2,6 @@
   import { _ } from 'svelte-i18n'
   import { s } from '../../javascript/settings'
   import { settingsDialog } from '../../javascript/plugin-interface'
-  import type { SvelteComponent } from 'svelte';
 
   const {font, fontSize, pageWidth, pageZoom, titleHighlight, justifyText, lineMargin, lineSpacing, dateFormat, singleChapterMode, countChars} = s
 
@@ -10,8 +9,6 @@
   export let callback : (value: any) => void
 
 
-
-  type PluginCallback = (bool : boolean) => void
 
   // https://stackoverflow.com/questions/64545260/svelte-using-bindthis-inside-each-block
   let _pluginCallbacks  : any[] = []

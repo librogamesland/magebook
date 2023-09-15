@@ -201,12 +201,12 @@
     border-left: 5px solid transparent;
   }
 
-  :global(input[type="text"], textarea){
+  :global(input[type="text"], input[type="password"], textarea){
     border: 1px solid #ccc;
     background-color: #fafafa;
   }
 
-  :global(.mage-theme-dark input[type="text"]){
+  :global(.mage-theme-dark input[type="text"], .mage-theme-dark input[type="password"]){
     background-color: #1d1d1d;
     border: 2px #161616 solid;
     color: #ddd;

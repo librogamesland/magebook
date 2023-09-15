@@ -7,7 +7,7 @@
     lock: false,
     session: null,
   })
-  const dialog = (component, ...params) =>
+  const dialog = (component : ComponentType<SvelteComponent<any>>, ...params : any[]) =>
     new Promise((resolve) =>
       dialogStore.set({
         component,
@@ -24,11 +24,11 @@
 
 <script lang="ts">
   import { _ } from 'svelte-i18n'
-  import { tick } from 'svelte'
+  import { tick, type ComponentType, SvelteComponent } from 'svelte'
 
 
   /* Dialog component */
-  let lock = false, session, component, callback, params
+  let lock = false, session :any, component : ComponentType<SvelteComponent<any>>, callback : Function, params : any[]
 
   lockStore.subscribe (data => ({lock, session} = data) )
 
@@ -57,10 +57,13 @@
 {/if}
 
 {#if component}
+  <!-- svelte-ignore a11y-no-static-element-interactions -->
   <div class="dialog-mask" on:click|self={() => callback(false)}/>
+    <!-- svelte-ignore a11y-no-noninteractive-element-interactions -->
   <div id="mage-modal" class="dialog-container" tabindex="-1" aria-modal="true" role="dialog" on:click|self={() => callback(false)}>
     <svelte:component this={component} {params} {callback}/>
-    <span tabindex="0" aria-hidden="true" onfocus="document.getElementById('mage-modal').focus()"></span>
+      <!-- svelte-ignore a11y-no-noninteractive-tabindex -->
+    <span tabindex="0" aria-hidden="true" on:focus={() => document.getElementById('mage-modal')?.focus()}></span>
   </div>
 {/if}
 

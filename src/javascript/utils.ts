@@ -46,7 +46,7 @@ export const isNatNumber = (n : number | string) => (n > 0 || String(n) === "0")
 
 /** Debounced Svelte Store
 Same as Svelte Stores, but result is updated only if result is stable since millis */
-export const debounced = <T>(millis : number, defaultValue: T = null)  => {
+export const debounced = <T>(millis : number, defaultValue: T | null = null)  => {
   let timer : ReturnType<typeof setTimeout>
 	let value = defaultValue
   const { subscribe, set } = writable(defaultValue);
@@ -119,7 +119,7 @@ export const intersects = (a : number,b : number,c :number,d :number, p :number,
 };
 
 
-export const scaleVector = ([x0, y0], length) => {
+export const scaleVector = ([x0, y0] : [number, number], length : number) => {
   const vectorLength = Math.sqrt(x0*x0 + y0*y0)
   return [
     x0 / vectorLength * length,
@@ -182,4 +182,7 @@ export const UUIDGeneratorBrowser = () : string =>// @ts-ignore
   (c ^ (crypto.getRandomValues(new Uint8Array(1))[0] & (15 >> (c / 4)))).toString(16)
 );
 
+
+
+export const asAny = (value: any) => value as any
 

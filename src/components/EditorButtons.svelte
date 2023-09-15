@@ -78,26 +78,26 @@
 </script>
 
 
-<div class="nav-element" on:click={async() => {
+<button class="nav-element" on:click={async() => {
   openSearchPanel(editor)
-}} title={$_('editor.buttons.find')}><span class="icon-search"/></div>
+}} title={$_('editor.buttons.find')}><span class="icon-search"/></button>
 
 {#if !isVSCode}
-<div class="nav-element" on:click={async() => {
+<button class="nav-element" on:click={async() => {
   undo(editor)
-}} title={$_('editor.buttons.undo')}><span class="icon-ccw"/></div>
+}} title={$_('editor.buttons.undo')}><span class="icon-ccw"/></button>
 
-<div class="nav-element" on:click={async() => {
+<button class="nav-element" on:click={async() => {
   redo(editor)
-}} title={$_('editor.buttons.redo')}><span class="icon-cw"/></div>
+}} title={$_('editor.buttons.redo')}><span class="icon-cw"/></button>
 {/if}
 
 
-<div class="nav-element" on:click={addQuickLink} title={$_('editor.buttons.quicklink')}>
+<button class="nav-element" on:click={addQuickLink} title={$_('editor.buttons.quicklink')}>
   <span class="link">[<span class="icon-flash"/>]</span>
-</div>
+</button>
 
-<div class="nav-element" on:click={addLink} title={$_('editor.buttons.link')}>[L]</div>
+<button class="nav-element" on:click={addLink} title={$_('editor.buttons.link')}>[L]</button>
 
 
 <style>
@@ -106,14 +106,14 @@
     margin-left: -2px !important;
   }
 
-  :global(.toolbar) > div {
+  :global(.toolbar) > button {
     color: rgb(22, 12, 92);
     text-decoration: underline;
     border-left: rgb(192, 192, 192) solid 1px;
     padding: 7px 22px 6px;
   }
 
-  div {
+  button {
     cursor: pointer;
     user-select: none;
     white-space: nowrap;

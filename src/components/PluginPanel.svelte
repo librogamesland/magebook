@@ -85,8 +85,7 @@
 
   <div class="overflow-y-auto relative" style={`width: calc(${w}px)`}>
     <div class="bg-zinc-400 absolute l-0 hover:bg-zinc-500 border-l-0 border-zinc-500 flex-initial flex-shrink-0 w-[8px] h-full cursor-col-resize"
-    on:touchstart|preventDefault|stopPropagation={handleResize} on:mousedown|preventDefault|stopPropagation={handleResize}>
-
+    on:touchstart|preventDefault|stopPropagation={handleResize} on:mousedown|preventDefault|stopPropagation={handleResize} role="button" tabindex="-1">
     </div>
     {#each $pluginPanel as plugin}
       {#if plugin.widget}

@@ -44,6 +44,7 @@
 
 
   <div class="toolbar">
+    <!-- svelte-ignore a11y-no-noninteractive-element-interactions-->
     <h1 class="only-desktop" on:click={ () => $showSidemenu = !$showSidemenu} title={selectedChapterFullTitle && $selectedChapterFullTitle}>
       {$selectedChapterFullTitle ?? ''}
     </h1>

@@ -169,7 +169,7 @@ const encode = (bookOrText : Book | string) => {
     }
   }
 
-  const xmlValue = (name: string | boolean, type: string, cdata: any) => ({
+  const xmlValue = (name: string, type: string, cdata: any) => ({
     "_attributes": { name, type },
     ...(type === "boolean"
       ? { "_cdata": (cdata == true) ? "true" : "false" }
@@ -192,7 +192,7 @@ const encode = (bookOrText : Book | string) => {
         ["hashtags", "array", filterFlags(chapter.flags)],
         ["flag_export", "boolean", !chapter.flags.includes("noexport")],
         ["flag_fixed", "boolean", chapter.flags.includes("fixed")],
-      ].map(([name, type, cdata]) => xmlValue(name, type, cdata)),
+      ].map(([name, type, cdata]) => xmlValue(name as string, type as string, cdata)),
     })
   }
 

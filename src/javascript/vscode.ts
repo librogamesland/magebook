@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { get } from 'svelte/store'
 import { store } from './store'
 import { initEditorLocal } from './init-editor.js'
@@ -7,11 +8,12 @@ import { EditorView } from "codemirror"
 import {undo, redo, historyCallbacks } from "./history"
 import { cursorPosition } from './codemirror'
 
+// TODO: fix vscode extension!
 
 
 
 // APP MODE
-export const isVSCode    = window['ISVSCODE']
+export const isVSCode    = ('ISVSCODE' in window) ? Boolean(window['ISVSCODE']) : false
 
 // @ts-ignore
 export const vscode = isVSCode ? acquireVsCodeApi() : null;

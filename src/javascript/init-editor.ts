@@ -8,10 +8,11 @@ import Firepad from '@lucafabbian/firepad'
 import { get } from 'svelte/store';
 import { _ } from 'svelte-i18n';
 import { toast } from '@zerodevx/svelte-toast';
+import type { FirebookConfig, SessionData } from './database.js';
 
 
 
-const initEditorLocal = (data) => {
+export const initEditorLocal = (data : SessionData['data']) => {
   const initialText = data.book
   cursorPosition.set({from: 0, to: 0})
   let [editor] = setupCodemirror(initialText)
@@ -19,7 +20,7 @@ const initEditorLocal = (data) => {
 }
 
 
-const initEditorFirebase = (config) => {
+export const initEditorFirebase = (config: FirebookConfig) => {
 
   try{
     cursorPosition.set({from: 0, to: 0})
@@ -31,7 +32,6 @@ const initEditorFirebase = (config) => {
     // Get a reference to the database service
     const database = firebase.database(app);
 
-    window['db'] = database
 
 
 
@@ -45,9 +45,9 @@ const initEditorFirebase = (config) => {
       resolveInitData({editor})
     });
 
-    firepad.on('synced', (newValue) => isSynced.set(newValue ? true : false));
+    firepad.on('synced', (newValue : string) => isSynced.set(newValue ? true : false));
 
-  }catch(e){
+  }catch(e : any){
     toast.push('Error: ' + e.toString())
 
     console.log(e)
@@ -56,6 +56,3 @@ const initEditorFirebase = (config) => {
 
 }
 
-
-
-export { initEditorLocal, initEditorFirebase}

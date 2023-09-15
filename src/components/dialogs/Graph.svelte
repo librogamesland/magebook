@@ -39,13 +39,13 @@
 </script>
 
 {#if loaded}
-<div class="imgbox" on:click={async() => {
+<div class="imgbox" role="button" tabindex="-1" on:click={async() => {
   src = ''
   await tick();
   callback(false)
 }}>
 
-  <div role="button" on:click|stopPropagation={() => {}} style="max-width:90vw; max-height: 80vh; overflow: auto;">
+  <div role="button" tabindex="-1" on:click|stopPropagation={() => {}} style="max-width:90vw; max-height: 80vh; overflow: auto;">
   {@html src}
   </div>
   <div>
@@ -77,7 +77,7 @@
             `data:image/svg+xml;base64,${encode(src)}`
           )
 
-          element.setAttribute('download', (book.index.title || 'graph') + '.svg')
+          element.setAttribute('download', (book.index?.title || 'graph') + '.svg')
           element.style.display = 'none'
           document.body.appendChild(element)
           element.click()

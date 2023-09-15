@@ -2,7 +2,7 @@
     import { _ } from 'svelte-i18n'
 
     export let params
-    export let callback
+    export let callback : (confirm : boolean) => any
 
     !params;
 </script>
