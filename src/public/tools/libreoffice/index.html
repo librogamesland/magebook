@@ -4,11 +4,14 @@
   <meta charset="UTF-8">
   <title>Librogame link fixer</title>
   <script src="petite-vue-twind.js" defer init></script>
-
   <script>
 
 
-    window.downloadFile = (content) => {  
+    window.isMagebookPlugin = location.hash.includes('magebookplugin=true')
+
+
+
+    window.downloadFile = (content) => {
       const element = document.createElement('a');
       element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(content));
       element.setAttribute('download', 'file.fodt');
@@ -34,33 +37,33 @@
       if(linkPattern.trim() !== '')    text = text.replace(new RegExp(linkPattern, "g"), (match, capturedContent) => `[[${capturedContent}]]`)
       return text;
     }
-      
-      
+
+
 
 
     window.getPurged = (text) => {
       let purgedText = "";
       let purgedTextIndexes = [];
-      
+
       let isBody = false;
       let isInsideBrackets = false;
       let isInsideBinaryData = 0;
       let isHTMLEscape = false;
-      
-      
+
+
       const bodyStart = '<office:body'
       const bodyEnd   = '</office:body>'
-      
+
       const openingSkips = ['<draw:frame', '<office:binary-data']
       const closingSkips = ['</draw:frame>', '</office:binary-data>']
-      
-      
+
+
       let lastChar = '\n'
       const allowedChars = `ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789àèéìòù&;[]{}` // !@#$%^&*()_-+={}[]|\\:;\"'<>,.?/`
-        
+
       for (let i = 0; i < text.length; i++) {
         const currentChar = text[i];
-        
+
         if (currentChar === "<") {
           isInsideBrackets = true;
           if (text.substring(i, i + bodyStart.length) === bodyStart) {
@@ -84,7 +87,7 @@
               isInsideBinaryData -= 1;
             }
           }
-        
+
         } else if (isBody && !isInsideBrackets && isInsideBinaryData === 0) {
           if(currentChar === '&'){
             isHTMLEscape = true;
@@ -102,48 +105,48 @@
       return [purgedText, purgedTextIndexes];
     }
 
-    
+
     const delimiters = [ '[[', ']]', '{{', '}}' ];
 
 
 
     window.defaultKeywords = `
-go to 
-going to 
-turn to 
-turning to 
-allez au 
-aller au 
+go to
+going to
+turn to
+turning to
+allez au
+aller au
 vado all
 vado al
 vai all
-vai al 
+vai al
 andare al
-andare al 
+andare al
 torno all
-torno al 
+torno al
 torna all
-torna al 
+torna al
 tornare all
-tornare al 
+tornare al
 continuo all
-continuo al 
+continuo al
 continua all
-continua al 
+continua al
 continuare all
-continuare al 
+continuare al
 proseguo all
-proseguo al 
+proseguo al
 prosegui all
-prosegui al 
+prosegui al
 proseguire all
-proseguire al 
+proseguire al
 andando all
-andando al 
+andando al
 all
-al 
-paragrafo 
-par 
+al
+paragrafo
+par
 `
 
     window.highlightLinks = (text, keywords) => {
@@ -197,6 +200,76 @@ par
       return text
     }
 
+    window.generateGraph = (text, singleDelimiters, renameChapters, substituteChapters, substituteLinks) => {
+      let single = singleDelimiters;
+      const removeTags = (text) => text.replace(/<[^>]+>/g, '');
+
+
+      let regex = single ? /\{(.*?)\}/gm : /\{\{(.*?)\}\}/gm;
+      let match;
+      const capturedGroups = [];  // [groupname: string, groupindex: number][]
+      while ((match = regex.exec(text)) !== null) {
+        capturedGroups.push(removeTags(match[1]).trim());
+      }
+      const reverseGroups = {}
+      capturedGroups.forEach((group, i) => {
+        reverseGroups[group] = renameChapters ? String(i + 1): group
+      })
+
+
+      const reord = (content) => reverseGroups[removeTags(content).trim()] || content;
+
+
+      const newElements = []
+
+      regex = single ? /\{(.*?)\}/g : /\{\{(.*?)\}\}/g;
+      while ((match = regex.exec(text)) !== null) {
+        newElements.push([reord(removeTags(match[1])).trim(), match.index, 'key']);
+      }
+
+      regex = single ? /\[(.*?)\]/g : /\[\[(.*?)\]\]/g;
+      while ((match = regex.exec(text)) !== null) {
+        newElements.push([reord(removeTags(match[1])).trim(), match.index, 'link']);
+      }
+
+      newElements.sort( (a, b) => a[1] - b[1])
+
+
+      const bookText = newElements.map( ([value, index, type]) => type === 'key' ? '\n### ' + value : '[' + value + ']').join('\n');
+      console.log(bookText);
+      return bookText
+    }
+
+
+    window.showGraph = (bookText) => {
+      window.top.postMessage({
+        action: 'eval',
+        code: `
+          const {dialog, Graph } = window['mageapi'].dialogs
+          const {graphToImg} = window['mageapi'].graph
+          dialog(Graph, () => graphToImg(${JSON.stringify(bookText)}))
+          `,
+      }, '*')
+
+    }
+
+    window.generateFromMagebook = (single) => {
+      window.top.postMessage({
+        action: 'eval',
+        code: `
+        const { store } = window['mageapi'].store;
+        const { download } = window['mageapi'].file;
+
+        store.then( async({book}) => {
+          const {titlePage} = book.content
+          const newBook = titlePage +
+            "\\nrenameTitle: '{' + key + '}'" +
+            "\\nrenameLink: '&#91;' + key + '&#93;'" + '\\n' +
+            book.text.substring(titlePage.length);
+          download('fodt', newBook)
+        })
+        `}, '*')
+    }
 
     window.generateFile = (text, singleDelimiters, renameChapters, substituteChapters, substituteLinks) => {
       let single = singleDelimiters;
@@ -216,51 +289,64 @@ par
       })
       const reord = (content) => reverseGroups[removeTags(content).trim()] || content;
       const replacedString = text
-        .replace(single ? /\{(.*?)\}/g : /\{\{(.*?)\}\}/g, (match, c) => 
-            substituteChapters 
+        .replace(single ? /\{(.*?)\}/g : /\{\{(.*?)\}\}/g, (match, c) =>
+            substituteChapters
               ? `<text:bookmark-start text:name="${reord(c)}"/>${reord(c)}<text:bookmark-end text:name="${reord(c)}"/>`
-              : (single ? '{' : '{{') + reord(c) + (single ? '}' : '}}') 
+              : (single ? '{' : '{{') + reord(c) + (single ? '}' : '}}')
           )
-        .replace(single ? /\[(.*?)\]/g : /\[\[(.*?)\]\]/g, (match, c) => 
+        .replace(single ? /\[(.*?)\]/g : /\[\[(.*?)\]\]/g, (match, c) =>
             substituteLinks
               ? `<text:a xlink:type="simple" xlink:href="#${reord(c)}" text:style-name="Internet_20_link" text:visited-style-name="Visited_20_Internet_20_Link">${reord(c)}</text:a>`
-              : (single ? '[' : '[[') + reord(c) + (single ? ']' : ']]') 
+              : (single ? '[' : '[[') + reord(c) + (single ? ']' : ']]')
           )
-    
+
       return replacedString;
     }
 
   </script>
+
+  <style>
+    body {
+      background-color: rgb(161 161 170);
+    }
+    select, .filelabel {
+      background-color: rgb(71, 85, 105);
+    }
+    select:hover, .filelabel:hover {
+      background-color: rgb(15 23 42);
+    }
+  </style>
 </head>
-<body class="p-10 bg-white"
+<body class="p-8"
 v-scope="{
   singleDelimiters: true,
 }">
 
   <!-- anywhere on the page -->
-  <div class="space-y-8 max-w-5xl py-10 md:px-10 mx-auto">
-  <div class="text-6xl font-extrabold leading-14 tracking-tight text-gray-900">
-    Librogame link fixer
+<div class="space-y-5 max-w-5xl py-3 md:px-10 mx-auto text-gray-800">
+  <div class="text-4xl font-extrabold leading-14 tracking-tight text-gray-900">
+    LibreOffice link fixer
   </div>
 
-  <div class="text-lg leading-7 text-gray-700">
-    Inserisci i link nei tuoi librogame scritti con libreoffice.<br>
-    Questo strumento ti permette di generare i link in modo automatico, senza doverli scrivere a mano. Inoltre, consente di correggere la numerazione dei paragrafi,
-    compattando i numeri in modo da non lasciare buchi.
+  <div>
+    Ora puoi inserire automaticamente i link all'interno di file LibreOffice.<br>
+    Questo strumento ti permette di lavorare su file senza perdere l'impaginazione. Consente di inserire link e correggere la numerazione dei paragrafi,
+    compattando i numeri in modo da non lasciare buchi. Puoi usare questo strumento sia per scrivere libri da zero con LibreOffice, sia per ritoccare un
+    libro all'ultimo.
   </div>
 
-  <div class="text-lg leading-7 text-gray-700">
-    <span class="font-bold text-gray-700">Attenzione:</span> questo sito funziona con i file libreoffice non compressi (.fodt). Se il tuo file è compresso (.odt)
+  <div>
+    <span class="font-bold text-gray-900">Attenzione:</span> questo sito funziona con i file LibreOffice non compressi (.fodt). Se il tuo file è compresso (.odt)
     dovrai prima decomprimerlo. Per farlo, clicca salva con nome e scegli il formato fodt, cioé flat openoffice.
   </div>
 
-  <select class="p-3 rounded w-full" id="delimiters" :value="singleDelimiters ? 'single' : 'double'" @change="singleDelimiters = $event.target.value === 'single'">
+  <select class="p-3 rounded w-full text-gray-200" id="delimiters" :value="singleDelimiters ? 'single' : 'double'" @change="singleDelimiters = $event.target.value === 'single'">
     <option value="single">Usa parentesi singole per delimitare paragrafi e link, ossia {numero} [numero]</option>
     <option value="double" v-pre>Usa parentesi doppie per delimitare paragrafi e link, ossia {{numero}} [[numero]]</option>
-  </select>      
+  </select>
   <div class="pb-8"></div>
 
-  <hr>
+  <hr class="bg-gray-500 border-none h-[1px]">
 
 
 
@@ -270,23 +356,27 @@ v-scope="{
     </div>
     <div class="text-gray-800 space-y-8">
       <div>
-        In questa prima fase, devi "marchiare i link".
+        In questa prima fase, devi "marchiare i link", racchiudendoli all'interno di una parentesi. Puoi svolgere questa operazione in vari modi.
       </div>
       <div>
         <span class="font-bold">Manualmente: </span>
         <span v-if="singleDelimiters">inserisci una parentesi quadra [numero] intorno al testo del link. Inserisci una parentesi graffa <span v-pre>{numero}</span> intorno al numero del paragrafo.</span>
         <span v-if="!singleDelimiters">inserisci parentesi quadre doppo [[numero]] intorno al testo del link. Inserisci parentesi graffe doppie <span v-pre>{{numero}}</span> intorno al numero del paragrafo.</span>
       </div>
-
-
+      <div>
+        <span class="font-bold">Dall'attuale libro di magebook: </span>
+        usa magebook per scaricare un libro già marchiato correttamente.
+        <button v-if="isMagebookPlugin" @click="generateFromMagebook(singleDelimiters)"
+        class="filelabel shadow-lg text-white py-2 px-16 rounded block">Clicca qui per generare il file LibreOffice dal libro attuale</button>
+      </div>
 
       <div
        v-scope="{
           count: 0,
           content: '',
           chapterPattern: '<text:bookmark-start\\b[^>]*>(.*?)<text:bookmark-end\\b[^>]*>',
-          linkPattern: '<text:a\\b[^>]*>(.*?)<\/text:a>', 
-          keywords: defaultKeywords.trim(),       
+          linkPattern: '<text:a\\b[^>]*>(.*?)<\/text:a>',
+          keywords: defaultKeywords.trim(),
           findLinks: true,
           isolatedChapters: true,
         }"
@@ -294,13 +384,13 @@ v-scope="{
         <div>
           <span class="font-bold">Automaticamente: </span> se hai già un file, puoi caricarlo qui sotto.
         </div>
-        <label for="dropzone-file" class="flex flex-col items-center justify-center w-full h-32 border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-gray-50 dark:hover:bg-bray-800 dark:bg-gray-700 hover:bg-gray-100 dark:border-gray-600 dark:hover:border-gray-500 dark:hover:bg-gray-600">
+        <label for="dropzone-file" class="filelabel flex flex-col items-center justify-center w-full h-32 border-2 border-gray-300 border-dashed rounded-lg cursor-pointer dark:hover:bg-bray-800 dark:bg-gray-700  dark:border-gray-600 dark:hover:border-gray-500 dark:hover:bg-gray-600">
           <div class="flex flex-col items-center justify-center pt-5 pb-6">
-              <svg v-if="content === ''" aria-hidden="true" class="w-10 h-10 mb-3 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path></svg>
-              <p v-if="content === ''" class="mb-2 text-sm text-gray-500 dark:text-gray-400"><span class="font-semibold">Clicca per caricare il file</span> o trascinalo</p>
-              <p v-if="content === ''" class="text-xs text-gray-500 dark:text-gray-400">file FODT (libreoffice non compresso)</p>
-              <p v-if="content !== ''" class="mb-2 text-sm text-gray-500 dark:text-gray-400">File caricato correttamente!</p>
-              <p v-if="content !== ''" class="mb-2 text-sm text-gray-500 dark:text-gray-400">Clicca qui per <span class="font-semibold">caricare un nuovo file</span></p>
+              <svg v-if="content === ''" aria-hidden="true" class="w-10 h-10 mb-3 text-gray-200" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path></svg>
+              <p v-if="content === ''" class="mb-2 text-sm text-gray-200 dark:text-gray-400"><span class="font-semibold">Clicca per caricare il file</span> o trascinalo</p>
+              <p v-if="content === ''" class="text-xs text-gray-200 dark:text-gray-400">file FODT (LibreOffice non compresso)</p>
+              <p v-if="content !== ''" class="mb-2 text-sm text-gray-200 dark:text-gray-400">File caricato correttamente!</p>
+              <p v-if="content !== ''" class="mb-2 text-sm text-gray-200 dark:text-gray-400">Clicca qui per <span class="font-semibold">caricare un nuovo file</span></p>
           </div>
           <input  id="dropzone-file" type="file" class="hidden" accept=".fodt" @change="
           $event.target.files[0].text().then(text => {
@@ -313,20 +403,20 @@ v-scope="{
           <div>
             <div class="mb-0.5 mt-4">
               <label for="chapterPattern">Riconosci paragrafi pre-esistenti da:</label>
-              <select class="p-1 rounded" id="chapterPattern" :value="chapterPattern in chapterPatterns ? chapterPattern : 'custom'" @change="chapterPattern = $event.target.value">
+              <select class="p-1 rounded text-gray-200" id="chapterPattern" :value="chapterPattern in chapterPatterns ? chapterPattern : 'custom'" @change="chapterPattern = $event.target.value">
                 <option value="custom">personalizzato</option>
                 <option v-for="pattern in Object.entries(chapterPatterns)" :value="pattern[0]">{{pattern[1]}}</option>
-              </select>      
+              </select>
             </div>
             <input type="text" class="w-full p-2.5 my-1 text-gray-600 border border-gray-300 text-sm rounded focus:ring-blue-500 focus:border-blue-500" v-model="chapterPattern" />
           </div>
           <div>
             <div class="mb-0.5 mt-4">
               <label for="linkPattern">Riconosci link pre-esistenti da:</label>
-              <select class="p-1 rounded" id="linkPattern" :value="linkPattern in linkPatterns ? linkPattern : 'custom'" @change="linkPattern = $event.target.value">
+              <select class="p-1 rounded text-gray-200" id="linkPattern" :value="linkPattern in linkPatterns ? linkPattern : 'custom'" @change="linkPattern = $event.target.value">
                 <option value="custom">personalizzato</option>
                 <option v-for="pattern in Object.entries(linkPatterns)" :value="pattern[0]">{{pattern[1]}}</option>
-              </select>      
+              </select>
             </div>
             <input type="text" class="w-full p-2.5 my-1 text-gray-600 border border-gray-300 text-sm rounded focus:ring-blue-500 focus:border-blue-500" v-model="linkPattern" />
           </div>
@@ -343,13 +433,13 @@ v-scope="{
             </div>
           </div>
           <div class="flex flex-row mb-0.5 mt-4 space-x-2 w-full">
-            <button class="flex-grow-2 bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded block"
+            <button class="flex-grow-2 shadow-lg  bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded block"
             @click="downloadFile(highlightChapters(highlightLinks(unwrapFile(content, chapterPattern, linkPattern),keywords), isolatedChapters ? '(^\\s*|\\n\\s*)(\\d+)\\s*\\n': ''))">
               Download
             </button>
-            <button class="bg-gray-400 hover:bg-gray-600 text-white font-bold py-2 px-16 rounded block"  @click="content = ''">
+            <button class="shadow-lg bg-gray-600 hover:bg-gray-800 text-white font-bold py-2 px-16 rounded block"  @click="content = ''">
               Annulla
-            </button>    
+            </button>
           </div>
         </div>
 
@@ -357,7 +447,7 @@ v-scope="{
 
     </div>
   </article>
-  <hr>
+  <hr class="bg-gray-500 border-none h-[1px]">
 
 
 
@@ -374,7 +464,7 @@ v-scope="{
 
 
 
-  <hr>
+  <hr class="bg-gray-500 border-none h-[1px]">
   <article class="flex flex-col md:flex-row space-x-5 space-y-8 md:space-y-0 py-4">
     <div class="w-52 flex-none font-bold tracking-tight text-xl text-gray-800">
       3. Genera il file
@@ -389,15 +479,15 @@ v-scope="{
      }"
     class="space-y-2 flex-grow">
       <div>
-        Una volta terminato il lavoro di scrittura, carica il file qui sotto per generare il file finale.
+        Una volta terminato il lavoro di scrittura, carica qui sotto il file per generare il file finale.
       </div>
-      <label for="dropzone-file-out" class="flex flex-col items-center justify-center w-full h-32 border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-gray-50 dark:hover:bg-bray-800 dark:bg-gray-700 hover:bg-gray-100 dark:border-gray-600 dark:hover:border-gray-500 dark:hover:bg-gray-600">
+      <label for="dropzone-file-out" class="filelabel flex flex-col items-center justify-center w-full h-32 border-2 border-gray-300 border-dashed rounded-lg cursor-pointer dark:hover:bg-bray-800 dark:bg-gray-700  dark:border-gray-600 dark:hover:border-gray-500 dark:hover:bg-gray-600">
         <div class="flex flex-col items-center justify-center pt-5 pb-6">
-            <svg v-if="content === ''" aria-hidden="true" class="w-10 h-10 mb-3 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path></svg>
-            <p v-if="content === ''" class="mb-2 text-sm text-gray-500 dark:text-gray-400"><span class="font-semibold">Clicca per caricare il file</span> o trascinalo</p>
-            <p v-if="content === ''" class="text-xs text-gray-500 dark:text-gray-400">file FODT (libreoffice non compresso)</p>
-            <p v-if="content !== ''" class="mb-2 text-sm text-gray-500 dark:text-gray-400">File caricato correttamente!</p>
-            <p v-if="content !== ''" class="mb-2 text-sm text-gray-500 dark:text-gray-400">Clicca qui per <span class="font-semibold">caricare un nuovo file</span></p>
+            <svg v-if="content === ''" aria-hidden="true" class="w-10 h-10 mb-3 text-gray-200" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path></svg>
+            <p v-if="content === ''" class="mb-2 text-sm text-gray-200 dark:text-gray-400"><span class="font-semibold">Clicca per caricare il file</span> o trascinalo</p>
+            <p v-if="content === ''" class="text-xs text-gray-200 dark:text-gray-400">file FODT (LibreOffice non compresso)</p>
+            <p v-if="content !== ''" class="mb-2 text-sm text-gray-200 dark:text-gray-400">File caricato correttamente!</p>
+            <p v-if="content !== ''" class="mb-2 text-sm text-gray-200 dark:text-gray-400">Clicca qui per <span class="font-semibold">caricare un nuovo file</span></p>
         </div>
         <input  id="dropzone-file-out" type="file" class="hidden" accept=".fodt" @change="
         $event.target.files[0].text().then(text => {
@@ -427,13 +517,17 @@ v-scope="{
           </div>
         </div>
         <div class="flex flex-row mb-0.5 mt-4 space-x-2 w-full">
-          <button class="flex-grow-2 bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded block"
+          <button class="shadow-lg flex-grow-2 bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded block"
           @click="downloadFile(generateFile(content, singleDelimiters, renameChapters, substituteChapters, substituteLinks))">
             Download
           </button>
-          <button class="bg-gray-400 hover:bg-gray-600 text-white font-bold py-2 px-16 rounded block" @click="content = ''">
+          <button v-if="isMagebookPlugin" class="shadow-lg flex-grow-2 bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded block"
+          @click="showGraph(generateGraph(content, singleDelimiters, renameChapters, substituteChapters, substituteLinks))">
+            Grafo
+          </button>
+          <button class="shadow-lg bg-gray-600 hover:bg-gray-800 text-white font-bold py-2 px-16 rounded block" @click="content = ''">
             Annulla
-          </button>    
+          </button>
         </div>
       </div>
     </div>

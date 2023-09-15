@@ -20,6 +20,7 @@
   let tab = firstTab()
   let w = localStorage['mage-pluginpanel-width'] ? parseInt(localStorage['mage-pluginpanel-width']) : 250
   let h = 250
+  let isResizing = false
 
   let preferredW = localStorage['mage-pluginpanel-preferredwidth'] ? parseInt(localStorage['mage-pluginpanel-preferredwidth']) : 250
   let newpreferredW = preferredW
@@ -43,7 +44,9 @@
 		}
 	}
 
+
   const endResize = () => {
+    isResizing = false
     if(w < 30){
       w = 0
     }else{
@@ -57,6 +60,7 @@
 		}else{
 			startW = (("touches" in e) ? e.changedTouches[0].pageX : e.x) + w
 		}
+    isResizing = true
 
 		if("touches" in e){
 				document.addEventListener("touchmove", resize, false);
@@ -84,7 +88,7 @@
     </div>
     {#each $pluginPanel as plugin}
       {#if plugin.widget}
-        <svelte:component this={plugin.widget} {store} {w} {tab}/>
+        <svelte:component this={plugin.widget} {store} {w} {tab} {isResizing}/>
       {/if}
     {/each}
   </div>

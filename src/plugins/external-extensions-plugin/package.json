@@ -1,0 +1,17 @@
+{
+  "name": "magebook-plugin",
+  "version": "0.0.1",
+  "description": "Template for building a magebook plugin",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "@rollup/plugin-commonjs": "^25.0.4",
+    "@rollup/plugin-node-resolve": "^15.2.0",
+    "rollup": "^3.28.0",
+    "rollup-plugin-svelte": "^7.1.6"
+  }
+}
