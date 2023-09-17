@@ -2,8 +2,8 @@ import {EditorView } from 'codemirror'
 import {markdown} from '@codemirror/lang-markdown'
 import {classHighlighter} from "@lezer/highlight"
 import {syntaxHighlighting } from "@codemirror/language"
-import {keymap, highlightActiveLine, ViewUpdate, ViewPlugin, highlightSpecialChars, drawSelection,  type DecorationSet} from '@codemirror/view'
-import {RangeSetBuilder, StateEffect, StateField, EditorSelection} from "@codemirror/state"
+import {keymap, highlightActiveLine, ViewUpdate, ViewPlugin, highlightSpecialChars, drawSelection, type DecorationSet} from '@codemirror/view'
+import {RangeSetBuilder, StateEffect, StateField, EditorSelection, type Range } from "@codemirror/state"
 import {Decoration} from "@codemirror/view"
 import {syntaxTree} from "@codemirror/language"
 import {search, searchKeymap} from '@codemirror/search'
@@ -52,7 +52,7 @@ const getLinkDecorations = (view: EditorView, {text, index} : {text : string, in
 
   const endTitlePage = index.lineStarts[index.lines.titlePageEnd + 1]
 
-  let decos : any[] = []
+  let decos : Range<Decoration>  [] = []
 
 
   for (let {from, to} of view.visibleRanges) {
@@ -134,6 +134,8 @@ const getLinkDecorations = (view: EditorView, {text, index} : {text : string, in
       }
     })
   }
+
+  decos.sort( (a, b) => a.from - b.from)
   return Decoration.set(decos)
 }
 
