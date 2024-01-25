@@ -1,0 +1,644 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <title>Librogame link fixer</title>
+  <script src="FileSaver.min.js"></script>
+  <script src="jszip.min.js"></script>
+  <link rel="stylesheet" href="archery.min.css">
+  <script src="archery.min.js" mount></script>
+  <script>
+
+    window.deb = (a) => { console.log(a); return a }
+
+    window.isMagebookPlugin = location.hash.includes('magebookplugin=true')
+
+    window.defaultKeywords = `
+go to
+going to
+turn to
+turning to
+allez au
+aller au
+vado all
+vado al
+vai all
+vai al
+andare al
+andare al
+torno all
+torno al
+torna all
+torna al
+tornare all
+tornare al
+continuo all
+continuo al
+continua all
+continua al
+continuare all
+continuare al
+proseguo all
+proseguo al
+prosegui all
+prosegui al
+proseguire all
+proseguire al
+andando all
+andando al
+all
+al
+paragrafo
+par
+`
+    window.zips = {
+      phase1: null,
+      phase3: null
+    }
+
+    window.store = reactive({
+      singleDelimiters: true,
+      count: 0,
+      phase1: {
+        content: '',
+        name: '',
+      },
+      phase3: {
+        content: '',
+        name: '',
+      },
+      chapterPattern: '<text:bookmark-start\\b[^>]*>(.*?)<text:bookmark-end\\b[^>]*>',
+      linkPattern: '<text:a\\b[^>]*>(.*?)<\/text:a>',
+      keywords: defaultKeywords.trim(),
+      findLinks: true,
+      isolatedChapters: true,
+      renameChapters: true,
+      substituteLinks: true,
+      substituteChapters: true,
+    })
+
+
+    window.loadFile = (key, $event) => {
+      const file = $event.target.files[0]
+      const name = file.name
+      $event.target.value = '';
+
+      if(file.name.endsWith('.fodt')){
+        file.text().then(content => {
+          store[key] = {
+            content,
+            name,
+          }
+          zips[key] = null
+        })
+      }else{
+        JSZip.loadAsync(file).then( zip => {
+          zip.file('content.xml').async('string').then(content => {
+            store[key] = {
+              content,
+              name,
+            }
+            zips[key] = zip
+          })
+        })
+      }
+    }
+
+
+    window.downloadFile = (phase, content) => {
+      const {name} = store[phase]
+      if(zips[phase] === null){
+        const element = document.createElement('a');
+        element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(content));
+        element.setAttribute('download', name);
+        element.style.display = 'none';
+        document.body.appendChild(element);
+        element.click();
+        document.body.removeChild(element);
+      }else{
+        const zip = zips[phase]
+        console.log(zip)
+        zip.file('content.xml', content)
+        zip.generateAsync({ type: "blob" })
+          .then(function (blob) {
+            saveAs(blob, name);
+          });
+
+      }
+    }
+
+
+    window.chapterPatterns = {
+      '<text:bookmark-start\\b[^>]*>(.*?)<text:bookmark-end\\b[^>]*>': 'segnalibri (bookmarks)',
+      '': 'nessuno',
+    }
+
+    window.linkPatterns = {
+      '<text:a\\b[^>]*>(.*?)<\/text:a>': 'link standard',
+      '': 'nessuno',
+    }
+
+    window.unwrapFile = (text, chapterPattern, linkPattern) => {
+      if (chapterPattern.trim() !== '') text = text.replace(new RegExp(chapterPattern, "g"), (match, capturedContent) => `{{${capturedContent}}}`)
+      if (linkPattern.trim() !== '') text = text.replace(new RegExp(linkPattern, "g"), (match, capturedContent) => `[[${capturedContent}]]`)
+      return text;
+    }
+
+
+
+
+    window.getPurged = (text) => {
+      let purgedText = "";
+      let purgedTextIndexes = [];
+
+      let isBody = false;
+      let isInsideBrackets = false;
+      let isInsideBinaryData = 0;
+      let isHTMLEscape = false;
+
+
+      const bodyStart = '<office:body'
+      const bodyEnd = '</office:body>'
+
+      const openingSkips = ['<draw:frame', '<office:binary-data']
+      const closingSkips = ['</draw:frame>', '</office:binary-data>']
+
+
+      let lastChar = '\n'
+      const allowedChars = `ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789àèéìòù&;[]{}` // !@#$%^&*()_-+={}[]|\\:;\"'<>,.?/`
+
+      for (let i = 0; i < text.length; i++) {
+        const currentChar = text[i];
+
+        if (currentChar === "<") {
+          isInsideBrackets = true;
+          if (text.substring(i, i + bodyStart.length) === bodyStart) {
+            isBody = true;
+          }
+
+          for (let openingSkip of openingSkips) {
+            if (text.substring(i, i + openingSkip.length) === openingSkip) {
+              isInsideBinaryData += 1;
+            }
+          }
+
+        } else if (currentChar === ">") {
+          isInsideBrackets = false;
+          if (text.substring(i - bodyEnd.length + 1, i + 1) === bodyEnd) {
+            isBody = false
+          }
+
+          for (let closingSkip of closingSkips) {
+            if (text.substring(i - closingSkip.length + 1, i + 1) === closingSkip) {
+              isInsideBinaryData -= 1;
+            }
+          }
+
+        } else if (isBody && !isInsideBrackets && isInsideBinaryData === 0) {
+          if (currentChar === '&') {
+            isHTMLEscape = true;
+          } else if (currentChar === ';') {
+            isHTMLEscape = false;
+          } else {
+            if (!isHTMLEscape && ((lastChar !== '\n' && " \t\n".includes(currentChar)) || allowedChars.includes(currentChar))) {
+              lastChar = currentChar
+              purgedText += currentChar;
+              purgedTextIndexes.push(i);
+            }
+          }
+        }
+      }
+      return [purgedText, purgedTextIndexes];
+    }
+
+    let delimiters = ['[', ']', '{', '}'];
+    store.$on('singleDelimiters', (val) => {
+      delimiters = val ? ['[', ']', '{', '}'] : ['[[', ']]', '{{', '}}'];
+    })
+
+
+
+
+    window.highlightLinks = (text, keywords) => {
+      keywords = keywords.trim().split('\n').map(s => s.trim()).filter(s => s.length > 0).map(s => s.replaceAll(" ", "\\s+"));
+
+      const findAllMatches = (regex, string) => {
+        const matches = Array.from(string.matchAll(regex), match => {
+          const { index, 0: fullMatch, ...groups } = match;
+          return [
+            index + groups[1].length, // groups[1] is the first capturing group, i.e. the keyword
+            index + fullMatch.length, // groups[2] is the second capturing group, i.e. the chapter
+          ]
+        });
+        return matches;
+      }
+
+      let [purgedText, purgedTextIndexes] = getPurged(text);
+      const chapters = findAllMatches(new RegExp(`(${keywords.join('|')})(\\d+)`, 'gi'), purgedText);
+
+      let shift = 0;
+      const insertAt = (string, index, insert) => string.slice(0, index) + insert + string.slice(index);
+      for (let [start, end] of chapters) {
+        text = insertAt(text, purgedTextIndexes[start] + shift, delimiters[0]);
+        shift += delimiters[0].length;
+        text = insertAt(text, purgedTextIndexes[end - 1] + shift + 1, delimiters[1]);
+        shift += delimiters[1].length;
+      }
+      return text;
+    }
+
+    window.highlightChapters = (text, isolatedChapters) => {
+      if (isolatedChapters.trim() === '') return text;
+      const [purgedText, purgedTextIndexes] = getPurged(text);
+
+      const titles = Array.from(purgedText.matchAll(new RegExp(isolatedChapters.trim(), "gi")), match => {
+        const { index, 0: fullMatch, ...groups } = match;
+        return [
+          index + groups[1].length, // groups[1] is the first capturing group, i.e. the keyword
+          index + groups[1].length + groups[2].length, // groups[2] is the second capturing group, i.e. the chapter
+        ]
+      });
+
+      let shift = 0;
+      const insertAt = (string, index, insert) => string.slice(0, index) + insert + string.slice(index);
+      for (let [start, end] of titles) {
+        text = insertAt(text, purgedTextIndexes[start] + shift, delimiters[2]);
+        shift += delimiters[2].length;
+        text = insertAt(text, purgedTextIndexes[end - 1] + shift + 1, delimiters[3]);
+        shift += delimiters[3].length;
+      }
+      return text
+    }
+
+    window.generateGraph = (text, singleDelimiters, renameChapters, substituteChapters, substituteLinks) => {
+      let single = singleDelimiters;
+      const removeTags = (text) => text.replace(/<[^>]+>/g, '');
+
+
+      let regex = single ? /\{(.*?)\}/gm : /\{\{(.*?)\}\}/gm;
+      let match;
+      const capturedGroups = [];  // [groupname: string, groupindex: number][]
+      while ((match = regex.exec(text)) !== null) {
+        capturedGroups.push(removeTags(match[1]).trim());
+      }
+      const reverseGroups = {}
+      capturedGroups.forEach((group, i) => {
+        reverseGroups[group] = renameChapters ? String(i + 1) : group
+      })
+
+
+      const reord = (content) => reverseGroups[removeTags(content).trim()] || content;
+
+
+      const newElements = []
+
+      regex = single ? /\{(.*?)\}/g : /\{\{(.*?)\}\}/g;
+      while ((match = regex.exec(text)) !== null) {
+        newElements.push([reord(removeTags(match[1])).trim(), match.index, 'key']);
+      }
+
+      regex = single ? /\[(.*?)\]/g : /\[\[(.*?)\]\]/g;
+      while ((match = regex.exec(text)) !== null) {
+        newElements.push([reord(removeTags(match[1])).trim(), match.index, 'link']);
+      }
+
+      newElements.sort((a, b) => a[1] - b[1])
+
+
+      const bookText = newElements.map(([value, index, type]) => type === 'key' ? '\n### ' + value : '[' + value + ']').join('\n');
+      console.log(bookText);
+      return bookText
+    }
+
+
+    window.showGraph = (bookText) => {
+      window.top.postMessage({
+        action: 'eval',
+        code: `
+          const {dialog, Graph } = window['mageapi'].dialogs
+          const {graphToImg} = window['mageapi'].graph
+          dialog(Graph, () => graphToImg(${JSON.stringify(bookText)}))
+          `,
+      }, '*')
+
+    }
+
+    window.generateFromMagebook = (single) => {
+      window.top.postMessage({
+        action: 'eval',
+        code: `
+        const { store } = window['mageapi'].store;
+        const { download } = window['mageapi'].file;
+
+        store.then( async({book}) => {
+          const {titlePage} = book.content
+          const newBook = titlePage +
+            "\\nrenameTitle: '{' + key + '}'" +
+            "\\nrenameLink: '&#91;' + key + '&#93;'" + '\\n' +
+            book.text.substring(titlePage.length);
+          download('fodt', newBook)
+        })
+        `}, '*')
+    }
+
+    window.generateFile = (text, singleDelimiters, renameChapters, substituteChapters, substituteLinks) => {
+      let single = singleDelimiters;
+      const removeTags = (text) => text.replace(/<[^>]+>/g, '');
+
+
+
+      let regex = single ? /\{(.*?)\}/g : /\{\{(.*?)\}\}/g;
+      let match;
+      const capturedGroups = [];
+      while ((match = regex.exec(text)) !== null) {
+        capturedGroups.push(removeTags(match[1]).trim());
+      }
+      const reverseGroups = {}
+      capturedGroups.forEach((group, i) => {
+        reverseGroups[group] = renameChapters ? String(i + 1) : group
+      })
+      const reord = (content) => reverseGroups[removeTags(content).trim()] || content;
+      const replacedString = text
+        .replace(single ? /\{(.*?)\}/g : /\{\{(.*?)\}\}/g, (match, c) =>
+          substituteChapters
+            ? `<text:bookmark-start text:name="${reord(c)}"/>${reord(c)}<text:bookmark-end text:name="${reord(c)}"/>`
+            : (single ? '{' : '{{') + reord(c) + (single ? '}' : '}}')
+        )
+        .replace(single ? /\[(.*?)\]/g : /\[\[(.*?)\]\]/g, (match, c) =>
+          substituteLinks
+            ? `<text:a xlink:type="simple" xlink:href="#${reord(c)}" text:style-name="Internet_20_link" text:visited-style-name="Visited_20_Internet_20_Link">${reord(c)}</text:a>`
+            : (single ? '[' : '[[') + reord(c) + (single ? ']' : ']]')
+        )
+
+      return replacedString;
+    }
+
+
+
+  </script>
+
+  <style>
+    body {
+      background-color: rgb(161 161 170);
+    }
+
+    select,
+    .filelabel {
+      background-color: rgb(71, 85, 105);
+    }
+
+    select:hover,
+    .filelabel:hover {
+      background-color: rgb(15 23 42);
+    }
+  </style>
+</head>
+
+<body class="p-8" runcss-cloak>
+  <div class="space-y-5 max-w-5xl py-3 md:px-10 mx-auto text-gray-800">
+    <div class="text-4xl font-extrabold leading-14 tracking-tight text-gray-900">
+      LibreOffice/OpenOffice link fixer
+    </div>
+
+    <div>
+      Ora puoi inserire automaticamente i link all'interno di file LibreOffice.<br>
+      Questo strumento ti permette di lavorare su file senza perdere l'impaginazione. Consente di inserire link e
+      correggere la numerazione dei paragrafi,
+      compattando i numeri in modo da non lasciare buchi. Puoi usare questo strumento sia per scrivere libri da zero con
+      LibreOffice, sia per ritoccare un
+      libro all'ultimo.
+    </div>
+
+    <select class="p-3 rounded w-full text-gray-200" id="delimiters" value="single"
+      @change="{{store.singleDelimiters = $event.target.value === 'single'}}">
+      <option value="single">Usa parentesi singole per delimitare paragrafi e link, ossia \{numero\} [numero]</option>
+      <option value="double" v-pre>Usa parentesi doppie per delimitare paragrafi e link, ossia \{\{numero\}\} [[numero]]
+      </option>
+    </select>
+    <div class="pb-8"></div>
+
+    <hr class="bg-gray-500 border-none h-[1px]">
+
+
+    <article class="flex flex-col md:flex-row space-x-5 space-y-8 md:space-y-0 py-4">
+      <div class="w-52 flex-none font-bold tracking-tight text-xl text-gray-800">
+        1. Individua i link
+      </div>
+      <div class="text-gray-800 space-y-8">
+        <div>
+          In questa prima fase, devi "marchiare i link", racchiudendoli all'interno di una parentesi. Puoi svolgere
+          questa
+          operazione in vari modi.
+        </div>
+        <div>
+          <span class="font-bold">Manualmente: </span>
+          {#if store.singleDelimiters}inserisci una parentesi quadra [numero] intorno al testo del link. Inserisci una
+          parentesi graffa \{numero\} intorno al numero del paragrafo.{/if}
+          {#if !store.singleDelimiters}inserisci parentesi quadre doppo [[numero]] intorno al testo del link. Inserisci
+          parentesi graffe doppie \{\{numero\}\} intorno al numero del paragrafo.{/if}
+        </div>
+        <div>
+          <span class="font-bold">Dall'attuale libro di magebook: </span>
+          usa magebook per scaricare un libro già marchiato correttamente.
+          {#if isMagebookPlugin}
+          <button @click="{{generateFromMagebook(singleDelimiters)}}"
+            class="filelabel shadow-lg text-white py-2 px-16 rounded block">
+            Clicca qui per generare il file LibreOffice dal libro attuale
+          </button>
+          {/if}
+        </div>
+
+        <div class="space-y-2">
+          <div>
+            <span class="font-bold">Automaticamente: </span> se hai già un file, puoi caricarlo qui sotto.
+          </div>
+          <label for="dropzone-file"
+            class="filelabel flex flex-col items-center justify-center w-full h-32 border-2 border-gray-300 border-dashed rounded-lg cursor-pointer dark:hover:bg-bray-800 dark:bg-gray-700  dark:border-gray-600 dark:hover:border-gray-500 dark:hover:bg-gray-600">
+            <div class="flex flex-col items-center justify-center pt-5 pb-6">
+              {#if store.phase1.content === ''}
+              <svg aria-hidden="true" class="w-10 h-10 mb-3 text-gray-200" fill="none" stroke="currentColor"
+                viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path>
+              </svg>
+              <p class="mb-2 text-sm text-gray-200 dark:text-gray-400"><span class="font-semibold">Clicca per caricare
+                  il file</span> o trascinalo</p>
+              <p class="text-xs text-gray-200 dark:text-gray-400">file ODT o FODT (LibreOffice/OpenOffice)</p>
+              {/if}
+              {#if store.phase1.content !== ''}
+              <p class="mb-2 text-sm text-gray-200 dark:text-gray-400">File caricato correttamente!</p>
+              <p class="mb-2 text-sm text-gray-200 dark:text-gray-400">Clicca qui per <span
+                  class="font-semibold">caricare un nuovo file</span></p>
+              {/if}
+              <input id="dropzone-file" type="file" class="hidden" accept=".fodt,.odt" @change="{{ loadFile('phase1', $event)}}">
+            </div>
+          </label>
+
+          {#if store.phase1.content}
+          <div>
+            <div class="mb-0.5 mt-4">
+              <label for="chapterPattern">Riconosci paragrafi pre-esistenti da:</label>
+              <select class="p-1 rounded text-gray-200" id="chapterPattern"
+                value="{{store.chapterPattern in chapterPatterns ? store.chapterPattern : 'custom'}}"
+                @change="{{store.chapterPattern = $event.target.value}}">
+                {#for pattern of Object.entries(chapterPatterns)}
+                <option value="{{pattern[0]}}">{{pattern[1]}}</option>
+                {/for}
+                <option value="custom">personalizzato</option>
+              </select>
+            </div>
+            <input type="text"
+              class="w-full p-2.5 my-1 text-gray-600 border border-gray-300 text-sm rounded focus:ring-blue-500 focus:border-blue-500"
+              value="{{store.chapterPattern}}" @input="{{store.chapterPattern = $event.target.value}}" />
+          </div>
+          <div>
+            <div class="mb-0.5 mt-4">
+              <label for="linkPattern">Riconosci link pre-esistenti da:</label>
+              <select class="p-1 rounded text-gray-200" id="linkPattern"
+                value="{{store.linkPattern in linkPatterns ? store.linkPattern : 'custom'}}"
+                @change="{{store.linkPattern = $event.target.value}}">
+                {#for pattern of Object.entries(linkPatterns)}
+                <option value="{{pattern[0]}}">{{pattern[1]}}</option>
+                {/for}
+                <option value="custom">personalizzato</option>
+              </select>
+            </div>
+            <input type="text"
+              class="w-full p-2.5 my-1 text-gray-600 border border-gray-300 text-sm rounded focus:ring-blue-500 focus:border-blue-500"
+              value="{{store.linkPattern}}" @input="{{store.linkPattern = $event.target.value}}" />
+          </div>
+          <div>
+            <div class="mb-0.5 mt-4">
+              <label for="linkPattern">Riconosci link analizzando il testo:</label>
+              <input type="checkbox" role="switch" id="flexSwitchChecked" checked="{{store.findLinks}}"
+                @change="{{store.findLinks = $event.target.checked}}" />
+              <textarea
+                class="w-full p-2.5 my-1 min-h-[250px] text-gray-600 border border-gray-300 text-sm rounded focus:ring-blue-500 focus:border-blue-500"
+                value="{{store.keywords}}"></textarea>
+            </div>
+            <div>
+              <div class="mb-0.5 mt-4">
+                <label for="linkPattern">Riconosci paragrafi che sono isolati:</label>
+                <input type="checkbox" role="switch" id="flexSwitchChecked" checked="{{store.isolatedChapters}}"
+                  @change="store.isolatedChapters = $event.target.checked" />
+              </div>
+            </div>
+            <div class="flex flex-row mb-0.5 mt-4 space-x-2 w-full">
+              <button
+                class="flex-grow-2 shadow-lg  bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded block"
+                @click="{{downloadFile('phase1', highlightChapters(highlightLinks(unwrapFile(store.phase1.content, store.chapterPattern, store.linkPattern),store.keywords), store.isolatedChapters ? '(^\\s*|\\n\\s*)(\\d+)\\s*\\n': ''))}}">
+                Download
+              </button>
+              <button class="shadow-lg bg-gray-600 hover:bg-gray-800 text-white font-bold py-2 px-16 rounded block"
+                @click="{{store.phase1.content = ''}}">
+                Annulla
+              </button>
+            </div>
+            {/if}
+          </div>
+        </div>
+    </article>
+    <hr class="bg-gray-500 border-none h-[1px]">
+
+
+    <article class="flex flex-col md:flex-row space-x-5 space-y-8 md:space-y-0 py-4">
+      <div class="w-52 flex-none font-bold tracking-tight text-xl text-gray-800">
+        2. Scrivi il librogame
+      </div>
+      <div class="text-gray-800 space-y-8">
+        Dopo aver marchiato i link nel testo, puoi continuare a scrivere il librogame come preferisci.
+        {#if store.singleDelimiters}Ogni volta che inserisci un nuovo paragrafo, inserisci il numero del paragrafo tra
+        parentesi graffe \{numero\}. Ogni volta che inserisci un link, inserisci il testo del link tra parentesi quadre
+        [testo]. {/if}
+        {#if !store.singleDelimiters}Ogni volta che inserisci un nuovo paragrafo, inserisci il numero del paragrafo tra
+        parentesi graffe doppie \{\{numero\}\}. Ogni volta che inserisci un link, inserisci il testo del link tra
+        parentesi quadre doppie [[testo]].{/if}
+      </div>
+    </article>
+    <hr class="bg-gray-500 border-none h-[1px]">
+
+
+
+
+    <article class="flex flex-col md:flex-row space-x-5 space-y-8 md:space-y-0 py-4">
+      <div class="w-52 flex-none font-bold tracking-tight text-xl text-gray-800">
+        3. Genera il file
+      </div>
+      <div class="space-y-2 flex-grow">
+        <div>
+          Una volta terminato il lavoro di scrittura, carica qui sotto il file per generare il file finale.
+        </div>
+        <label for="dropzone-file3"
+          class="filelabel flex flex-col items-center justify-center w-full h-32 border-2 border-gray-300 border-dashed rounded-lg cursor-pointer dark:hover:bg-bray-800 dark:bg-gray-700  dark:border-gray-600 dark:hover:border-gray-500 dark:hover:bg-gray-600">
+          <div class="flex flex-col items-center justify-center pt-5 pb-6">
+            {#if store.phase3.content === ''}
+            <svg aria-hidden="true" class="w-10 h-10 mb-3 text-gray-200" fill="none" stroke="currentColor"
+              viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path>
+            </svg>
+            <p class="mb-2 text-sm text-gray-200 dark:text-gray-400"><span class="font-semibold">Clicca per caricare il
+                file</span> o trascinalo</p>
+            <p class="text-xs text-gray-200 dark:text-gray-400">file ODT o FODT (LibreOffice/OpenOffice)</p>
+            {/if}
+            {#if store.phase3.content !== ''}
+            <p class="mb-2 text-sm text-gray-200 dark:text-gray-400">File caricato correttamente!</p>
+            <p class="mb-2 text-sm text-gray-200 dark:text-gray-400">Clicca qui per <span class="font-semibold">caricare
+                un
+                nuovo file</span></p>
+            {/if}
+            <input id="dropzone-file3" type="file" class="hidden" accept=".fodt,.odt" @change="{{ loadFile('phase3', $event)}}">
+          </div>
+        </label>
+
+        {#if store.phase3.content}
+        <div>
+          <div class="mb-0.5 mt-4">
+            <label for="linkPattern">Rinomina i paragrafi:</label>
+            <input type="checkbox" role="switch" id="flexSwitchChecked" checked="{{store.renameChapters}}"
+              @change="{{store.renameChapters = $event.target.checked}}" />
+          </div>
+        </div>
+        <div>
+          <div class="mb-0.5 mt-4">
+            <label for="linkPattern">Sostituisci le parentesi {{store.singleDelimiters ? '\{\}' : '\{\{\}\}'}} con
+              segnalibri:</label>
+            <input type="checkbox" role="switch" id="flexSwitchChecked" checked="{{store.substituteChapters}}"
+              @change="{{store.substituteChapters = $event.target.checked}}" />
+          </div>
+        </div>
+        <div>
+          <div class="mb-0.5 mt-4">
+            <label for="linkPattern">Inserisci link al posto delle parentesi {{ store.singleDelimiters? '[]' :
+              '[[]]'}}:</label>
+            <input type="checkbox" role="switch" id="flexSwitchChecked" checked="{{store.substituteLinks}}"
+              @change="{{store.substituteLinks = $event.target.checked}}" />
+          </div>
+        </div>
+        <div class="flex flex-row mb-0.5 mt-4 space-x-2 w-full">
+          <button
+            class="shadow-lg flex-grow-2 bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded block"
+            @click="{{downloadFile('phase3', generateFile(store.phase3.content, store.singleDelimiters, store.renameChapters, store.substituteChapters, store.substituteLinks))}}">
+            Download
+          </button>
+          {#if isMagebookPlugin}
+          <button
+            class="shadow-lg flex-grow-2 bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded block"
+            @click="{{showGraph(generateGraph(store.phase3.content, store.singleDelimiters, store.renameChapters, store.substituteChapters, store.substituteLinks))}}">
+            Grafo
+          </button>
+          {/if}
+          <button class="shadow-lg bg-gray-600 hover:bg-gray-800 text-white font-bold py-2 px-16 rounded block"
+            @click="{{store.phase3.content = ''}}">
+            Annulla
+          </button>
+        </div>
+        {/if}
+      </div>
+    </article>
+
+  </div>
+</body>
+
+</html>
